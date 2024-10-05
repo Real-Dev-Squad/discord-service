@@ -4,29 +4,30 @@ import (
 	"fmt"
 	"os"
 
-	utility "github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 )
 
-var logger = &utility.Logger{}
-
-type PredefinedConfig struct {
-	Port string
-	Mode string
+type Config struct {
+	Port               string
+	Mode               string
+	DISCORD_PUBLIC_KEY string
 }
 
-var Config PredefinedConfig
+var AppConfig Config
 
 func init() {
-	err := godotenv.Load()
-	if err != nil {
-		fmt.Println("Error loading .env file")
+	if err := godotenv.Load(); err != nil {
+		logrus.Error(err)
 	} else {
-		logger.Info("Loaded .env file successfully")
+		logrus.Info("Loaded .env file successfully")
 	}
 
-	Config.Mode = loadEnv("MODE")
-	Config.Port = loadEnv("PORT")
+	AppConfig = Config{
+		Mode:               loadEnv("MODE"),
+		Port:               loadEnv("PORT"),
+		DISCORD_PUBLIC_KEY: loadEnv("DISCORD_PUBLIC_KEY"),
+	}
 }
 
 func loadEnv(key string) string {

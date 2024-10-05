@@ -1,18 +1,12 @@
 package main
 
 import (
-	"net/http"
-
 	config "github.com/Real-Dev-Squad/discord-service/config"
-	utility "github.com/Real-Dev-Squad/discord-service/utils"
+	"github.com/Real-Dev-Squad/discord-service/routes"
+	"github.com/sirupsen/logrus"
 )
 
-var logger = &utility.Logger{}
-
 func main() {
-	logger.Info("Starting server")
-	err := http.ListenAndServe(":"+config.Config.Port, nil)
-	if err != nil {
-		logger.Error(err)
-	}
+	logrus.Info("Starting server on port " + config.AppConfig.Port)
+	routes.Listen(":" + config.AppConfig.Port)
 }

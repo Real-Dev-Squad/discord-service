@@ -17,26 +17,25 @@ func HomeHandler(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	if err != nil {
 		logrus.Error(err)
 		http.Error(rw, "Failed to read request body", http.StatusBadRequest)
+		return
 	}
 	var message dtos.DiscordMessage
 	err = json.Unmarshal(payload, &message)
 	if err != nil {
 		logrus.Error(err)
-		http.Error(rw, "Failed to read request body", http.StatusBadRequest)
+		http.Error(rw, "Failed to parse request body", http.StatusBadRequest)
+		return
 	}
 	switch message.Type {
 	case discordgo.InteractionPing:
-		rw.WriteHeader(http.StatusOK)
 		resp := map[string]uint8{"type": uint8(discordgo.InteractionResponsePong)}
 		err = json.NewEncoder(rw).Encode(resp)
 		if err != nil {
-			rw.WriteHeader(http.StatusInternalServerError)
-			http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
 			logrus.Error(err)
+			http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
+			return
 		}
-		return
 	default:
 		rw.WriteHeader(http.StatusOK)
-		return
 	}
 }

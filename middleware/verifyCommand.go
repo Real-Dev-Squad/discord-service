@@ -10,17 +10,17 @@ import (
 )
 
 func VerifyCommand(next httprouter.Handle) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	return func(response http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		publicKeyBytes, err := hex.DecodeString(config.AppConfig.DISCORD_PUBLIC_KEY)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+			response.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		result := discordgo.VerifyInteraction(r, publicKeyBytes)
+		result := discordgo.VerifyInteraction(request, publicKeyBytes)
 		if !result {
-			w.WriteHeader(http.StatusUnauthorized)
+			response.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		next(w, r, ps)
+		next(response, request, params)
 	}
 }

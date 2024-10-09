@@ -11,31 +11,31 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func HomeHandler(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	rw.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	payload, err := io.ReadAll(r.Body)
+func HomeHandler(response http.ResponseWriter, request *http.Request, params httprouter.Params) {
+	response.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	payload, err := io.ReadAll(request.Body)
 	if err != nil {
 		logrus.Error(err)
-		http.Error(rw, "Failed to read request body", http.StatusBadRequest)
+		http.Error(response, "Failed to read request body", http.StatusBadRequest)
 		return
 	}
 	var message dtos.DiscordMessage
 	err = json.Unmarshal(payload, &message)
 	if err != nil {
 		logrus.Error(err)
-		http.Error(rw, "Failed to parse request body", http.StatusBadRequest)
+		http.Error(response, "Failed to parse request body", http.StatusBadRequest)
 		return
 	}
 	switch message.Type {
 	case discordgo.InteractionPing:
 		resp := map[string]uint8{"type": uint8(discordgo.InteractionResponsePong)}
-		err = json.NewEncoder(rw).Encode(resp)
+		err = json.NewEncoder(response).Encode(resp)
 		if err != nil {
 			logrus.Error(err)
-			http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
+			http.Error(response, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 	default:
-		rw.WriteHeader(http.StatusOK)
+		response.WriteHeader(http.StatusOK)
 	}
 }

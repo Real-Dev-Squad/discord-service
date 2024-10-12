@@ -12,7 +12,6 @@ import (
 )
 
 func HomeHandler(response http.ResponseWriter, request *http.Request, params httprouter.Params) {
-	response.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	payload, err := io.ReadAll(request.Body)
 	if err != nil {
 		utils.Errors.NewBadRequestError(response, "Failed to read request body")

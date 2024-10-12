@@ -25,12 +25,9 @@ func HomeHandler(response http.ResponseWriter, request *http.Request, params htt
 	}
 	switch message.Type {
 	case discordgo.InteractionPing:
-		resp := map[string]uint8{"type": uint8(discordgo.InteractionResponsePong)}
-		err = json.NewEncoder(response).Encode(resp)
-		if err != nil {
-			utils.Errors.NewInternalError(response)
-			return
-		}
+		payload := map[string]interface{}{"type": uint8(discordgo.InteractionResponsePong)}
+		utils.Success.NewDiscordResponse(response, "Pong", payload)
+		return
 	default:
 		response.WriteHeader(http.StatusOK)
 	}

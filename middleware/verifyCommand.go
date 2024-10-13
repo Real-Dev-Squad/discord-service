@@ -10,6 +10,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+var VerifyInteraction = discordgo.VerifyInteraction
+
 func VerifyCommand(next httprouter.Handle) httprouter.Handle {
 	return func(response http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		response.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -18,7 +20,7 @@ func VerifyCommand(next httprouter.Handle) httprouter.Handle {
 			utils.Errors.NewInternalError(response)
 			return
 		}
-		result := discordgo.VerifyInteraction(request, publicKeyBytes)
+		result := VerifyInteraction(request, publicKeyBytes)
 		if !result {
 			utils.Errors.NewUnauthorisedError(response)
 			return

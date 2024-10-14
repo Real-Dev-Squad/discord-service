@@ -13,8 +13,8 @@ import (
 
 func HomeHandler(response http.ResponseWriter, request *http.Request, params httprouter.Params) {
 	payload, err := io.ReadAll(request.Body)
-	if err != nil {
-		utils.Errors.NewBadRequestError(response, "Failed to read request body")
+	if err != nil || len(payload) == 0 {
+		utils.Errors.NewBadRequestError(response, "Invalid Request Payload")
 		return
 	}
 	var message dtos.DiscordMessage

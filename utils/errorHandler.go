@@ -14,12 +14,14 @@ var Errors *errorPackage = &errorPackage{}
 func (errorPackage) NewBadRequestError(response http.ResponseWriter, message string) {
 	formatError(response, message, http.StatusBadRequest)
 }
+
 func (errorPackage) NewUnauthorisedError(response http.ResponseWriter, message ...string) {
 	if len(message) == 0 {
 		message = []string{"Unauthorized Access"}
 	}
 	formatError(response, message[0], http.StatusUnauthorized)
 }
+
 func (errorPackage) NewInternalError(response http.ResponseWriter) {
 	formatError(response, "Internal Server Error", http.StatusInternalServerError)
 }

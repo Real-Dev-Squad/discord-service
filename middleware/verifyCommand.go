@@ -5,22 +5,26 @@ import (
 	"net/http"
 
 	"github.com/Real-Dev-Squad/discord-service/config"
+	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/julienschmidt/httprouter"
 )
 
+var VerifyInteraction = discordgo.VerifyInteraction
+
 func VerifyCommand(next httprouter.Handle) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	return func(response http.ResponseWriter, request *http.Request, params httprouter.Params) {
+		response.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		publicKeyBytes, err := hex.DecodeString(config.AppConfig.DISCORD_PUBLIC_KEY)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+			utils.Errors.NewInternalError(response)
 			return
 		}
-		result := discordgo.VerifyInteraction(r, publicKeyBytes)
+		result := VerifyInteraction(request, publicKeyBytes)
 		if !result {
-			w.WriteHeader(http.StatusUnauthorized)
+			utils.Errors.NewUnauthorisedError(response)
 			return
 		}
-		next(w, r, ps)
+		next(response, request, params)
 	}
 }

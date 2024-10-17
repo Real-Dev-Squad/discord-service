@@ -1,2 +1,4 @@
 .env
 .vscode
+coverage.html
+coverage.out

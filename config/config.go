@@ -12,6 +12,8 @@ type Config struct {
 	Port               string
 	Mode               string
 	DISCORD_PUBLIC_KEY string
+	GUILD_ID           string
+	BOT_TOKEN          string
 }
 
 var AppConfig Config
@@ -27,6 +29,8 @@ func init() {
 		Mode:               loadEnv("MODE"),
 		Port:               loadEnv("PORT"),
 		DISCORD_PUBLIC_KEY: loadEnv("DISCORD_PUBLIC_KEY"),
+		GUILD_ID:           loadEnv("GUILD_ID"),
+		BOT_TOKEN:          loadEnv("BOT_TOKEN"),
 	}
 }
 

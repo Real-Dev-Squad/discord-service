@@ -33,6 +33,11 @@ clean:
 	@rm -rf coverage.out
 	@rm -rf coverage.html
 
+register:
+	@echo "Registering commands..."
+	@go run commands/main/resigter.go
+	@echo "Registration complete."
+
 test-cover:
 ifeq ($(FORCE),1)
 	@echo "Force flag detected. Cleaning before tests..."

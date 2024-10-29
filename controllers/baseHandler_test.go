@@ -47,10 +47,24 @@ func TestHomeHandler(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, float64(discordgo.InteractionResponsePong), response["type"])
 	})
+	t.Run("Should return 200 when request body is valid for interaction command", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		message := dtos.DiscordMessage{Type: discordgo.InteractionApplicationCommand}
+		jsonBytes, _ := json.Marshal(message)
+		r, _ := http.NewRequest("POST", "/", bytes.NewBuffer(jsonBytes))
+		controllers.HomeHandler(w, r, nil)
+		assert.Equal(t, http.StatusOK, w.Code)
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.Nil(t, err)
+		assert.Equal(t, float64(discordgo.InteractionResponseChannelMessageWithSource), response["type"])
+		data := response["data"].(map[string]interface{})
+		assert.Equal(t, "Hey there! Congratulations, you just executed your first slash command", data["content"])
+	})
 
 	t.Run("Should return 200 when interaction type is unknown", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		message := dtos.DiscordMessage{Type: discordgo.InteractionApplicationCommand}
+		message := dtos.DiscordMessage{}
 		jsonBytes, _ := json.Marshal(message)
 		r, _ := http.NewRequest("POST", "/", bytes.NewBuffer(jsonBytes))
 		controllers.HomeHandler(w, r, nil)

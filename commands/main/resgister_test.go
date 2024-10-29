@@ -101,5 +101,13 @@ func TestRegisterCommands(t *testing.T) {
 			RegisterCommands(mockSess)
 		}, "RegisterCommands should panic when ApplicationCommandCreate returns an error")
 	})
-
+	t.Run("should call all methods when none of the methods returns no error", func(t *testing.T) {
+		mockSess := &mockSession{openError: nil, commandError: nil}
+		assert.NotPanics(t, func() {
+			RegisterCommands(mockSess)
+		})
+		assert.True(t, mockSess.applicationCommandCalled)
+		assert.True(t, mockSess.getUserIdCalled)
+		assert.True(t, mockSess.closeCalled)
+	})
 }

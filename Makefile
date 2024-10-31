@@ -35,7 +35,7 @@ clean:
 
 register:
 	@echo "Registering commands..."
-	@go run commands/main/resigter.go
+	@go run commands/main/register.go
 	@echo "Registration complete."
 
 test-cover:

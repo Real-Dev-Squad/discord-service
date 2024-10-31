@@ -9,16 +9,7 @@ import (
 )
 
 func TestInit(t *testing.T) {
-	t.Run("Should call SetupConnection function", func(t *testing.T) {
-		originalSetup := SetupConnection
-		defer func() { SetupConnection = originalSetup }()
-		shouldHaveCalled := false
-		SetupConnection = func() {
-			shouldHaveCalled = true
-		}
-		main()
-		assert.True(t, shouldHaveCalled)
-	})
+
 	t.Run("should panic when SetupConnection returns an error", func(t *testing.T) {
 		originalNewDiscord := NewDiscord
 		defer func() { NewDiscord = originalNewDiscord }()

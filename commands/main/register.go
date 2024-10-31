@@ -7,27 +7,27 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type sessionWrapper struct {
+type SessionWrapper struct {
 	session *discordgo.Session
 }
 
-func (s *sessionWrapper) open() error {
+func (s *SessionWrapper) open() error {
 	return s.session.Open()
 }
 
-func (s *sessionWrapper) close() error {
+func (s *SessionWrapper) close() error {
 	return s.session.Close()
 }
 
-func (s *sessionWrapper) applicationCommandCreate(applicationID, guildID string, command *discordgo.ApplicationCommand) (*discordgo.ApplicationCommand, error) {
+func (s *SessionWrapper) applicationCommandCreate(applicationID, guildID string, command *discordgo.ApplicationCommand) (*discordgo.ApplicationCommand, error) {
 	return s.session.ApplicationCommandCreate(applicationID, guildID, command)
 }
 
-func (sw *sessionWrapper) getUerId() string {
+func (sw *SessionWrapper) getUerId() string {
 	return sw.session.State.User.ID
 }
 
-type SessionInterface interface {
+type sessionInterface interface {
 	open() error
 	close() error
 	applicationCommandCreate(applicationID, guildID string, command *discordgo.ApplicationCommand) (*discordgo.ApplicationCommand, error)
@@ -47,11 +47,11 @@ func main() {
 		logrus.Info("Logged in as: ", session.State.User.Username, session.State.User.Discriminator)
 	})
 
-	sessionWrapper := &sessionWrapper{session: session}
+	sessionWrapper := &SessionWrapper{session: session}
 	RegisterCommands(sessionWrapper)
 }
 
-var RegisterCommands = func(openSession SessionInterface) {
+var RegisterCommands = func(openSession sessionInterface) {
 	err := openSession.open()
 	if err != nil {
 		logrus.Error("Cannot open the session: ")

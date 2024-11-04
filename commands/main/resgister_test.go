@@ -30,10 +30,6 @@ func TestInit(t *testing.T) {
 		}
 		assert.Panics(t, main)
 	})
-	t.Run("should panic when invalid session is passed to RegisterCommands", func(t *testing.T) {
-		originalRegisterCommands := RegisterCommands
-		defer func() { RegisterCommands = originalRegisterCommands }()
-	})
 }
 
 type mockSession struct {

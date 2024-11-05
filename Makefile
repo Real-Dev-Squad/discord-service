@@ -20,7 +20,7 @@ fmt:
 
 test:
 	@echo "Running the Go project tests..."
-	@go list ./... | grep -v "/config$$" | grep -v "/routes$$" | xargs go test -coverprofile=coverage.out
+	@go list ./... | grep -v "/config$$" | grep -v "/routes$$" | xargs go test -v -coverprofile=coverage.out
 
 coverage:
 	@echo "Running the Go project tests with coverage..."
@@ -32,6 +32,11 @@ clean:
 	@rm -rf coverage
 	@rm -rf coverage.out
 	@rm -rf coverage.html
+
+register:
+	@echo "Registering commands..."
+	@go run commands/main/register.go
+	@echo "Registration complete."
 
 test-cover:
 ifeq ($(FORCE),1)

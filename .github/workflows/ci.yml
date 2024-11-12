@@ -1,0 +1,38 @@
+# This workflow will build and test the Go code
+# This workflow will install Go dependencies, build the source code, and run tests.
+
+name: Go CI Checks
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    strategy:
+      matrix:
+        go-version: [1.22.4]
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v3
+
+      - name: Set up Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Build and test
+        run: |
+          go build ./...
+          go test -v ./...

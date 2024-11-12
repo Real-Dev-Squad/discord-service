@@ -14,6 +14,10 @@ tidy:
 	@echo "Running the Go project tidy..."
 	@go mod tidy
 
+download:
+	@echo "Running the Go project tidy..."
+	@go mod download
+
 fmt:
 	@echo "Running the Go project fmt..."
 	@go fmt ./...

@@ -4,12 +4,13 @@
 name: Go CI Checks
 
 on:
-  push:
-    branches:
-      - '**'
   pull_request:
     branches:
       - '**'
+  push:
+    branches:
+      - 'main'
+      - 'develop'
 
 jobs:
   build:

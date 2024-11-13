@@ -13,7 +13,6 @@ services:
       - .:/app
     networks:
       - app-network
-    restart: always
 
 networks:
   app-network:

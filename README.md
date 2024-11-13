@@ -29,15 +29,41 @@ Before running the project, ensure that you have the following installed:
    [Make Installation Guide.](https://www.geeksforgeeks.org/how-to-install-make-on-ubuntu/)
 3. **Install Ngrok**
    To install Ngrok, follow the installation steps here:
-   [Ngrok Installation Guide]().
+   [Ngrok Installation Guide](https://download.ngrok.com/).
 4. **Install Air**
-   To install Air, run:
+   To install Air, follow the installation steps here:
+   [Air Installation Guide](https://github.com/air-verse/air)
+
+
+## Running the Project Using Go
+
+1. **Install Packages**
 
    ```bash
-   curl -fLo ./air https://github.com/cosmtrek/air/releases/download/v1.30.0/air_linux_amd64 && chmod +x ./air
+   go mod download
    ```
 
-## Running the Project
+2. **Verify Packages**
+   If it's your first time running the project, ensure all dependencies are set up:
+
+   ```bash
+   go mod tidy
+   ```
+
+3. **Running the Project**
+
+   ```bash
+   go run .
+   ```
+
+4. **Running the Project Using Air**
+
+   ```bash
+   air
+   ```
+
+
+## Running the Project Using Make
 
 You can run the project using the `Makefile`, which provides several commands for various tasks. Below are the steps to run the project:
 
@@ -57,10 +83,16 @@ You can run the project using the `Makefile`, which provides several commands fo
 3. **Running the Project**
 
    ```bash
-   make tidy
+   make run
    ```
 
-## Run the Project using Docker
+4. **Running the Project Using Air**
+
+   ```bash
+   make air
+   ```
+
+## Run the Project Using Docker
 
 You can run the project using the `Docker`, using the following steps
 
@@ -79,36 +111,28 @@ You can run the project using the `Docker`, using the following steps
    docker-compose down
    ```
 
-## Usage
+## Other Commands Usage
 
-You can run the project using the `Makefile`, which provides several commands for various tasks. Below are the steps to run the project:
-
-1. **To run the project**:
+1. **To run tests**:
 
    ```bash
-   make run
+   make test #or go list ./... | grep -v "/config$$" | grep -v "/routes$$" | xargs go test -v
    ```
 
-2. **To run tests**:
+2. **To generate a coverage report**:
 
    ```bash
-   make test
+   make coverage #or go list ./... | grep -v "/config$$" | grep -v "/routes$$" | xargs go test -v -coverprofile=coverage.out
    ```
 
-3. **To generate a coverage report**:
+3. **To automatically re-run the application on changes**:
 
    ```bash
-   make coverage
+   make air #or air
    ```
 
-4. **To automatically re-run the application on changes**:
+4. **To clean up the generated files**:
 
    ```bash
-   make air
-   ```
-
-5. **To clean up the generated files**:
-
-   ```bash
-   make clean
+   make clean #or rm -rf coverage coverage.out coverage.html
    ```

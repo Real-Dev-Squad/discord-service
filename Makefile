@@ -8,7 +8,7 @@ run:
 
 ngrok:
 	@echo "Running the Go project using Ngrok..."
-	ngrok http 8080
+	ngrok http 8999
 
 tidy:
 	@echo "Running the Go project tidy..."

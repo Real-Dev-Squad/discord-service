@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Real-Dev-Squad/discord-service/dtos"
+	"github.com/Real-Dev-Squad/discord-service/fixtures"
 	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
 	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
@@ -13,15 +14,7 @@ import (
 
 func TestMainService(t *testing.T) {
 	t.Run("should return HelloService when command name is hello", func(t *testing.T) {
-		discordMessage := &dtos.DiscordMessage{
-			Data: &dtos.Data{
-				GuildId: "876543210987654321",
-				ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
-					Name: "hello",
-				},
-			},
-		}
-		handler := MainService(discordMessage)
+		handler := MainService(fixtures.HelloCommand)
 		w := httptest.NewRecorder()
 		r, _ := http.NewRequest("GET", "/", nil)
 		handler(w, r)

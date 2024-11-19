@@ -15,7 +15,6 @@ var CS = CommandService{}
 func MainService(discordMessage *dtos.DiscordMessage) func(response http.ResponseWriter, request *http.Request) {
 	CS.discordMessage = discordMessage
 	switch discordMessage.Data.Name {
-
 	case "hello":
 		return CS.HelloService
 

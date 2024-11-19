@@ -58,8 +58,6 @@ func TestHomeHandler(t *testing.T) {
 
 		assert.Nil(t, err)
 		assert.Equal(t, float64(discordgo.InteractionResponseChannelMessageWithSource), response["type"])
-		data := response["data"].(map[string]interface{})
-		assert.Equal(t, "Hey there! Congratulations, you just executed your first slash command", data["content"])
 	})
 
 	t.Run("Should return 200 when interaction type is unknown", func(t *testing.T) {

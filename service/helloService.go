@@ -11,7 +11,7 @@ func (s *CommandService) HelloService(response http.ResponseWriter, request *htt
 	messageResponse := &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: "Hey there! Congratulations, you just executed your first slash command",
+			Content: utils.ResponseGenerator.HelloResponse(s.discordMessage.Member.User.ID),
 		},
 	}
 	utils.Success.NewDiscordResponse(response, "Success", messageResponse)

@@ -2,7 +2,7 @@ package dtos
 
 import "github.com/bwmarrin/discordgo"
 
-type data struct {
+type Data struct {
 	discordgo.ApplicationCommandInteractionData
 	GuildId string `json:"guild_id"`
 }
@@ -14,5 +14,5 @@ type DiscordMessage struct {
 	Channel        *discordgo.Channel        `json:"channel"`
 	ChannelId      string                    `json:"channel_id"`
 	Member         *discordgo.Member         `json:"member"`
-	Data           *data                     `json:"data"`
+	Data           *Data                     `json:"data"`
 }

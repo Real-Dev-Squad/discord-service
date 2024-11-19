@@ -9,6 +9,7 @@ import (
 
 	"github.com/Real-Dev-Squad/discord-service/controllers"
 	"github.com/Real-Dev-Squad/discord-service/dtos"
+	"github.com/Real-Dev-Squad/discord-service/fixtures"
 	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
 	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
@@ -47,8 +48,7 @@ func TestHomeHandler(t *testing.T) {
 	})
 	t.Run("Should return 200 when request body is valid for interaction command", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		message := dtos.DiscordMessage{Type: discordgo.InteractionApplicationCommand}
-		jsonBytes, _ := json.Marshal(message)
+		jsonBytes, _ := json.Marshal(fixtures.HelloCommand)
 		r, _ := http.NewRequest("POST", "/", bytes.NewBuffer(jsonBytes))
 		controllers.HomeHandler(w, r, nil)
 

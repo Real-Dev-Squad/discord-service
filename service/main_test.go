@@ -18,6 +18,7 @@ func TestMainService(t *testing.T) {
 		w := httptest.NewRecorder()
 		r, _ := http.NewRequest("GET", "/", nil)
 		handler(w, r)
+
 		assert.Equal(t, http.StatusOK, w.Code)
 	})
 
@@ -30,10 +31,12 @@ func TestMainService(t *testing.T) {
 				},
 			},
 		}
+
 		handler := MainService(discordMessage)
 		w := httptest.NewRecorder()
 		r, _ := http.NewRequest("GET", "/", nil)
 		handler(w, r)
+
 		assert.Equal(t, http.StatusOK, w.Code)
 	})
 

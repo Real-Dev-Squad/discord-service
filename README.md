@@ -6,7 +6,7 @@ This document provides instructions on how to set up and run the Go project usin
 
 - Go 1.18+
 - Make
-- Air (for `make air`)
+- Air (for `make dev`)
 - Ngrok (for `make ngrok`)
 
 Ensure you have these dependencies installed before running the commands.
@@ -89,7 +89,7 @@ You can run the project using the `Makefile`, which provides several commands fo
 4. **Running the Project Using Air**
 
    ```bash
-   make air
+   make dev
    ```
 
 ## Run the Project Using Docker
@@ -128,7 +128,7 @@ You can run the project using the `Docker`, using the following steps
 3. **To automatically re-run the application on changes**:
 
    ```bash
-   make air #or air
+   make dev #or air
    ```
 
 4. **To clean up the generated files**:

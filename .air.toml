@@ -1,13 +1,13 @@
 root = "."
 testdata_dir = "testdata"
-tmp_dir = "bin"
+tmp_dir = "build"
 
 [build]
   args_bin = []
-  bin = "./bin/discord-service"
-  cmd = "go build -o bin/discord-service main.go"
+  bin = "./build/discord-service"
+  cmd = "go build -o build/discord-service main.go"
   delay = 1000
-  exclude_dir = ["assets", "tmp", "vendor", "testdata", "bin"]
+  exclude_dir = ["assets", "tmp", "vendor", "testdata", "bin", "build"]
   exclude_file = []
   exclude_regex = ["_test.go"]
   exclude_unchanged = false

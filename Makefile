@@ -3,10 +3,10 @@ dev:
 	@air
 build:
 	@echo "Building the Go Project...."
-	@go build -o bin/discord-service
+	@go build -o build/discord-service
 run:build
 	@echo "Running the Go project..."
-	@./bin/discord-service
+	@./build/discord-service
 
 ngrok:
 	@echo "Running the Go project using Ngrok..."

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/Real-Dev-Squad/discord-service/dtos"
+	service "github.com/Real-Dev-Squad/discord-service/service"
 	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/julienschmidt/httprouter"
@@ -24,19 +25,16 @@ func HomeHandler(response http.ResponseWriter, request *http.Request, params htt
 		return
 	}
 	switch message.Type {
+
 	case discordgo.InteractionPing:
 		payload := map[string]interface{}{"type": uint8(discordgo.InteractionResponsePong)}
 		utils.Success.NewDiscordResponse(response, "Pong", payload)
 		return
+
 	case discordgo.InteractionApplicationCommand:
-		messageResponse := &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Hey there! Congratulations, you just executed your first slash command",
-			},
-		}
-		utils.Success.NewDiscordResponse(response, "Success", messageResponse)
+		service.MainService(&message)(response, request)
 		return
+
 	default:
 		response.WriteHeader(http.StatusOK)
 	}

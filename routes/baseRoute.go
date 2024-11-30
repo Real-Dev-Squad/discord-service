@@ -8,4 +8,7 @@ import (
 
 func SetupBaseRoutes(router *httprouter.Router) {
 	router.POST("/", middleware.VerifyCommand(controllers.HomeHandler))
+
+	// Add the health check route
+	router.GET("/health", controllers.HealthCheckHandler)
 }

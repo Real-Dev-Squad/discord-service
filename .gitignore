@@ -2,4 +2,5 @@
 .vscode
 coverage.html
 coverage.out
+tmp
 build

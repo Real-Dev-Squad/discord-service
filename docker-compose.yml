@@ -1,19 +1,13 @@
-version: '3.8'
-
 services:
-  go-app:
+  server:
     build:
       context: .
-      dockerfile: Dockerfile
+      target: final
     ports:
-      - '8999:8080'
+      - 8080:8080
     env_file:
       - .env
     volumes:
       - .:/app
-    networks:
-      - app-network
+    
 
-networks:
-  app-network:
-    driver: bridge

@@ -9,10 +9,9 @@ import (
 	service "github.com/Real-Dev-Squad/discord-service/service"
 	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
-	"github.com/julienschmidt/httprouter"
 )
 
-func HomeHandler(response http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func HomeHandler(response http.ResponseWriter, request *http.Request) {
 	payload, err := io.ReadAll(request.Body)
 	if err != nil || len(payload) == 0 {
 		utils.Errors.NewBadRequestError(response, "Invalid Request Payload")

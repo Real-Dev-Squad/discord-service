@@ -3,13 +3,13 @@ package routes
 import (
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 )
 
 func SetupV1Routes() http.Handler {
-	router := httprouter.New()
+	router := mux.NewRouter()
 	corsConfig := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "PUT"},

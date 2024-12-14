@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
-
-	"github.com/julienschmidt/httprouter"
 )
 
 type HealthCheckResponse struct {
@@ -13,7 +11,7 @@ type HealthCheckResponse struct {
 	Timestamp string `json:"timestamp"`
 }
 
-func HealthCheckHandler(response http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func HealthCheckHandler(response http.ResponseWriter, request *http.Request) {
 	response.Header().Set("Content-Type", "application/json")
 
 	data := HealthCheckResponse{

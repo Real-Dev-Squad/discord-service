@@ -9,21 +9,21 @@ import (
 	"github.com/Real-Dev-Squad/discord-service/config"
 	"github.com/Real-Dev-Squad/discord-service/middleware"
 	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
-	"github.com/julienschmidt/httprouter"
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 )
 
 var testControllerCalled bool = false
 
-func testController(response http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func testController(response http.ResponseWriter, request *http.Request) {
 	testControllerCalled = true
 	response.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	response.WriteHeader(http.StatusOK)
 }
-func setup() *httprouter.Router {
+func setup() *mux.Router {
 	testControllerCalled = false
-	router := httprouter.New()
-	router.POST("/", middleware.VerifyCommand(testController))
+	router := mux.NewRouter()
+	router.HandleFunc("/", middleware.VerifyCommand(testController)).Methods(("POST"))
 	return router
 }
 

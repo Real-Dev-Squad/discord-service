@@ -17,7 +17,7 @@ func TestHealthCheckHandler(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		controllers.HealthCheckHandler(w, r, nil)
+		controllers.HealthCheckHandler(w, r)
 	})
 
 	handler.ServeHTTP(rr, req)

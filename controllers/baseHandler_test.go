@@ -19,7 +19,7 @@ func TestHomeHandler(t *testing.T) {
 	t.Run("Should return 400 when request body is empty", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		r, _ := http.NewRequest("POST", "/", http.NoBody)
-		controllers.HomeHandler(w, r, nil)
+		controllers.HomeHandler(w, r)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
@@ -27,7 +27,7 @@ func TestHomeHandler(t *testing.T) {
 	t.Run("Should return 500 when request body is malformed", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		r, _ := http.NewRequest("POST", "/", bytes.NewBuffer([]byte("malformed request")))
-		controllers.HomeHandler(w, r, nil)
+		controllers.HomeHandler(w, r)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 	})
@@ -37,7 +37,7 @@ func TestHomeHandler(t *testing.T) {
 		message := dtos.DiscordMessage{Type: discordgo.InteractionPing}
 		jsonBytes, _ := json.Marshal(message)
 		r, _ := http.NewRequest("POST", "/", bytes.NewBuffer(jsonBytes))
-		controllers.HomeHandler(w, r, nil)
+		controllers.HomeHandler(w, r)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		var response map[string]interface{}
@@ -50,7 +50,7 @@ func TestHomeHandler(t *testing.T) {
 		w := httptest.NewRecorder()
 		jsonBytes, _ := json.Marshal(fixtures.HelloCommand)
 		r, _ := http.NewRequest("POST", "/", bytes.NewBuffer(jsonBytes))
-		controllers.HomeHandler(w, r, nil)
+		controllers.HomeHandler(w, r)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		var response map[string]interface{}
@@ -65,7 +65,7 @@ func TestHomeHandler(t *testing.T) {
 		message := dtos.DiscordMessage{}
 		jsonBytes, _ := json.Marshal(message)
 		r, _ := http.NewRequest("POST", "/", bytes.NewBuffer(jsonBytes))
-		controllers.HomeHandler(w, r, nil)
+		controllers.HomeHandler(w, r)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 	})

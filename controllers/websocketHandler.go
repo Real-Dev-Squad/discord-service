@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"github.com/sirupsen/logrus"
 )
 
 type sessionWrapper struct {
@@ -33,18 +33,18 @@ func WSHandler(w http.ResponseWriter, r *http.Request) {
 	var session = &sessionWrapper{}
 	err := session.upgrade(w, r, nil)
 	if err != nil {
-		log.Printf("Error upgrading connection: %v", err)
+		logrus.Printf("Error upgrading connection: %v", err)
 		return
 	}
 
-	log.Printf("Connected with %v", session.connection.RemoteAddr())
+	logrus.Printf("Connected with %v", session.connection.RemoteAddr())
 	defer session.connection.Close()
 
 	for {
 		_, _, err := session.connection.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("Disconnected: %v", session.connection.RemoteAddr())
+				logrus.Printf("Disconnected: %v", session.connection.RemoteAddr())
 			}
 			break
 		}

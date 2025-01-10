@@ -9,7 +9,7 @@ import (
 )
 
 type Config struct {
-	Port               string
+	PORT               string
 	DISCORD_PUBLIC_KEY string
 	GUILD_ID           string
 	BOT_TOKEN          string
@@ -25,7 +25,7 @@ func init() {
 	}
 
 	AppConfig = Config{
-		Port:               loadEnv("PORT"),
+		PORT:               loadEnv("PORT"),
 		DISCORD_PUBLIC_KEY: loadEnv("DISCORD_PUBLIC_KEY"),
 		GUILD_ID:           loadEnv("GUILD_ID"),
 		BOT_TOKEN:          loadEnv("BOT_TOKEN"),

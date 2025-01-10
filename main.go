@@ -7,6 +7,6 @@ import (
 )
 
 func main() {
-	logrus.Info("Starting server on port " + config.AppConfig.Port)
-	routes.Listen(":" + config.AppConfig.Port)
+	logrus.Info("Starting server on port " + config.AppConfig.PORT)
+	routes.Listen(":" + config.AppConfig.PORT)
 }

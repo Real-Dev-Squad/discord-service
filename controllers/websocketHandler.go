@@ -41,12 +41,17 @@ func WSHandler(w http.ResponseWriter, r *http.Request) {
 	defer session.connection.Close()
 
 	for {
-		_, _, err := session.connection.ReadMessage()
+		messageType, messageBytes, err := session.connection.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				logrus.Printf("Disconnected: %v", session.connection.RemoteAddr())
+				logrus.Printf("Disconnected unexpectedly: %v", session.connection.RemoteAddr())
+			} else {
+				logrus.Printf("Connection closed: %v", session.connection.RemoteAddr())
 			}
 			break
 		}
+		// Create a DTO and bind the message to it
+		logrus.Printf("Message Type: %v", messageType)
+		logrus.Printf("Message Bytes: %v", messageBytes)
 	}
 }

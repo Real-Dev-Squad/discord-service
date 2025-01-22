@@ -13,6 +13,7 @@ type Config struct {
 	DISCORD_PUBLIC_KEY string
 	GUILD_ID           string
 	BOT_TOKEN          string
+	QUEUE_NAME         string
 }
 
 var AppConfig Config
@@ -29,6 +30,7 @@ func init() {
 		DISCORD_PUBLIC_KEY: loadEnv("DISCORD_PUBLIC_KEY"),
 		GUILD_ID:           loadEnv("GUILD_ID"),
 		BOT_TOKEN:          loadEnv("BOT_TOKEN"),
+		QUEUE_NAME:         "DISCORD_QUEUE",
 	}
 }
 

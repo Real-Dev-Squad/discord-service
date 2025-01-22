@@ -14,6 +14,7 @@ type Config struct {
 	GUILD_ID           string
 	BOT_TOKEN          string
 	QUEUE_NAME         string
+	MAX_RETRIES        int
 }
 
 var AppConfig Config
@@ -31,6 +32,7 @@ func init() {
 		GUILD_ID:           loadEnv("GUILD_ID"),
 		BOT_TOKEN:          loadEnv("BOT_TOKEN"),
 		QUEUE_NAME:         "DISCORD_QUEUE",
+		MAX_RETRIES:        5,
 	}
 }
 

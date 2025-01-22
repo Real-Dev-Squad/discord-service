@@ -15,7 +15,9 @@ func ExponentialBackoffRetry(maxRetries int, operation func() error) error {
 			return nil
 		}
 		logrus.Errorf("Attempt %d: Operation failed: %s", i+1, err)
-		time.Sleep(time.Duration(math.Pow(3, float64(i))) * time.Second)
+		if i < maxRetries-1 {
+			time.Sleep(time.Duration(math.Pow(2, float64(i))) * time.Second)
+		}
 	}
 	return err
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func ExponentialBackoffRetry(maxRetries int, operation func() error) error {
+var ExponentialBackoffRetry = func(maxRetries int, operation func() error) error {
 	var err error
 	for i := 0; i < maxRetries; i++ {
 		err = operation()

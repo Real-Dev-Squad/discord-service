@@ -10,6 +10,17 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var (
+	queueInstance *Queue
+	once          sync.Once
+)
+
+type sessionInterface interface {
+	dial() error
+	createChannel() error
+	declareQueue() error
+}
+
 type Queue struct {
 	Connection *amqp.Connection
 	Queue      amqp.Queue
@@ -42,17 +53,6 @@ func (q *Queue) declareQueue() error {
 	return err
 }
 
-var (
-	queueInstance *Queue
-	once          sync.Once
-)
-
-type sessionInterface interface {
-	dial() error
-	createChannel() error
-	declareQueue() error
-}
-
 func InitQueueConnection(openSession sessionInterface) {
 	var err error
 	f := func() error {
@@ -78,7 +78,7 @@ func InitQueueConnection(openSession sessionInterface) {
 }
 
 func queueHandler() {
-	queueInstance := &Queue{}
+	queueInstance = &Queue{}
 	InitQueueConnection(queueInstance)
 }
 

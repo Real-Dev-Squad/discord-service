@@ -19,7 +19,7 @@ type Queue struct {
 
 func (q *Queue) dial() error {
 	var err error
-	q.Connection, err = amqp.Dial("amqp://localhost")
+	q.Connection, err = amqp.Dial(config.AppConfig.QUEUE_URL)
 	return err
 }
 

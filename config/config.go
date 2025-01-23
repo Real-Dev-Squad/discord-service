@@ -13,6 +13,7 @@ type Config struct {
 	DISCORD_PUBLIC_KEY string
 	GUILD_ID           string
 	BOT_TOKEN          string
+	QUEUE_URL          string
 	QUEUE_NAME         string
 	MAX_RETRIES        int
 }
@@ -28,6 +29,7 @@ func init() {
 
 	AppConfig = Config{
 		Port:               loadEnv("PORT"),
+		QUEUE_URL:          loadEnv("QUEUE_URL"),
 		DISCORD_PUBLIC_KEY: loadEnv("DISCORD_PUBLIC_KEY"),
 		GUILD_ID:           loadEnv("GUILD_ID"),
 		BOT_TOKEN:          loadEnv("BOT_TOKEN"),

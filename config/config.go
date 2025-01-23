@@ -31,7 +31,7 @@ func init() {
 		DISCORD_PUBLIC_KEY: loadEnv("DISCORD_PUBLIC_KEY"),
 		GUILD_ID:           loadEnv("GUILD_ID"),
 		BOT_TOKEN:          loadEnv("BOT_TOKEN"),
-		QUEUE_NAME:         "DISCORD_QUEUE",
+		QUEUE_NAME:         loadEnv("QUEUE_NAME"),
 		MAX_RETRIES:        5,
 	}
 }

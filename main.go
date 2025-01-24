@@ -9,6 +9,6 @@ import (
 
 func main() {
 	logrus.Info("Starting server on port " + config.AppConfig.Port)
-	go queue.GetQueueInstance()
+	queue.GetQueueInstance()
 	routes.Listen(":" + config.AppConfig.Port)
 }

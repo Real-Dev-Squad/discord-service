@@ -89,18 +89,26 @@ var GetQueueInstance = func() *Queue {
 
 func SendMessage(message dtos.TextMessage) {
 	queue := GetQueueInstance()
+
+	if queue.Channel == nil {
+		logrus.Errorf("Queue channel is not initialized")
+		return
+	}
+
 	err := queue.Channel.Publish(
-		"",
-		queue.Name,
-		true,
-		false,
+		"",               // default exchange
+		queue.Queue.Name, // use the actual queue name
+		false,            // mandatory
+		false,            // immediate
 		amqp.Publishing{
 			ContentType: "text/plain",
 			Body:        []byte(message.Text),
 			Priority:    message.Priority,
 		})
+
 	if err != nil {
-		logrus.Errorf("Failed to publish a message: %s", err)
+		logrus.Errorf("Failed to publish message: %v", err)
+		return
 	}
-	logrus.Info("Message Sent Successfully")
+	logrus.Info("Message sent successfully")
 }

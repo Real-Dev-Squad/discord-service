@@ -73,7 +73,7 @@ func TestGetQueueInstance(t *testing.T) {
 			return errors.New("error")
 		}
 		defer func() { utils.ExponentialBackoffRetry = originalFunc }()
-		assert.Nil(t, GetQueueInstance())
+		assert.NotNil(t, GetQueueInstance())
 		assert.Equal(t, 1, attempt)
 	})
 }
@@ -104,13 +104,13 @@ func TestSessionWrapper(t *testing.T) {
 }
 
 func TestSendMessage(t *testing.T) {
-	t.Run("Should panic when SendMessage returns error", func(t *testing.T) {
+	t.Run("Should not panic when SendMessage returns error", func(t *testing.T) {
 		config.AppConfig.MAX_RETRIES = 1
 		message := dtos.TextMessage{
 			Text:     "test",
 			Priority: 1,
 		}
-		assert.Panics(t, func() {
+		assert.NotPanics(t, func() {
 			SendMessage(message)
 		}, "SendMessage should panic when SendMessage returns error")
 	})

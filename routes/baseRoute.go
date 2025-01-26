@@ -9,4 +9,5 @@ import (
 func SetupBaseRoutes(router *httprouter.Router) {
 	router.POST("/", middleware.VerifyCommand(controllers.HomeHandler))
 	router.GET("/health", controllers.HealthCheckHandler)
+	router.POST("/queue", controllers.QueueHandler)
 }

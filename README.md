@@ -34,6 +34,31 @@ Before running the project, ensure that you have the following installed:
    To install Air, follow the installation steps here:
    [Air Installation Guide](https://github.com/air-verse/air)
 
+## Running RabbitMQ with Docker
+
+1. Ensure Docker is installed and running on your machine.
+2. Navigate to the project directory.
+3. Create a `docker-compose.yml` file with the following content:
+
+   ```yaml
+   version: '3.8'
+
+   services:
+     rabbitmq:
+       image: rabbitmq:3.13-management
+       container_name: rabbitmq
+       ports:
+         - '5672:5672'
+         - '15672:15672'
+   ```
+
+4. Start the RabbitMQ container:
+
+   ```sh
+   docker-compose up -d
+   ```
+
+5. Verify that RabbitMQ is running by accessing the management interface at [http://localhost:15672](http://localhost:15672). The default username and password are both `guest`.
 
 ## Running the Project Using Go
 
@@ -61,7 +86,6 @@ Before running the project, ensure that you have the following installed:
    ```bash
    air
    ```
-
 
 ## Running the Project Using Make
 

@@ -24,6 +24,6 @@ func Listen(listenAddress string) {
 	router := SetupV1Routes()
 	err := http.ListenAndServe(listenAddress, router)
 	if err != nil {
-		logrus.Error(err)
+		logrus.Fatal(err)
 	}
 }

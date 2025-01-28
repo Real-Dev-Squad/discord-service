@@ -5,6 +5,7 @@ import (
 
 	"github.com/Real-Dev-Squad/discord-service/config"
 	"github.com/Real-Dev-Squad/discord-service/dtos"
+	"github.com/Real-Dev-Squad/discord-service/models"
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 )
@@ -36,13 +37,15 @@ type DiscordSession struct {
 	session *discordgo.Session
 }
 
+var NewDiscord = discordgo.New
 var CreateSession = func() (*discordgo.Session, error) {
-	session, err := discordgo.New("Bot " + config.AppConfig.BOT_TOKEN)
+	session, err := NewDiscord("Bot " + config.AppConfig.BOT_TOKEN)
 	if err != nil {
 		logrus.Errorf("Cannot create a new Discord session: %v", err)
 		return nil, err
 	}
-	err = session.Open()
+	openSession := &models.SessionWrapper{Session: session}
+	err = openSession.Open()
 	if err != nil {
 		logrus.Errorf("Cannot open the session: %v", err)
 		return nil, err

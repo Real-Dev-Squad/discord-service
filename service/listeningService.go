@@ -16,6 +16,8 @@ func (s *CommandService) ListeningService(response http.ResponseWriter, request 
 	msg := ""
 	requiresUpdate := false
 
+	fmt.Println("options value", options.Value)
+	fmt.Println("user  value", s.discordMessage.Member.Nick)
 	if options.Value.(bool) && strings.Contains(s.discordMessage.Member.Nick, utils.NICKNAME_SUFFIX) {
 		msg = "You are already set to listen."
 	} else if !options.Value.(bool) && !strings.Contains(s.discordMessage.Member.Nick, utils.NICKNAME_SUFFIX) {

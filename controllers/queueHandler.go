@@ -4,8 +4,8 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/Real-Dev-Squad/discord-service/commands/handlers"
 	"github.com/Real-Dev-Squad/discord-service/config"
-	commandHandler "github.com/Real-Dev-Squad/discord-service/service/commandHandler"
 	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/julienschmidt/httprouter"
 	"github.com/sirupsen/logrus"
@@ -18,7 +18,7 @@ func QueueHandler(response http.ResponseWriter, request *http.Request, params ht
 		return
 	}
 	logrus.Infof("QueueHandler: %s\n", string(body))
-	handler := commandHandler.MainHandler(body)
+	handler := handlers.MainHandler(body)
 	if handler != nil {
 		logrus.Info("Processing Received Command")
 		if err := utils.ExponentialBackoffRetry(config.AppConfig.MAX_RETRIES, handler); err == nil {

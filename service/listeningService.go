@@ -48,7 +48,7 @@ func (s *CommandService) ListeningService(response http.ResponseWriter, request 
 	messageResponse := &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: utils.ResponseGenerator.ListeningResponse(msg),
+			Content: fmt.Sprintf(msg),
 			Flags:   64, // Ephemeral message flag
 		},
 	}

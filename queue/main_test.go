@@ -106,12 +106,14 @@ func TestSessionWrapper(t *testing.T) {
 func TestSendMessage(t *testing.T) {
 	t.Run("Should not panic when SendMessage returns error", func(t *testing.T) {
 		config.AppConfig.MAX_RETRIES = 1
-		message := dtos.TextMessage{
-			Text:     "test",
-			Priority: 1,
+		message := dtos.DataPacket{
+			UserID:      "1",
+			CommandName: "listening",
 		}
+		bytes, err := message.ToByte()
+		assert.NoError(t, err)
 		assert.NotPanics(t, func() {
-			SendMessage(message)
+			SendMessage(bytes)
 		}, "SendMessage should panic when SendMessage returns error")
 	})
 }

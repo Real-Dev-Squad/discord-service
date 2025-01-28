@@ -30,7 +30,8 @@ func (s *CommandService) ListeningService(response http.ResponseWriter, request 
 			UserID:      s.discordMessage.Member.User.ID,
 			CommandName: "listening",
 			MetaData: map[string]string{
-				"value": fmt.Sprint(options.Value),
+				"value":    fmt.Sprint(options.Value),
+				"nickname": s.discordMessage.Member.Nick,
 			},
 		}
 		bytePacket, err := dataPacket.ToByte()

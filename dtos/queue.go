@@ -9,7 +9,7 @@ import (
 type DataPacket struct {
 	UserID      string
 	CommandName string
-	metaData    map[string]string
+	MetaData    map[string]string
 }
 
 func (d *DataPacket) ToByte() ([]byte, error) {

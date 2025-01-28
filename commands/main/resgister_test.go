@@ -3,7 +3,6 @@ package main
 import (
 	"testing"
 
-	constants "github.com/Real-Dev-Squad/discord-service/commands"
 	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
 	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
@@ -40,23 +39,23 @@ type mockSession struct {
 	getUserIdCalled          bool
 }
 
-func (m *mockSession) open() error {
+func (m *mockSession) Open() error {
 	return m.openError
 }
 
-func (m *mockSession) close() error {
+func (m *mockSession) Close() error {
 	m.closeCalled = true
 	return nil
 }
 
-func (m *mockSession) applicationCommandCreate(applicationID, guildID string, command *discordgo.ApplicationCommand) (*discordgo.ApplicationCommand, error) {
+func (m *mockSession) ApplicationCommandCreate(applicationID, guildID string, command *discordgo.ApplicationCommand) (*discordgo.ApplicationCommand, error) {
 	if m.commandError == nil {
 		m.applicationCommandCalled = true
 	}
 	return nil, m.commandError
 }
 
-func (m *mockSession) getUerId() string {
+func (m *mockSession) GetUerId() string {
 	m.getUserIdCalled = true
 	return ""
 }
@@ -98,34 +97,4 @@ func TestRegisterCommands(t *testing.T) {
 		assert.True(t, mockSess.getUserIdCalled)
 		assert.True(t, mockSess.closeCalled)
 	})
-}
-
-func TestSessionWrapper(t *testing.T) {
-	mockSession := &discordgo.Session{}
-	sessionWrapper := &SessionWrapper{session: mockSession}
-
-	t.Run("SessionWrapper should always implement open() method", func(t *testing.T) {
-		assert.Panics(t, func() {
-			sessionWrapper.open()
-		}, "should panic when open() is called")
-	})
-
-	t.Run("SessionWrapper should always implement close() method", func(t *testing.T) {
-		assert.NotPanics(t, func() {
-			sessionWrapper.close()
-		}, "should not panic when close() is called")
-	})
-
-	t.Run("SessionWrapper should always implement applicationCommandCreate() method", func(t *testing.T) {
-		assert.Panics(t, func() {
-			sessionWrapper.applicationCommandCreate("1", "2", constants.Commands[0])
-		}, "should panic when applicationCommandCreate() is called")
-	})
-
-	t.Run("SessionWrapper should always implement getUerId() method", func(t *testing.T) {
-		assert.Panics(t, func() {
-			sessionWrapper.getUerId()
-		}, "should panic when getUerId() is called")
-	})
-
 }

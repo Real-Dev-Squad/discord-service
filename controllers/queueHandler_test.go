@@ -49,7 +49,7 @@ func TestQueueHandler(t *testing.T) {
 			return errors.New("error")
 		}
 		defer func() { utils.ExponentialBackoffRetry = originalFunc }()
-		body := []byte(`{"CommandName": "listening"}`)
+		body := []byte(`{"CommandName": "listening", "MetaData": {"value": "true", "nickname" : "joy-gupta-1"}}`)
 		_, err := http.NewRequest("POST", "/queue", bytes.NewBuffer(body))
 		assert.NoError(t, err)
 	})

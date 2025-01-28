@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	"github.com/Real-Dev-Squad/discord-service/config"
-	"github.com/Real-Dev-Squad/discord-service/dtos"
 	"github.com/Real-Dev-Squad/discord-service/utils"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/sirupsen/logrus"
@@ -87,7 +86,7 @@ var GetQueueInstance = func() *Queue {
 	return queueInstance
 }
 
-func SendMessage(message dtos.TextMessage) {
+func SendMessage(message []byte) {
 	queue := GetQueueInstance()
 
 	if queue.Channel == nil {
@@ -102,8 +101,7 @@ func SendMessage(message dtos.TextMessage) {
 		false,            // immediate
 		amqp.Publishing{
 			ContentType: "text/plain",
-			Body:        []byte(message.Text),
-			Priority:    message.Priority,
+			Body:        message,
 		})
 
 	if err != nil {

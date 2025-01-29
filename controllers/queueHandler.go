@@ -20,9 +20,8 @@ func QueueHandler(response http.ResponseWriter, request *http.Request, params ht
 	logrus.Infof("QueueHandler: %s\n", string(body))
 	handler := handlers.MainHandler(body)
 	if handler != nil {
-		logrus.Info("Processing Received Command")
-		if err := utils.ExponentialBackoffRetry(config.AppConfig.MAX_RETRIES, handler); err == nil {
-			logrus.Info("Command Processed Successfully")
+		if err := utils.ExponentialBackoffRetry(config.AppConfig.MAX_RETRIES, handler); err != nil {
+			logrus.Errorf("Failed to process command after %d attempts: %s", config.AppConfig.MAX_RETRIES, err)
 		}
 	}
 	response.Header().Set("Content-Type", "application/json")

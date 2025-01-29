@@ -17,7 +17,6 @@ func QueueHandler(response http.ResponseWriter, request *http.Request, params ht
 		http.Error(response, "Failed to read request body", http.StatusInternalServerError)
 		return
 	}
-	logrus.Infof("QueueHandler: %s\n", string(body))
 	handler := handlers.MainHandler(body)
 	if handler != nil {
 		if err := utils.ExponentialBackoffRetry(config.AppConfig.MAX_RETRIES, handler); err != nil {

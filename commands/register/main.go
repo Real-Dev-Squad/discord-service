@@ -10,7 +10,7 @@ import (
 
 var NewDiscord = discordgo.New
 
-func main() {
+func SetupRegister() {
 	session, err := NewDiscord("Bot " + config.AppConfig.BOT_TOKEN)
 	if err != nil {
 		logrus.Error("Cannot create a new Discord session: ")

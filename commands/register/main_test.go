@@ -16,7 +16,7 @@ func TestInit(t *testing.T) {
 		NewDiscord = func(token string) (s *discordgo.Session, err error) {
 			return nil, assert.AnError
 		}
-		assert.Panics(t, main)
+		assert.Panics(t, SetupRegister)
 	})
 	t.Run("should call AddHandler method of session if SetupConnection succeeds", func(t *testing.T) {
 		originalNewDiscord := NewDiscord
@@ -27,7 +27,7 @@ func TestInit(t *testing.T) {
 			}
 			return mockSession, nil
 		}
-		assert.Panics(t, main)
+		assert.Panics(t, SetupRegister)
 	})
 }
 

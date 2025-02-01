@@ -55,4 +55,6 @@ jobs:
               -e DISCORD_PUBLIC_KEY=${{secrets.DISCORD_PUBLIC_KEY}} \
               -e BOT_TOKEN=${{secrets.BOT_TOKEN}} \
               -e GUILD_ID=${{secrets.GUILD_ID}} \
+              -e QUEUE_NAME=${{vars.QUEUE_NAME}} \
+              -e QUEUE_URL=${{vars.QUEUE_URL}} \
               ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}

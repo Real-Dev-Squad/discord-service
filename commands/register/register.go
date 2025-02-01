@@ -1,4 +1,4 @@
-package main
+package register
 
 import (
 	constants "github.com/Real-Dev-Squad/discord-service/commands"
@@ -8,10 +8,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var NewDiscordSession = discordgo.New
+var NewDiscord = discordgo.New
 
-func main() {
-	session, err := NewDiscordSession("Bot " + config.AppConfig.BOT_TOKEN)
+func SetupRegister() {
+	session, err := NewDiscord("Bot " + config.AppConfig.BOT_TOKEN)
 	if err != nil {
 		logrus.Error("Cannot create a new Discord session")
 		panic(err)
@@ -26,6 +26,8 @@ func main() {
 
 var RegisterCommands = func(openSession models.SessionInterface) {
 	err := openSession.Open()
+	defer openSession.Close()
+
 	if err != nil {
 		logrus.Error("Cannot open the session")
 		panic(err)
@@ -38,6 +40,5 @@ var RegisterCommands = func(openSession models.SessionInterface) {
 			panic(err)
 		}
 	}
-
-	defer openSession.Close()
+	logrus.Info("Successfully registered commands")
 }

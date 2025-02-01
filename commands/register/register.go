@@ -1,4 +1,4 @@
-package main
+package register
 
 import (
 	constants "github.com/Real-Dev-Squad/discord-service/commands"
@@ -38,6 +38,7 @@ var RegisterCommands = func(openSession models.SessionInterface) {
 			panic(err)
 		}
 	}
+	logrus.Info("Successfully registered commands")
 
 	defer openSession.Close()
 }

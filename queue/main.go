@@ -1,10 +1,10 @@
 package queue
 
 import (
+	"errors"
 	"sync"
 
 	"github.com/Real-Dev-Squad/discord-service/config"
-	"github.com/Real-Dev-Squad/discord-service/dtos"
 	"github.com/Real-Dev-Squad/discord-service/utils"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/sirupsen/logrus"
@@ -87,12 +87,12 @@ var GetQueueInstance = func() *Queue {
 	return queueInstance
 }
 
-func SendMessage(message dtos.TextMessage) {
+var SendMessage = func(message []byte) error {
 	queue := GetQueueInstance()
 
 	if queue.Channel == nil {
 		logrus.Errorf("Queue channel is not initialized")
-		return
+		return errors.New("Queue channel is not initialized")
 	}
 
 	err := queue.Channel.Publish(
@@ -102,13 +102,13 @@ func SendMessage(message dtos.TextMessage) {
 		false,            // immediate
 		amqp.Publishing{
 			ContentType: "text/plain",
-			Body:        []byte(message.Text),
-			Priority:    message.Priority,
+			Body:        message,
 		})
 
 	if err != nil {
 		logrus.Errorf("Failed to publish message: %v", err)
-		return
+		return err
 	}
 	logrus.Info("Message sent successfully")
+	return nil
 }

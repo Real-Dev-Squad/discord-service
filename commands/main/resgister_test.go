@@ -11,17 +11,17 @@ import (
 func TestInit(t *testing.T) {
 
 	t.Run("should panic when SetupConnection returns an error", func(t *testing.T) {
-		originalNewDiscord := NewDiscord
-		defer func() { NewDiscord = originalNewDiscord }()
-		NewDiscord = func(token string) (s *discordgo.Session, err error) {
+		originalNewDiscord := NewDiscordSession
+		defer func() { NewDiscordSession = originalNewDiscord }()
+		NewDiscordSession = func(token string) (s *discordgo.Session, err error) {
 			return nil, assert.AnError
 		}
 		assert.Panics(t, main)
 	})
 	t.Run("should call AddHandler method of session if SetupConnection succeeds", func(t *testing.T) {
-		originalNewDiscord := NewDiscord
-		defer func() { NewDiscord = originalNewDiscord }()
-		NewDiscord = func(token string) (s *discordgo.Session, err error) {
+		originalNewDiscord := NewDiscordSession
+		defer func() { NewDiscordSession = originalNewDiscord }()
+		NewDiscordSession = func(token string) (s *discordgo.Session, err error) {
 			mockSession := &discordgo.Session{
 				State: &discordgo.State{},
 			}

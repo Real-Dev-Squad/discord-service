@@ -8,12 +8,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var NewDiscord = discordgo.New
+var NewDiscordSession = discordgo.New
 
 func main() {
-	session, err := NewDiscord("Bot " + config.AppConfig.BOT_TOKEN)
+	session, err := NewDiscordSession("Bot " + config.AppConfig.BOT_TOKEN)
 	if err != nil {
-		logrus.Error("Cannot create a new Discord session: ")
+		logrus.Error("Cannot create a new Discord session:")
 		panic(err)
 	}
 

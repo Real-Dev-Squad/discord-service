@@ -13,7 +13,7 @@ var NewDiscordSession = discordgo.New
 func main() {
 	session, err := NewDiscordSession("Bot " + config.AppConfig.BOT_TOKEN)
 	if err != nil {
-		logrus.Error("Cannot create a new Discord session:")
+		logrus.Error("Cannot create a new Discord session")
 		panic(err)
 	}
 
@@ -27,7 +27,7 @@ func main() {
 var RegisterCommands = func(openSession models.SessionInterface) {
 	err := openSession.Open()
 	if err != nil {
-		logrus.Error("Cannot open the session: ")
+		logrus.Error("Cannot open the session")
 		panic(err)
 	}
 

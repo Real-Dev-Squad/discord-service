@@ -28,7 +28,7 @@ var RegisterCommands = func(openSession models.SessionInterface) {
 	err := openSession.Open()
 	defer openSession.Close()
 	if err != nil {
-		logrus.Error("Cannot open the session: ")
+		logrus.Error("Cannot open the session")
 		panic(err)
 	}
 

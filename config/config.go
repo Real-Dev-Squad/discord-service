@@ -41,7 +41,7 @@ func init() {
 func loadEnv(key string) string {
 	value := os.Getenv(key)
 	if value == "" {
-		panic(fmt.Sprintf("Environment variable %s not set", key))
+		logrus.Panic(fmt.Sprintf("Environment variable %s not set", key))
 	}
 	return value
 }

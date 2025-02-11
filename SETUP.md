@@ -48,3 +48,12 @@ Since we are considering 8999 as default port for this service. If you wish to c
 4. Copy the Ngrok URL and open the General Information on [Discord Developer Portal](https://discord.com/developers/applications) of your bot, paste the copied URL in Interactions Endpoint URL
    ![Screenshot 2024-11-14 at 10 58 30 AM](https://github.com/user-attachments/assets/53f372e4-44e7-4cdc-acfc-0e3b707f8607)
 5. All Set 🚀🚀🚀. Now you can start with running hello command
+
+# Connecting Discord Service with Discord Message Broker
+
+These variables are required to make Discord Service functional
+
+- [ ] QUEUE_URL
+- [ ] QUEUE_NAME
+
+In order to set these variables follow the instructions mentioned in [README.md](QUEUE_NAME 'Running RabbitMQ using Docker') of Discord Message Broker

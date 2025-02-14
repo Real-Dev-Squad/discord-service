@@ -9,7 +9,7 @@ var Commands = []*discordgo.ApplicationCommand{
 	},
 	{
 		Name:        "listening",
-		Description: "mark user as listening",
+		Description: "Mark user as listening",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Name:        "value",
@@ -18,5 +18,9 @@ var Commands = []*discordgo.ApplicationCommand{
 				Required:    true,
 			},
 		},
+	},
+	{
+		Name:        "verify",
+		Description: "Generate a link with user specific token to link with RDS backend",
 	},
 }

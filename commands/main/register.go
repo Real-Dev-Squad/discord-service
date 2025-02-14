@@ -13,8 +13,7 @@ var NewDiscordSession = discordgo.New
 func main() {
 	session, err := NewDiscordSession("Bot " + config.AppConfig.BOT_TOKEN)
 	if err != nil {
-		logrus.Error("Cannot create a new Discord session")
-		panic(err)
+		logrus.Panic("Cannot create a new Discord session", err)
 	}
 
 	session.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
@@ -27,15 +26,13 @@ func main() {
 var RegisterCommands = func(openSession models.SessionInterface) {
 	err := openSession.Open()
 	if err != nil {
-		logrus.Error("Cannot open the session")
-		panic(err)
+		logrus.Panic("Cannot open the session ", err)
 	}
 
 	for _, v := range constants.Commands {
 		_, err := openSession.ApplicationCommandCreate(openSession.GetUerId(), config.AppConfig.GUILD_ID, v)
 		if err != nil {
-			logrus.Error("Cannot create ", v.Name, "command: ", err)
-			panic(err)
+			logrus.Panic("Cannot create ", v.Name, "command: ", err)
 		}
 	}
 

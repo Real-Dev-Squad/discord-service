@@ -19,6 +19,8 @@ func MainService(discordMessage *dtos.DiscordMessage) func(response http.Respons
 		return CS.HelloService
 	case "listening":
 		return CS.ListeningService
+	case "verify":
+		return CS.VerifyService
 	default:
 		return func(response http.ResponseWriter, request *http.Request) {
 			response.WriteHeader(http.StatusOK)

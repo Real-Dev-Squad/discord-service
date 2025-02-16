@@ -7,7 +7,7 @@ import (
 )
 
 func SetupBaseRoutes(router *httprouter.Router) {
-	router.POST("/", middleware.VerifyCommand(controllers.HomeHandler))
+	router.POST("/", middleware.VerifyCommand(controllers.DiscordBaseHandler))
 	router.GET("/health", controllers.HealthCheckHandler)
 	router.POST("/queue", controllers.QueueHandler)
 }

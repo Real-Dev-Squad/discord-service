@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Real-Dev-Squad/discord-service/utils"
@@ -13,8 +12,8 @@ func (s *CommandService) VerifyService(response http.ResponseWriter, request *ht
 	messageResponse := &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: fmt.Sprintf(msg),
-			Flags:   64, // Ephemeral message flag
+			Content: msg,
+			Flags:   discordgo.MessageFlags(64), //Ephemeral message flag
 		},
 	}
 	utils.Success.NewDiscordResponse(response, "Success", messageResponse)

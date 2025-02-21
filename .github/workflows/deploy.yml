@@ -57,4 +57,5 @@ jobs:
               -e GUILD_ID=${{secrets.GUILD_ID}} \
               -e QUEUE_NAME=${{vars.QUEUE_NAME}} \
               -e QUEUE_URL=${{vars.QUEUE_URL}} \
+              -e ENV=${{vars.ENV}} \
               ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}

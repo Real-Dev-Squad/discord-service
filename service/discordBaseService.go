@@ -16,6 +16,7 @@ func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 		utils.Errors.NewBadRequestError(response, "Invalid Request Payload")
 		return
 	}
+	defer request.Body.Close()
 	var message dtos.DiscordMessage
 	err = json.Unmarshal(payload, &message)
 	if err != nil {

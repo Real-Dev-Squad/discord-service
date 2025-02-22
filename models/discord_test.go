@@ -3,12 +3,13 @@ package models
 import (
 	"testing"
 
+	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
 )
 
 var command = &discordgo.ApplicationCommand{
-	Name:        "hello",
+	Name:        utils.CommandNames.Hello,
 	Description: "Greets back with hello!",
 }
 

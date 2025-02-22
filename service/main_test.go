@@ -33,7 +33,7 @@ func TestMainService(t *testing.T) {
 			Data: &dtos.Data{
 				GuildId: "876543210987654321",
 				ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
-					Name: "listening",
+					Name: utils.CommandNames.Listening,
 					Options: []*discordgo.ApplicationCommandInteractionDataOption{
 						{Value: true},
 					},
@@ -57,7 +57,7 @@ func TestMainService(t *testing.T) {
 			Data: &dtos.Data{
 				GuildId: "876543210987654321",
 				ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
-					Name: "verify",
+					Name: utils.CommandNames.Verify,
 				},
 			},
 		}

@@ -10,6 +10,10 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+// DiscordBaseService processes HTTP requests from Discord by reading and parsing the incoming JSON payload into a Discord message.
+// It handles different interaction types: responding with "Pong" when the message is a ping, delegating to MainService for application commands,
+// and simply returning an HTTP 200 status for other messages. In case of an empty or unreadable payload or failed unmarshalling,
+// it sends an appropriate error response.
 func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 	payload, err := io.ReadAll(request.Body)
 	if err != nil || len(payload) == 0 {

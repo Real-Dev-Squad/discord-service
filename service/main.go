@@ -13,6 +13,10 @@ type CommandService struct {
 
 var CS = CommandService{}
 
+// MainService returns an HTTP handler function that dispatches a Discord command to the appropriate service method.
+// It assigns the provided Discord message to the service state and uses the command name within the message data to
+// select the corresponding method. For recognized commands (Hello, Listening, Verify), it returns the respective service;
+// otherwise, it returns a default handler that writes a 200 OK status to the response.
 func MainService(discordMessage *dtos.DiscordMessage) func(response http.ResponseWriter, request *http.Request) {
 	CS.discordMessage = discordMessage
 	switch discordMessage.Data.Name {

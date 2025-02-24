@@ -17,6 +17,9 @@ type CommandHandler struct {
 
 var CS = CommandHandler{}
 
+// MainHandler decodes the provided dataPacket into a DataPacket and returns the corresponding command handler.
+// It updates the global CommandHandler with the decoded message. If decoding fails or the command name is unrecognized
+// (i.e., not utils.CommandNames.Listening), the function logs an error or warning and returns nil.
 func MainHandler(dataPacket []byte) func() error {
 	packetData := &dtos.DataPacket{}
 	err := packetData.FromByte(dataPacket)

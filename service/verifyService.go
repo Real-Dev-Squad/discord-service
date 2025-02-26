@@ -7,7 +7,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func (s *CommandService) VerifyService(response http.ResponseWriter, request *http.Request) {
+func (s *CommandService) Verify(response http.ResponseWriter, request *http.Request) {
 	msg := "Work in progress for Verify command"
 	messageResponse := &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,

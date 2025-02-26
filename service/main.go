@@ -20,7 +20,7 @@ func (service *CommandService) HandleMessage(response http.ResponseWriter, reque
 		service.Listening(response, request)
 		return
 	case utils.CommandNames.Verify:
-		service.VerifyService(response, request)
+		service.Verify(response, request)
 		return
 	default:
 		utils.Errors.NewBadRequestError(response, "Invalid Command")

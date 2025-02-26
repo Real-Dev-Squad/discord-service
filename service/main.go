@@ -8,7 +8,7 @@ import (
 )
 
 type CommandService struct {
-	discordMessage *dtos.DiscordMessage
+	discordMessage dtos.DiscordMessage
 }
 
 func (service *CommandService) HandleMessage(response http.ResponseWriter, request *http.Request) {

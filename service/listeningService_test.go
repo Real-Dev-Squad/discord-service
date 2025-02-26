@@ -47,7 +47,7 @@ func TestListeningService(t *testing.T) {
 		req, _ := http.NewRequest("POST", "/listening", bytes.NewBuffer(body))
 		rr := httptest.NewRecorder()
 
-		discordMessage := &dtos.DiscordMessage{
+		discordMessage := dtos.DiscordMessage{
 			Data: mockData,
 			Member: &discordgo.Member{
 				Nick: fmt.Sprintf("joy-gupta-1%s", utils.NICKNAME_SUFFIX),
@@ -75,7 +75,7 @@ func TestListeningService(t *testing.T) {
 		req, _ := http.NewRequest("POST", "/listening", bytes.NewBuffer(body))
 		rr := httptest.NewRecorder()
 		options.Value = false
-		discordMessage := &dtos.DiscordMessage{
+		discordMessage := dtos.DiscordMessage{
 			Data: mockData,
 			Member: &discordgo.Member{
 				Nick: fmt.Sprintf("joy-gupta-1"),
@@ -108,7 +108,7 @@ func TestListeningService(t *testing.T) {
 		req, _ := http.NewRequest("POST", "/listening", bytes.NewBuffer(body))
 		rr := httptest.NewRecorder()
 		options.Value = true
-		discordMessage := &dtos.DiscordMessage{
+		discordMessage := dtos.DiscordMessage{
 			Data: mockData,
 			Member: &discordgo.Member{
 				Nick: fmt.Sprintf("joy-gupta-1"),

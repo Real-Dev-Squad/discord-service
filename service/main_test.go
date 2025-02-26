@@ -26,7 +26,7 @@ func TestMainService(t *testing.T) {
 	})
 
 	t.Run("should trigger ListeningService when command name is listening", func(t *testing.T) {
-		discordMessage := &dtos.DiscordMessage{
+		discordMessage := dtos.DiscordMessage{
 			Member: &discordgo.Member{
 				Nick: fmt.Sprintf("test%s", utils.NICKNAME_SUFFIX),
 			},
@@ -53,7 +53,7 @@ func TestMainService(t *testing.T) {
 	})
 
 	t.Run("should trigger VerifyService when command name is verify", func(t *testing.T) {
-		discordMessage := &dtos.DiscordMessage{
+		discordMessage := dtos.DiscordMessage{
 			Data: &dtos.Data{
 				GuildId: "876543210987654321",
 				ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
@@ -74,7 +74,7 @@ func TestMainService(t *testing.T) {
 	})
 
 	t.Run("should return default handler when command name is not in record", func(t *testing.T) {
-		discordMessage := &dtos.DiscordMessage{
+		discordMessage := dtos.DiscordMessage{
 			Data: &dtos.Data{
 				GuildId: "876543210987654321",
 				ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{

@@ -6,7 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-var HelloCommand = &dtos.DiscordMessage{
+var HelloCommand = dtos.DiscordMessage{
 	AppPermissions: "0",
 	ApplicationId:  "123456789012345678",
 	Type:           discordgo.InteractionApplicationCommand,

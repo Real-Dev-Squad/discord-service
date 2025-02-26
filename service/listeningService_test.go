@@ -58,7 +58,7 @@ func TestListeningService(t *testing.T) {
 		}
 
 		commandService := &CommandService{discordMessage: discordMessage}
-		commandService.ListeningService(rr, req)
+		commandService.Listening(rr, req)
 
 		assert.Contains(t, rr.Body.String(), "You are already set to listen.")
 	})
@@ -86,7 +86,7 @@ func TestListeningService(t *testing.T) {
 		}
 
 		commandService := &CommandService{discordMessage: discordMessage}
-		commandService.ListeningService(rr, req)
+		commandService.Listening(rr, req)
 
 		assert.Contains(t, rr.Body.String(), "Your nickname remains unchanged.")
 	})
@@ -119,7 +119,7 @@ func TestListeningService(t *testing.T) {
 		}
 
 		commandService := &CommandService{discordMessage: discordMessage}
-		commandService.ListeningService(rr, req)
+		commandService.Listening(rr, req)
 
 		assert.Contains(t, rr.Body.String(), "Your nickname will be updated shortly.")
 	})

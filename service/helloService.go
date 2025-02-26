@@ -7,7 +7,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func (s *CommandService) HelloService(response http.ResponseWriter, request *http.Request) {
+func (s *CommandService) Hello(response http.ResponseWriter, request *http.Request) {
 	messageResponse := &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{

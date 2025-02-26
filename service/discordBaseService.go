@@ -32,7 +32,7 @@ func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 
 	case discordgo.InteractionApplicationCommand:
 		mainService := CommandService{discordMessage: &message}
-		mainService.MainService(response, request)
+		mainService.HandleMessage(response, request)
 
 		return
 

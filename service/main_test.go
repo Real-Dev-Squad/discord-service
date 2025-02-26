@@ -20,7 +20,7 @@ func TestMainService(t *testing.T) {
 		CS := CommandService{discordMessage: fixtures.HelloCommand}
 		w := httptest.NewRecorder()
 		r, _ := http.NewRequest("GET", "/", nil)
-		CS.MainService(w, r)
+		CS.HandleMessage(w, r)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 	})
@@ -44,7 +44,7 @@ func TestMainService(t *testing.T) {
 		CS := CommandService{discordMessage: discordMessage}
 		w := httptest.NewRecorder()
 		r, _ := http.NewRequest("GET", "/", nil)
-		CS.MainService(w, r)
+		CS.HandleMessage(w, r)
 		messageResponse := discordgo.InteractionResponse{}
 		err := json.Unmarshal(w.Body.Bytes(), &messageResponse)
 		assert.NoError(t, err)
@@ -65,7 +65,7 @@ func TestMainService(t *testing.T) {
 		CS := CommandService{discordMessage: discordMessage}
 		w := httptest.NewRecorder()
 		r, _ := http.NewRequest("GET", "/", nil)
-		CS.MainService(w, r)
+		CS.HandleMessage(w, r)
 		messageResponse := discordgo.InteractionResponse{}
 		err := json.Unmarshal(w.Body.Bytes(), &messageResponse)
 		assert.NoError(t, err)
@@ -87,7 +87,7 @@ func TestMainService(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		r, _ := http.NewRequest("GET", "/", nil)
-		CS.MainService(w, r)
+		CS.HandleMessage(w, r)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})

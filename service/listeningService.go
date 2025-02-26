@@ -11,7 +11,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func (s *CommandService) ListeningService(response http.ResponseWriter, request *http.Request) {
+func (s *CommandService) Listening(response http.ResponseWriter, request *http.Request) {
 	options := s.discordMessage.Data.Options[0]
 	msg := ""
 	requiresUpdate := false
@@ -50,7 +50,7 @@ func (s *CommandService) ListeningService(response http.ResponseWriter, request 
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: fmt.Sprintf(msg),
-			Flags:   64, // Ephemeral message flag
+			Flags:   discordgo.MessageFlags(64), // Ephemeral message flag
 		},
 	}
 	utils.Success.NewDiscordResponse(response, "Success", messageResponse)

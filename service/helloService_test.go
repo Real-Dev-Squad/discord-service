@@ -25,7 +25,7 @@ func TestHelloService(t *testing.T) {
 		CS := CommandService{
 			discordMessage: fixtures.HelloCommand,
 		}
-		CS.HelloService(w, r)
+		CS.Hello(w, r)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		var response discordgo.InteractionResponse

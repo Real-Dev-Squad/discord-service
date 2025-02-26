@@ -17,10 +17,10 @@ import (
 
 func TestMainService(t *testing.T) {
 	t.Run("should return HelloService when command name is hello", func(t *testing.T) {
-		handler := MainService(fixtures.HelloCommand)
+		CS := CommandService{discordMessage: fixtures.HelloCommand}
 		w := httptest.NewRecorder()
 		r, _ := http.NewRequest("GET", "/", nil)
-		handler(w, r)
+		CS.MainService(w, r)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 	})
@@ -41,10 +41,10 @@ func TestMainService(t *testing.T) {
 			},
 		}
 
-		handler := MainService(discordMessage)
+		CS := CommandService{discordMessage: discordMessage}
 		w := httptest.NewRecorder()
 		r, _ := http.NewRequest("GET", "/", nil)
-		handler(w, r)
+		CS.MainService(w, r)
 		messageResponse := discordgo.InteractionResponse{}
 		err := json.Unmarshal(w.Body.Bytes(), &messageResponse)
 		assert.NoError(t, err)
@@ -62,10 +62,10 @@ func TestMainService(t *testing.T) {
 			},
 		}
 
-		handler := MainService(discordMessage)
+		CS := CommandService{discordMessage: discordMessage}
 		w := httptest.NewRecorder()
 		r, _ := http.NewRequest("GET", "/", nil)
-		handler(w, r)
+		CS.MainService(w, r)
 		messageResponse := discordgo.InteractionResponse{}
 		err := json.Unmarshal(w.Body.Bytes(), &messageResponse)
 		assert.NoError(t, err)
@@ -83,12 +83,13 @@ func TestMainService(t *testing.T) {
 			},
 		}
 
-		handler := MainService(discordMessage)
+		CS := CommandService{discordMessage: discordMessage}
+
 		w := httptest.NewRecorder()
 		r, _ := http.NewRequest("GET", "/", nil)
-		handler(w, r)
+		CS.MainService(w, r)
 
-		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
 
 }

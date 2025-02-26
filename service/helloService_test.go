@@ -22,7 +22,9 @@ func TestHelloService(t *testing.T) {
 		jsonBytes, _ := json.Marshal(fixtures.HelloCommand)
 		r, _ := http.NewRequest("POST", "/", bytes.NewBuffer(jsonBytes))
 
-		CS.discordMessage = fixtures.HelloCommand
+		CS := CommandService{
+			discordMessage: fixtures.HelloCommand,
+		}
 		CS.HelloService(w, r)
 
 		assert.Equal(t, http.StatusOK, w.Code)

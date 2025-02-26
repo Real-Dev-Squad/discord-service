@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestHelloService(t *testing.T) {
+func TestHello(t *testing.T) {
 
 	t.Run("should return a success response with a message", func(t *testing.T) {
 		w := httptest.NewRecorder()

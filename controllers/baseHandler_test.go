@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestHomeHandler(t *testing.T) {
+func TestDiscordBaseHandler(t *testing.T) {
 	t.Run("Should return 400 when request body is empty", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		r, _ := http.NewRequest("POST", "/", http.NoBody)

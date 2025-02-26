@@ -16,7 +16,7 @@ import (
 )
 
 func TestMainService(t *testing.T) {
-	t.Run("should return HelloService when command name is hello", func(t *testing.T) {
+	t.Run("should return Hello when command name is hello", func(t *testing.T) {
 		CS := CommandService{discordMessage: fixtures.HelloCommand}
 		w := httptest.NewRecorder()
 		r, _ := http.NewRequest("GET", "/", nil)

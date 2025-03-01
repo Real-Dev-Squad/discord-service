@@ -21,7 +21,6 @@ func TestMainService(t *testing.T) {
 		w := httptest.NewRecorder()
 		r, _ := http.NewRequest("GET", "/", nil)
 		CS.HandleMessage(w, r)
-
 		assert.Equal(t, http.StatusOK, w.Code)
 	})
 

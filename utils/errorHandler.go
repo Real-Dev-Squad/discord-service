@@ -22,8 +22,11 @@ func (errorPackage) NewUnauthorisedError(response http.ResponseWriter, message .
 	formatError(response, message[0], http.StatusUnauthorized)
 }
 
-func (errorPackage) NewInternalError(response http.ResponseWriter) {
-	formatError(response, "Internal Server Error", http.StatusInternalServerError)
+func (errorPackage) NewInternalError(response http.ResponseWriter, message ...string) {
+	if len(message) == 0 {
+		message = []string{"Internal Server Error"}
+	}
+	formatError(response, message[0], http.StatusInternalServerError)
 }
 
 func formatError(response http.ResponseWriter, message string, status int) {

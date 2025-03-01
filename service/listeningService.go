@@ -9,6 +9,7 @@ import (
 	"github.com/Real-Dev-Squad/discord-service/queue"
 	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
+	"github.com/sirupsen/logrus"
 )
 
 func (s *CommandService) Listening(response http.ResponseWriter, request *http.Request) {
@@ -37,11 +38,13 @@ func (s *CommandService) Listening(response http.ResponseWriter, request *http.R
 		bytePacket, err := dataPacket.ToByte()
 		if err != nil {
 			msg = "Failed to update your nickname."
+			logrus.Errorf("Failed to marshal message: %v", err)
 			response.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		if err := queue.SendMessage(bytePacket); err != nil {
 			msg = "Failed to update your nickname."
+			logrus.Errorf("Failed to send message to queue: %v", err)
 			response.WriteHeader(http.StatusInternalServerError)
 			return
 		}

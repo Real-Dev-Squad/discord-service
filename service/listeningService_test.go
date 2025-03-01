@@ -26,7 +26,7 @@ func TestListeningService(t *testing.T) {
 		Value: true,
 	}
 
-	mockData := &dtos.Data{
+	mockData := dtos.Data{
 		GuildId: "876543210987654321",
 		ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
 			Name: utils.CommandNames.Listening,
@@ -49,7 +49,7 @@ func TestListeningService(t *testing.T) {
 
 		discordMessage := dtos.DiscordMessage{
 			Data: mockData,
-			Member: &discordgo.Member{
+			Member: discordgo.Member{
 				Nick: fmt.Sprintf("joy-gupta-1%s", utils.NICKNAME_SUFFIX),
 				User: &discordgo.User{
 					ID: "1",
@@ -77,7 +77,7 @@ func TestListeningService(t *testing.T) {
 		options.Value = false
 		discordMessage := dtos.DiscordMessage{
 			Data: mockData,
-			Member: &discordgo.Member{
+			Member: discordgo.Member{
 				Nick: fmt.Sprintf("joy-gupta-1"),
 				User: &discordgo.User{
 					ID: "1",
@@ -110,7 +110,7 @@ func TestListeningService(t *testing.T) {
 		options.Value = true
 		discordMessage := dtos.DiscordMessage{
 			Data: mockData,
-			Member: &discordgo.Member{
+			Member: discordgo.Member{
 				Nick: fmt.Sprintf("joy-gupta-1"),
 				User: &discordgo.User{
 					ID: "1",

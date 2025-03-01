@@ -11,8 +11,8 @@ type DiscordMessage struct {
 	AppPermissions string                    `json:"app_permissions"`
 	ApplicationId  string                    `json:"application_id"`
 	Type           discordgo.InteractionType `json:"type"`
-	Channel        *discordgo.Channel        `json:"channel"`
+	Channel        discordgo.Channel         `json:"channel"`
 	ChannelId      string                    `json:"channel_id"`
-	Member         *discordgo.Member         `json:"member"`
-	Data           *Data                     `json:"data"`
+	Member         discordgo.Member          `json:"member"`
+	Data           Data                      `json:"data"`
 }

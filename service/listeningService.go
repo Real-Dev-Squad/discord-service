@@ -38,13 +38,11 @@ func (s *CommandService) Listening(response http.ResponseWriter, request *http.R
 		}
 		bytePacket, err := dataPacket.ToByte()
 		if err != nil {
-			msg = "Failed to update your nickname."
 			logrus.Errorf("Failed to marshal message: %v", err)
 			utils.Errors.NewInternalError(response, err.Error())
 			return
 		}
 		if err := queue.SendMessage(bytePacket); err != nil {
-			msg = "Failed to update your nickname."
 			logrus.Errorf("Failed to send message to queue: %v", err)
 			utils.Errors.NewInternalError(response, err.Error())
 			return

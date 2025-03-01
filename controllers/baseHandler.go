@@ -3,11 +3,11 @@ package controllers
 import (
 	"net/http"
 
-	service "github.com/Real-Dev-Squad/discord-service/service"
+	services "github.com/Real-Dev-Squad/discord-service/services"
 	"github.com/julienschmidt/httprouter"
 )
 
 func DiscordBaseHandler(response http.ResponseWriter, request *http.Request, params httprouter.Params) {
-	service.DiscordBaseService(response, request)
+	services.DiscordBaseService(response, request)
 	return
 }

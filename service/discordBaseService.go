@@ -19,7 +19,7 @@ func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 	}
 	var message dtos.DiscordMessage
 	if err := json.Unmarshal(payload, &message); err != nil {
-		utils.Errors.NewInternalError(response)
+		utils.Errors.NewBadRequestError(response, err.Error())
 		return
 	}
 	switch message.Type {

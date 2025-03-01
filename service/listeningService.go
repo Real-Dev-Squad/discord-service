@@ -53,7 +53,7 @@ func (s *CommandService) Listening(response http.ResponseWriter, request *http.R
 	messageResponse := &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: fmt.Sprintf(msg),
+			Content: msg,
 			Flags:   discordgo.MessageFlags(64), // Ephemeral message flag
 		},
 	}

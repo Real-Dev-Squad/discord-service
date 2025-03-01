@@ -18,8 +18,7 @@ func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 	var message dtos.DiscordMessage
-	err = json.Unmarshal(payload, &message)
-	if err != nil {
+	if err := json.Unmarshal(payload, &message); err != nil {
 		utils.Errors.NewInternalError(response)
 		return
 	}
@@ -37,6 +36,6 @@ func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 		return
 
 	default:
-		response.WriteHeader(http.StatusOK)
+		response.WriteHeader(http.StatusNotFound)
 	}
 }

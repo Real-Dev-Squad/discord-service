@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Real-Dev-Squad/discord-service/config"
 	"github.com/Real-Dev-Squad/discord-service/dtos"
 	"github.com/Real-Dev-Squad/discord-service/fixtures"
 	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
@@ -51,6 +52,35 @@ func TestMainService(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code)
 	})
 
+	t.Run("should fail if ListeningService returns an error", func(t *testing.T) {
+		discordMessage := dtos.DiscordMessage{
+			Member: &discordgo.Member{
+				Nick: "test",
+				User: &discordgo.User{
+					ID: "123456789012345678",
+				},
+			},
+			Data: &dtos.Data{
+				GuildId: "876543210987654321",
+				ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
+					Name: utils.CommandNames.Listening,
+					Options: []*discordgo.ApplicationCommandInteractionDataOption{
+						{Value: true},
+					},
+				},
+			},
+		}
+		config.AppConfig.MAX_RETRIES = 1
+		CS := CommandService{discordMessage: discordMessage}
+		w := httptest.NewRecorder()
+		r, _ := http.NewRequest("GET", "/", nil)
+		CS.HandleMessage(w, r)
+		response := dtos.CommandError{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Equal(t, response.Message, "Queue channel is not initialized")
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+	})
 	t.Run("should trigger VerifyService when command name is verify", func(t *testing.T) {
 		discordMessage := dtos.DiscordMessage{
 			Data: &dtos.Data{

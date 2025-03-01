@@ -13,6 +13,7 @@ import (
 )
 
 func (s *CommandService) Listening(response http.ResponseWriter, request *http.Request) {
+
 	options := s.discordMessage.Data.Options[0]
 	msg := ""
 	requiresUpdate := false
@@ -39,13 +40,13 @@ func (s *CommandService) Listening(response http.ResponseWriter, request *http.R
 		if err != nil {
 			msg = "Failed to update your nickname."
 			logrus.Errorf("Failed to marshal message: %v", err)
-			response.WriteHeader(http.StatusInternalServerError)
+			utils.Errors.NewInternalError(response, err.Error())
 			return
 		}
 		if err := queue.SendMessage(bytePacket); err != nil {
 			msg = "Failed to update your nickname."
 			logrus.Errorf("Failed to send message to queue: %v", err)
-			response.WriteHeader(http.StatusInternalServerError)
+			utils.Errors.NewInternalError(response, err.Error())
 			return
 		}
 	}

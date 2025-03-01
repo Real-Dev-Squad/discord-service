@@ -45,7 +45,7 @@ func TestListeningService(t *testing.T) {
 		}
 		body, _ := json.Marshal(data)
 		req, _ := http.NewRequest("POST", "/listening", bytes.NewBuffer(body))
-		rr := httptest.NewRecorder()
+		w := httptest.NewRecorder()
 
 		discordMessage := dtos.DiscordMessage{
 			Data: mockData,
@@ -58,9 +58,9 @@ func TestListeningService(t *testing.T) {
 		}
 
 		commandService := &CommandService{discordMessage: discordMessage}
-		commandService.Listening(rr, req)
+		commandService.Listening(w, req)
 
-		assert.Contains(t, rr.Body.String(), "You are already set to listen.")
+		assert.Contains(t, w.Body.String(), "You are already set to listen.")
 	})
 
 	t.Run("should return 'Your nickname remains unchanged.' if nickname contains suffix and value is true", func(t *testing.T) {
@@ -73,7 +73,7 @@ func TestListeningService(t *testing.T) {
 		}
 		body, _ := json.Marshal(data)
 		req, _ := http.NewRequest("POST", "/listening", bytes.NewBuffer(body))
-		rr := httptest.NewRecorder()
+		w := httptest.NewRecorder()
 		options.Value = false
 		discordMessage := dtos.DiscordMessage{
 			Data: mockData,
@@ -86,9 +86,9 @@ func TestListeningService(t *testing.T) {
 		}
 
 		commandService := &CommandService{discordMessage: discordMessage}
-		commandService.Listening(rr, req)
+		commandService.Listening(w, req)
 
-		assert.Contains(t, rr.Body.String(), "Your nickname remains unchanged.")
+		assert.Contains(t, w.Body.String(), "Your nickname remains unchanged.")
 	})
 
 	t.Run("should pass if nickname does not contain suffix and value is true", func(t *testing.T) {
@@ -106,7 +106,7 @@ func TestListeningService(t *testing.T) {
 		}
 		body, _ := json.Marshal(data)
 		req, _ := http.NewRequest("POST", "/listening", bytes.NewBuffer(body))
-		rr := httptest.NewRecorder()
+		w := httptest.NewRecorder()
 		options.Value = true
 		discordMessage := dtos.DiscordMessage{
 			Data: mockData,
@@ -119,9 +119,9 @@ func TestListeningService(t *testing.T) {
 		}
 
 		commandService := &CommandService{discordMessage: discordMessage}
-		commandService.Listening(rr, req)
+		commandService.Listening(w, req)
 
-		assert.Contains(t, rr.Body.String(), "Your nickname will be updated shortly.")
+		assert.Contains(t, w.Body.String(), "Your nickname will be updated shortly.")
 	})
 
 }

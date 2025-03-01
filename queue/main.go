@@ -2,7 +2,6 @@ package queue
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 
 	"github.com/Real-Dev-Squad/discord-service/config"
@@ -91,7 +90,6 @@ var GetQueueInstance = func() *Queue {
 var SendMessage = func(message []byte) error {
 	queue := GetQueueInstance()
 
-	fmt.Println("Queee ", queue)
 	if queue.Channel == nil {
 		logrus.Errorf("Queue channel is not initialized")
 		return errors.New("Queue channel is not initialized")

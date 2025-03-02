@@ -13,15 +13,18 @@ import (
 func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 	payload, err := io.ReadAll(request.Body)
 	defer request.Body.Close()
+
 	if err != nil || len(payload) == 0 {
 		utils.Errors.NewBadRequestError(response, "Invalid Request Payload")
 		return
 	}
+
 	var message dtos.DiscordMessage
 	if err := json.Unmarshal(payload, &message); err != nil {
 		utils.Errors.NewBadRequestError(response, err.Error())
 		return
 	}
+
 	switch message.Type {
 
 	case discordgo.InteractionPing:
@@ -32,7 +35,6 @@ func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 	case discordgo.InteractionApplicationCommand:
 		mainService := CommandService{discordMessage: message}
 		mainService.HandleMessage(response, request)
-
 		return
 
 	default:

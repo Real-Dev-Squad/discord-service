@@ -1,8 +1,8 @@
 package utils
 
 import (
+	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/sirupsen/logrus"
 )
@@ -32,6 +32,7 @@ func (errorPackage) NewInternalError(response http.ResponseWriter, message ...st
 func formatError(response http.ResponseWriter, message string, status int) {
 	logrus.Error("Message : ", message)
 	response.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	http.Error(response, `{"success": false, "message": "`+message+`", "status": `+strconv.Itoa(status)+`}`, status)
+	errorMessage := fmt.Sprintf(`{"success": false, "message": "%s", "status": %d}`, message, status)
+	http.Error(response, errorMessage, status)
 	return
 }

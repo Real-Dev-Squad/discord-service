@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -30,7 +29,6 @@ func TestMainService(t *testing.T) {
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
 		assert.Equal(t, response.Data.Content, "Hey there \u003c@123456789012345678\u003e! Congratulations, you just executed your first slash command")
-		fmt.Println(w.Body.String())
 	})
 
 	t.Run("should trigger ListeningService when command name is listening", func(t *testing.T) {

@@ -28,7 +28,7 @@ func (s *CommandService) ListeningService(response http.ResponseWriter, request 
 	if requiresUpdate {
 		dataPacket := dtos.DataPacket{
 			UserID:      s.discordMessage.Member.User.ID,
-			CommandName: "listening",
+			CommandName: utils.CommandNames.Listening,
 			MetaData: map[string]string{
 				"value":    fmt.Sprint(options.Value),
 				"nickname": s.discordMessage.Member.Nick,

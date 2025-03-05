@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -25,17 +27,19 @@ type URLs struct {
 	VERIFICATION_SITE_URL string
 }
 
+const domain = "https://%s.realdevsquad.com"
+
 var EnvironmentURLs = map[Environment]URLs{
 	Development: {
 		RDS_BASE_API_URL:      "http://localhost:3000",
 		VERIFICATION_SITE_URL: "http://localhost:3443",
 	},
 	Staging: {
-		RDS_BASE_API_URL:      "https://staging-api.realdevsquad.com",
-		VERIFICATION_SITE_URL: "https://staging-my.realdevsquad.com",
+		RDS_BASE_API_URL:      fmt.Sprintf(domain, "staging-api"),
+		VERIFICATION_SITE_URL: fmt.Sprintf(domain, "staging-my"),
 	},
 	Production: {
-		RDS_BASE_API_URL:      "https://api.realdevsquad.com",
-		VERIFICATION_SITE_URL: "https://my.realdevsquad.com",
+		RDS_BASE_API_URL:      fmt.Sprintf(domain, "api"),
+		VERIFICATION_SITE_URL: fmt.Sprintf(domain, "my"),
 	},
 }

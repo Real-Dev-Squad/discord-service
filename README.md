@@ -34,6 +34,10 @@ Before running the project, ensure that you have the following installed:
    To install Air, follow the installation steps here:
    [Air Installation Guide](https://github.com/air-verse/air)
 
+## Setup env
+1. Create .env file in root directory
+2. Copy .env.example content in .env
+
 ## Running RabbitMQ with Docker
 
 1. Ensure Docker is installed and running on your machine.

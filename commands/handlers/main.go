@@ -6,6 +6,7 @@ import (
 	"github.com/Real-Dev-Squad/discord-service/config"
 	"github.com/Real-Dev-Squad/discord-service/dtos"
 	"github.com/Real-Dev-Squad/discord-service/models"
+	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 )
@@ -25,7 +26,7 @@ func MainHandler(dataPacket []byte) func() error {
 	}
 	CS.discordMessage = packetData
 	switch packetData.CommandName {
-	case "listening":
+	case utils.CommandNames.Listening:
 		return CS.listeningHandler
 	default:
 		logrus.Warn("Invalid Command Received: ", packetData.CommandName)

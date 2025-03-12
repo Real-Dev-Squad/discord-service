@@ -29,7 +29,7 @@ func TestListeningService(t *testing.T) {
 	mockData := &dtos.Data{
 		GuildId: "876543210987654321",
 		ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
-			Name: "listening",
+			Name: utils.CommandNames.Listening,
 			Options: []*discordgo.ApplicationCommandInteractionDataOption{
 				options,
 			},

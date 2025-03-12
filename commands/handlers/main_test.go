@@ -6,6 +6,7 @@ import (
 
 	"github.com/Real-Dev-Squad/discord-service/dtos"
 	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
+	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
 )
@@ -13,7 +14,7 @@ import (
 func TestMainHandler(t *testing.T) {
 	t.Run("should return listeningHandler for 'listening' command", func(t *testing.T) {
 		dataPacket := &dtos.DataPacket{
-			CommandName: "listening",
+			CommandName: utils.CommandNames.Listening,
 		}
 		data, err := dataPacket.ToByte()
 		assert.NoError(t, err)

@@ -1,6 +1,8 @@
 package service
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -8,6 +10,7 @@ import (
 	"github.com/Real-Dev-Squad/discord-service/dtos"
 	"github.com/Real-Dev-Squad/discord-service/fixtures"
 	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
+	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
 )
@@ -19,6 +22,54 @@ func TestMainService(t *testing.T) {
 		r, _ := http.NewRequest("GET", "/", nil)
 		handler(w, r)
 
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
+
+	t.Run("should trigger ListeningService when command name is listening", func(t *testing.T) {
+		discordMessage := &dtos.DiscordMessage{
+			Member: &discordgo.Member{
+				Nick: fmt.Sprintf("test%s", utils.NICKNAME_SUFFIX),
+			},
+			Data: &dtos.Data{
+				GuildId: "876543210987654321",
+				ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
+					Name: utils.CommandNames.Listening,
+					Options: []*discordgo.ApplicationCommandInteractionDataOption{
+						{Value: true},
+					},
+				},
+			},
+		}
+
+		handler := MainService(discordMessage)
+		w := httptest.NewRecorder()
+		r, _ := http.NewRequest("GET", "/", nil)
+		handler(w, r)
+		messageResponse := discordgo.InteractionResponse{}
+		err := json.Unmarshal(w.Body.Bytes(), &messageResponse)
+		assert.NoError(t, err)
+		assert.Equal(t, messageResponse.Data.Content, "You are already set to listen.")
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
+
+	t.Run("should trigger VerifyService when command name is verify", func(t *testing.T) {
+		discordMessage := &dtos.DiscordMessage{
+			Data: &dtos.Data{
+				GuildId: "876543210987654321",
+				ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
+					Name: utils.CommandNames.Verify,
+				},
+			},
+		}
+
+		handler := MainService(discordMessage)
+		w := httptest.NewRecorder()
+		r, _ := http.NewRequest("GET", "/", nil)
+		handler(w, r)
+		messageResponse := discordgo.InteractionResponse{}
+		err := json.Unmarshal(w.Body.Bytes(), &messageResponse)
+		assert.NoError(t, err)
+		assert.Equal(t, messageResponse.Data.Content, "Work in progress for Verify command")
 		assert.Equal(t, http.StatusOK, w.Code)
 	})
 

@@ -2,6 +2,7 @@ package fixtures
 
 import (
 	"github.com/Real-Dev-Squad/discord-service/dtos"
+	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -24,7 +25,7 @@ var HelloCommand = &dtos.DiscordMessage{
 	Data: &dtos.Data{
 		GuildId: "876543210987654321",
 		ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
-			Name: "hello",
+			Name: utils.CommandNames.Hello,
 		},
 	},
 }

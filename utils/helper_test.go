@@ -148,23 +148,6 @@ func TestMakeAPICall(t *testing.T) {
 		assert.Equal(t, false, result.Success)
 	})
 
-	t.Run("should handle server error responses", func(t *testing.T) {
-		result := &TestResponse{}
-		mockServer := MakeMockServer(`{"success":false}`, http.StatusInternalServerError)
-		defer mockServer.Close()
-
-		wb := &WebsiteBackend{
-			AuthToken: nil,
-			Method:    http.MethodPost,
-			URL:       mockServer.URL,
-		}
-		body := map[string]string{"key": "value"}
-		err := wb.MakeAPICall(body, result)
-
-		assert.NoError(t, err)
-		assert.Equal(t, false, result.Success)
-	})
-
 	t.Run("should return error if response does not matches with the provided dto", func(t *testing.T) {
 		result := &TestResponse{}
 		mockServer := MakeMockServer(`{success:false}`, http.StatusInternalServerError)

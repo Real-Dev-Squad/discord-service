@@ -89,25 +89,6 @@ func TestMakeAPICall(t *testing.T) {
 		assert.Equal(t, 20, result.Data[0].Age)
 	})
 
-	t.Run("should make API call successfully", func(t *testing.T) {
-		mockServer := MakeMockServer(`{"success": true, "data" : [{"name" : "joy", "age" : 20}]}`, http.StatusOK)
-		defer mockServer.Close()
-
-		wb := &WebsiteBackend{
-			AuthToken: nil,
-			Method:    http.MethodPost,
-			URL:       mockServer.URL,
-		}
-		body := map[string]string{"key": "value"}
-		result := &TestResponse{}
-		err := wb.MakeAPICall(body, result)
-
-		assert.NoError(t, err)
-		assert.Equal(t, true, result.Success)
-		assert.Equal(t, "joy", result.Data[0].Name)
-		assert.Equal(t, 20, result.Data[0].Age)
-	})
-
 	t.Run("should return error if json.Marshal fails", func(t *testing.T) {
 		wb := &WebsiteBackend{
 			AuthToken: nil,

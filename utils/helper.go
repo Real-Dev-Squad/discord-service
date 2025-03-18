@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Real-Dev-Squad/discord-service/config"
 	"github.com/sirupsen/logrus"
 )
 
@@ -32,18 +33,33 @@ var ExponentialBackoffRetry = func(maxRetries int, operation func() error) error
 	return err
 }
 
-func (wb *WebsiteBackend) MakeAPICall(body interface{}) (interface{}, error) {
+func (wb *WebsiteBackend) MakeAPICall(body interface{}, result interface{}) error {
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
 		logrus.Errorf("Failed to marshal message: %v", err)
-		return nil, err
+		return err
 	}
 	req, err := http.NewRequest(wb.Method, wb.URL, strings.NewReader(string(jsonBody)))
 	if err != nil {
-		return nil, err
+		return err
+	}
+	client := &http.Client{
+		Timeout: config.AppConfig.TIMEOUT * time.Second,
 	}
 	wb.PrepareHeaders(req)
-	return http.DefaultClient.Do(req)
+	resp, err := client.Do(req)
+	if err != nil {
+		logrus.Errorf("Failed to make request: %v", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	err = json.NewDecoder(resp.Body).Decode(result)
+	if err != nil {
+		logrus.Errorf("Failed to unmarshal message: %v", err)
+		return err
+	}
+	return nil
 }
 
 func (wb *WebsiteBackend) PrepareHeaders(req *http.Request) {

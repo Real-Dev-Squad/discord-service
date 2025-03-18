@@ -2,11 +2,11 @@ package utils
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -60,14 +60,17 @@ func TestExponentialBackoffRetry_ImmediateSuccess(t *testing.T) {
 	assert.Equal(t, 1, attempts)
 }
 
+type TestResponse struct {
+	Success bool `json:"success"`
+	Data    []struct {
+		Name string `json:"name"`
+		Age  int    `json:"age"`
+	}
+}
+
 func TestMakeAPICall(t *testing.T) {
 	t.Run("should make API call successfully", func(t *testing.T) {
-		mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, http.MethodPost, r.Method)
-			assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintln(w, `{"success": true}`)
-		}))
+		mockServer := MakeMockServer(`{"success": true, "data" : [{"name" : "joy", "age" : 20}]}`, http.StatusOK)
 		defer mockServer.Close()
 
 		wb := &WebsiteBackend{
@@ -76,10 +79,32 @@ func TestMakeAPICall(t *testing.T) {
 			URL:       mockServer.URL,
 		}
 		body := map[string]string{"key": "value"}
-		resp, err := wb.MakeAPICall(body)
+		result := &TestResponse{}
+		err := wb.MakeAPICall(body, result)
 
 		assert.NoError(t, err)
-		assert.NotNil(t, resp)
+		assert.Equal(t, true, result.Success)
+		assert.Equal(t, "joy", result.Data[0].Name)
+		assert.Equal(t, 20, result.Data[0].Age)
+	})
+
+	t.Run("should make API call successfully", func(t *testing.T) {
+		mockServer := MakeMockServer(`{"success": true, "data" : [{"name" : "joy", "age" : 20}]}`, http.StatusOK)
+		defer mockServer.Close()
+
+		wb := &WebsiteBackend{
+			AuthToken: nil,
+			Method:    http.MethodPost,
+			URL:       mockServer.URL,
+		}
+		body := map[string]string{"key": "value"}
+		result := &TestResponse{}
+		err := wb.MakeAPICall(body, result)
+
+		assert.NoError(t, err)
+		assert.Equal(t, true, result.Success)
+		assert.Equal(t, "joy", result.Data[0].Name)
+		assert.Equal(t, 20, result.Data[0].Age)
 	})
 
 	t.Run("should return error if json.Marshal fails", func(t *testing.T) {
@@ -89,10 +114,9 @@ func TestMakeAPICall(t *testing.T) {
 			URL:       "http://example.com/api",
 		}
 		body := make(chan int) // This will cause json.Marshal to fail
-		resp, err := wb.MakeAPICall(body)
+		err := wb.MakeAPICall(body, nil)
 
 		assert.Error(t, err)
-		assert.Nil(t, resp)
 	})
 
 	t.Run("should return error if http.NewRequest fails", func(t *testing.T) {
@@ -102,10 +126,40 @@ func TestMakeAPICall(t *testing.T) {
 			URL:       "http://example.com/api",
 		}
 		body := map[string]string{"key": "value"}
-		resp, err := wb.MakeAPICall(body)
+		err := wb.MakeAPICall(body, nil)
 
 		assert.Error(t, err)
-		assert.Nil(t, resp)
+	})
+
+	t.Run("should handle server error responses", func(t *testing.T) {
+		result := &TestResponse{}
+		mockServer := MakeMockServer(`{"success":false}`, http.StatusInternalServerError)
+		defer mockServer.Close()
+
+		wb := &WebsiteBackend{
+			AuthToken: nil,
+			Method:    http.MethodPost,
+			URL:       mockServer.URL,
+		}
+		body := map[string]string{"key": "value"}
+		err := wb.MakeAPICall(body, result)
+
+		assert.NoError(t, err)
+		assert.Equal(t, false, result.Success)
+	})
+	t.Run("should return error if response does not matches with the provided dto", func(t *testing.T) {
+		result := &TestResponse{}
+		mockServer := MakeMockServer(`{success:false}`, http.StatusInternalServerError)
+		defer mockServer.Close()
+
+		wb := &WebsiteBackend{
+			AuthToken: nil,
+			Method:    http.MethodPost,
+			URL:       mockServer.URL,
+		}
+		body := map[string]string{"key": "value"}
+		err := wb.MakeAPICall(body, result)
+		assert.Error(t, err)
 	})
 }
 
@@ -132,4 +186,12 @@ func TestPrepareHeaders(t *testing.T) {
 
 		assert.Equal(t, "Bearer test-token", req.Header.Get("Authorization"))
 	})
+}
+
+func MakeMockServer(response string, statusCode int) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.Header.Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(response))
+	}))
 }

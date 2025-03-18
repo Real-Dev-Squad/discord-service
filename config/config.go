@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
@@ -19,6 +20,7 @@ type Config struct {
 	MAX_RETRIES           int
 	RDS_BASE_API_URL      string
 	VERIFICATION_SITE_URL string
+	TIMEOUT               time.Duration
 }
 
 var AppConfig Config
@@ -38,6 +40,7 @@ func init() {
 		BOT_TOKEN:          loadEnv("BOT_TOKEN"),
 		QUEUE_NAME:         loadEnv("QUEUE_NAME"),
 		ENV:                Environment(loadEnv("ENV")).Validate(),
+		TIMEOUT:            time.Duration(30),
 		MAX_RETRIES:        5,
 	}
 

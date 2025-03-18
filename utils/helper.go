@@ -44,7 +44,7 @@ func (wb *WebsiteBackend) MakeAPICall(body interface{}, result interface{}) erro
 		return err
 	}
 	client := &http.Client{
-		Timeout: config.AppConfig.TIMEOUT * time.Second,
+		Timeout: config.AppConfig.TIMEOUT,
 	}
 	wb.PrepareHeaders(req)
 	resp, err := client.Do(req)

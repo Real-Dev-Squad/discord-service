@@ -40,7 +40,7 @@ func init() {
 		BOT_TOKEN:          loadEnv("BOT_TOKEN"),
 		QUEUE_NAME:         loadEnv("QUEUE_NAME"),
 		ENV:                Environment(loadEnv("ENV")).Validate(),
-		TIMEOUT:            time.Duration(30),
+		TIMEOUT:            30 * time.Second,
 		MAX_RETRIES:        5,
 	}
 

@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Real-Dev-Squad/discord-service/config"
 	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
 	"github.com/stretchr/testify/assert"
 )
@@ -131,6 +132,24 @@ func TestMakeAPICall(t *testing.T) {
 		assert.Error(t, err)
 	})
 
+	t.Run("should handle error from client.Do", func(t *testing.T) {
+
+		mockServer := MakeMockServer(`{"success": true, "data" : [{"name" : "joy", "age" : 20}]}`, http.StatusOK)
+		defer mockServer.Close()
+		wb := &WebsiteBackend{
+			AuthToken: nil,
+			Method:    http.MethodPost,
+			URL:       mockServer.URL,
+		}
+		originalTimeout := config.AppConfig.TIMEOUT
+		config.AppConfig.TIMEOUT = 2
+		defer func() { config.AppConfig.TIMEOUT = originalTimeout }()
+		body := map[string]string{"key": "value"}
+		result := &TestResponse{}
+		err := wb.MakeAPICall(body, result)
+		assert.Error(t, err)
+	})
+
 	t.Run("should handle server error responses", func(t *testing.T) {
 		result := &TestResponse{}
 		mockServer := MakeMockServer(`{"success":false}`, http.StatusInternalServerError)
@@ -147,6 +166,24 @@ func TestMakeAPICall(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, false, result.Success)
 	})
+
+	t.Run("should handle server error responses", func(t *testing.T) {
+		result := &TestResponse{}
+		mockServer := MakeMockServer(`{"success":false}`, http.StatusInternalServerError)
+		defer mockServer.Close()
+
+		wb := &WebsiteBackend{
+			AuthToken: nil,
+			Method:    http.MethodPost,
+			URL:       mockServer.URL,
+		}
+		body := map[string]string{"key": "value"}
+		err := wb.MakeAPICall(body, result)
+
+		assert.NoError(t, err)
+		assert.Equal(t, false, result.Success)
+	})
+
 	t.Run("should return error if response does not matches with the provided dto", func(t *testing.T) {
 		result := &TestResponse{}
 		mockServer := MakeMockServer(`{success:false}`, http.StatusInternalServerError)

@@ -36,7 +36,7 @@ func (s *CommandService) Listening(response http.ResponseWriter, request *http.R
 				"nickname": s.discordMessage.Member.Nick,
 			},
 		}
-		bytePacket, err := dataPacket.ToByte()
+		bytePacket, err := utils.ToByte(dataPacket)
 		if err != nil {
 			logrus.Errorf("Failed to marshal message: %v", err)
 			utils.Errors.NewInternalError(response, err.Error())

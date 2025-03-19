@@ -16,11 +16,25 @@ func TestMainHandler(t *testing.T) {
 		dataPacket := &dtos.DataPacket{
 			CommandName: utils.CommandNames.Listening,
 		}
-		data, err := dataPacket.ToByte()
+		data, err := utils.ToByte(dataPacket)
 		assert.NoError(t, err)
 
 		handler := MainHandler(data)
 		assert.NotNil(t, handler)
+	})
+	t.Run("should handle error and return nil for 'listening' command", func(t *testing.T) {
+		dataPacket := &dtos.DataPacket{
+			CommandName: utils.CommandNames.Listening,
+		}
+		originalFunc := utils.FromByte
+		defer func() { utils.FromByte = originalFunc }()
+		utils.FromByte = func(data []byte, v interface{}) error {
+			return errors.New("testing error")
+		}
+		data, err := utils.ToByte(dataPacket)
+		assert.NoError(t, err)
+		handler := MainHandler(data)
+		assert.Nil(t, handler)
 	})
 	t.Run("should return nil for invalid data", func(t *testing.T) {
 		invalidData := []byte(`{"invalid": "data"}`)

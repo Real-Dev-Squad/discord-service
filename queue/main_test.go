@@ -116,4 +116,31 @@ func TestSendMessage(t *testing.T) {
 			SendMessage(bytes)
 		}, "SendMessage should panic when SendMessage returns error")
 	})
+	t.Run("Should panic when trying to send message from queue without proper connection", func(t *testing.T) {
+		config.AppConfig.MAX_RETRIES = 1
+		message := dtos.DataPacket{
+			UserID:      "1",
+			CommandName: utils.CommandNames.Listening,
+		}
+		bytes, err := utils.ToByte(message)
+		assert.NoError(t, err)
+		originalFunc := utils.ExponentialBackoffRetry
+		originalQueueInstance := GetQueueInstance
+		utils.ExponentialBackoffRetry = func(maxRetries int, operation func() error) error {
+			return nil
+		}
+		GetQueueInstance = func() *Queue {
+			return &Queue{
+				Channel: &amqp.Channel{},
+			}
+		}
+		defer func() {
+			utils.ExponentialBackoffRetry = originalFunc
+			GetQueueInstance = originalQueueInstance
+		}()
+
+		assert.Panics(t, func() {
+			SendMessage(bytes)
+		}, "SendMessage should panic when SendMessage returns error")
+	})
 }

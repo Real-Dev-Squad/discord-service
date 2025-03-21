@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"encoding/json"
+	"io"
 	"math"
 	"time"
 
@@ -20,4 +22,26 @@ var ExponentialBackoffRetry = func(maxRetries int, operation func() error) error
 		}
 	}
 	return err
+}
+
+var ToByte = func(data interface{}) ([]byte, error) {
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		logrus.Errorf("Failed to marshal message: %v", err)
+		return nil, err
+	}
+	return bytes, nil
+}
+
+var FromByte = func(bytes []byte, result interface{}) error {
+	err := json.Unmarshal(bytes, result)
+	if err != nil {
+		logrus.Errorf("Failed to unmarshal message: %v", err)
+		return err
+	}
+	return nil
+}
+
+var Encode = func(w io.Writer, data interface{}) error {
+	return json.NewEncoder(w).Encode(data)
 }

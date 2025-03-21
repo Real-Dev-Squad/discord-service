@@ -26,7 +26,7 @@ func TestListeningService(t *testing.T) {
 		Value: true,
 	}
 
-	mockData := &dtos.Data{
+	mockData := dtos.Data{
 		GuildId: "876543210987654321",
 		ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
 			Name: utils.CommandNames.Listening,
@@ -45,11 +45,11 @@ func TestListeningService(t *testing.T) {
 		}
 		body, _ := json.Marshal(data)
 		req, _ := http.NewRequest("POST", "/listening", bytes.NewBuffer(body))
-		rr := httptest.NewRecorder()
+		w := httptest.NewRecorder()
 
-		discordMessage := &dtos.DiscordMessage{
+		discordMessage := dtos.DiscordMessage{
 			Data: mockData,
-			Member: &discordgo.Member{
+			Member: discordgo.Member{
 				Nick: fmt.Sprintf("joy-gupta-1%s", utils.NICKNAME_SUFFIX),
 				User: &discordgo.User{
 					ID: "1",
@@ -58,9 +58,9 @@ func TestListeningService(t *testing.T) {
 		}
 
 		commandService := &CommandService{discordMessage: discordMessage}
-		commandService.ListeningService(rr, req)
+		commandService.Listening(w, req)
 
-		assert.Contains(t, rr.Body.String(), "You are already set to listen.")
+		assert.Contains(t, w.Body.String(), "You are already set to listen.")
 	})
 
 	t.Run("should return 'Your nickname remains unchanged.' if nickname contains suffix and value is true", func(t *testing.T) {
@@ -73,11 +73,11 @@ func TestListeningService(t *testing.T) {
 		}
 		body, _ := json.Marshal(data)
 		req, _ := http.NewRequest("POST", "/listening", bytes.NewBuffer(body))
-		rr := httptest.NewRecorder()
+		w := httptest.NewRecorder()
 		options.Value = false
-		discordMessage := &dtos.DiscordMessage{
+		discordMessage := dtos.DiscordMessage{
 			Data: mockData,
-			Member: &discordgo.Member{
+			Member: discordgo.Member{
 				Nick: fmt.Sprintf("joy-gupta-1"),
 				User: &discordgo.User{
 					ID: "1",
@@ -86,9 +86,9 @@ func TestListeningService(t *testing.T) {
 		}
 
 		commandService := &CommandService{discordMessage: discordMessage}
-		commandService.ListeningService(rr, req)
+		commandService.Listening(w, req)
 
-		assert.Contains(t, rr.Body.String(), "Your nickname remains unchanged.")
+		assert.Contains(t, w.Body.String(), "Your nickname remains unchanged.")
 	})
 
 	t.Run("should pass if nickname does not contain suffix and value is true", func(t *testing.T) {
@@ -106,11 +106,11 @@ func TestListeningService(t *testing.T) {
 		}
 		body, _ := json.Marshal(data)
 		req, _ := http.NewRequest("POST", "/listening", bytes.NewBuffer(body))
-		rr := httptest.NewRecorder()
+		w := httptest.NewRecorder()
 		options.Value = true
-		discordMessage := &dtos.DiscordMessage{
+		discordMessage := dtos.DiscordMessage{
 			Data: mockData,
-			Member: &discordgo.Member{
+			Member: discordgo.Member{
 				Nick: fmt.Sprintf("joy-gupta-1"),
 				User: &discordgo.User{
 					ID: "1",
@@ -119,9 +119,48 @@ func TestListeningService(t *testing.T) {
 		}
 
 		commandService := &CommandService{discordMessage: discordMessage}
-		commandService.ListeningService(rr, req)
+		commandService.Listening(w, req)
 
-		assert.Contains(t, rr.Body.String(), "Your nickname will be updated shortly.")
+		assert.Contains(t, w.Body.String(), "Your nickname will be updated shortly.")
+	})
+
+	t.Run("should fail if ToBytes fails", func(t *testing.T) {
+		originalFunc := queue.SendMessage
+		defer func() { queue.SendMessage = originalFunc }()
+		queue.SendMessage = func(message []byte) error {
+			return nil
+		}
+		data := dtos.DataPacket{
+			UserID: "userID",
+			MetaData: map[string]string{
+				"nickname": "testNick",
+				"value":    "true",
+			},
+		}
+		body, _ := json.Marshal(data)
+		req, _ := http.NewRequest("POST", "/listening", bytes.NewBuffer(body))
+		w := httptest.NewRecorder()
+		options.Value = true
+		discordMessage := dtos.DiscordMessage{
+			Data: mockData,
+			Member: discordgo.Member{
+				Nick: fmt.Sprintf("joy-gupta-1"),
+				User: &discordgo.User{
+					ID: "1",
+				},
+			},
+		}
+
+		originalToByteFunc := utils.ToByte
+		defer func() { utils.ToByte = originalToByteFunc }()
+		utils.ToByte = func(data interface{}) ([]byte, error) {
+			return nil, fmt.Errorf("error")
+		}
+
+		commandService := &CommandService{discordMessage: discordMessage}
+		commandService.Listening(w, req)
+
+		assert.Contains(t, w.Body.String(), "{\"success\": false, \"message\": \"error\", \"status\": 500}\n")
 	})
 
 }

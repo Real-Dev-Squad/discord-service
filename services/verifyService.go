@@ -7,11 +7,13 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func (s *CommandService) HelloService(response http.ResponseWriter, request *http.Request) {
+func (s *CommandService) Verify(response http.ResponseWriter, request *http.Request) {
+	msg := "Work in progress for Verify command"
 	messageResponse := &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: utils.ResponseGenerator.HelloResponse(s.discordMessage.Member.User.ID),
+			Content: msg,
+			Flags:   discordgo.MessageFlags(64), //Ephemeral message flag
 		},
 	}
 	utils.Success.NewDiscordResponse(response, "Success", messageResponse)

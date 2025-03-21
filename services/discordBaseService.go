@@ -12,17 +12,19 @@ import (
 
 func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 	payload, err := io.ReadAll(request.Body)
+	defer request.Body.Close()
+
 	if err != nil || len(payload) == 0 {
 		utils.Errors.NewBadRequestError(response, "Invalid Request Payload")
 		return
 	}
-	defer request.Body.Close()
+
 	var message dtos.DiscordMessage
-	err = json.Unmarshal(payload, &message)
-	if err != nil {
-		utils.Errors.NewInternalError(response)
+	if err := json.Unmarshal(payload, &message); err != nil {
+		utils.Errors.NewBadRequestError(response, err.Error())
 		return
 	}
+
 	switch message.Type {
 
 	case discordgo.InteractionPing:
@@ -31,10 +33,11 @@ func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 		return
 
 	case discordgo.InteractionApplicationCommand:
-		MainService(&message)(response, request)
+		mainService := CommandService{discordMessage: message}
+		mainService.HandleMessage(response, request)
 		return
 
 	default:
-		response.WriteHeader(http.StatusOK)
+		response.WriteHeader(http.StatusNotFound)
 	}
 }

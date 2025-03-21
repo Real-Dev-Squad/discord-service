@@ -19,7 +19,7 @@ var CS = CommandHandler{}
 
 func MainHandler(dataPacket []byte) func() error {
 	packetData := &dtos.DataPacket{}
-	err := packetData.FromByte(dataPacket)
+	err := utils.FromByte(dataPacket, packetData)
 	if err != nil {
 		logrus.Errorf("Failed to unmarshal data send by queue: %v", err)
 		return nil

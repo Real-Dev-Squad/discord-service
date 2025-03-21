@@ -124,4 +124,43 @@ func TestListeningService(t *testing.T) {
 		assert.Contains(t, w.Body.String(), "Your nickname will be updated shortly.")
 	})
 
+	t.Run("should fail if ToBytes fails", func(t *testing.T) {
+		originalFunc := queue.SendMessage
+		defer func() { queue.SendMessage = originalFunc }()
+		queue.SendMessage = func(message []byte) error {
+			return nil
+		}
+		data := dtos.DataPacket{
+			UserID: "userID",
+			MetaData: map[string]string{
+				"nickname": "testNick",
+				"value":    "true",
+			},
+		}
+		body, _ := json.Marshal(data)
+		req, _ := http.NewRequest("POST", "/listening", bytes.NewBuffer(body))
+		w := httptest.NewRecorder()
+		options.Value = true
+		discordMessage := dtos.DiscordMessage{
+			Data: mockData,
+			Member: discordgo.Member{
+				Nick: fmt.Sprintf("joy-gupta-1"),
+				User: &discordgo.User{
+					ID: "1",
+				},
+			},
+		}
+
+		originalToByteFunc := utils.ToByte
+		defer func() { utils.ToByte = originalToByteFunc }()
+		utils.ToByte = func(data interface{}) ([]byte, error) {
+			return nil, fmt.Errorf("error")
+		}
+
+		commandService := &CommandService{discordMessage: discordMessage}
+		commandService.Listening(w, req)
+
+		assert.Contains(t, w.Body.String(), "{\"success\": false, \"message\": \"error\", \"status\": 500}\n")
+	})
+
 }

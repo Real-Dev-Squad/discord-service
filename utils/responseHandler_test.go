@@ -32,3 +32,10 @@ func TestNewDiscordResponseWithEncodeError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, response.Code)
 
 }
+
+func TestNewDiscordResponseWithNoError(t *testing.T) {
+	response := httptest.NewRecorder()
+	Success.NewDiscordResponse(response, "hello", "data")
+	assert.Equal(t, http.StatusOK, response.Code)
+
+}

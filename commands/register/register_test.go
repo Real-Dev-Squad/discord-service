@@ -5,6 +5,7 @@ import (
 
 	"github.com/Real-Dev-Squad/discord-service/tests"
 	_ "github.com/Real-Dev-Squad/discord-service/tests/setup"
+	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
 )
@@ -12,17 +13,17 @@ import (
 func TestInit(t *testing.T) {
 
 	t.Run("should panic when SetupConnection returns an error", func(t *testing.T) {
-		originalNewDiscord := NewDiscord
-		defer func() { NewDiscord = originalNewDiscord }()
-		NewDiscord = func(token string) (s *discordgo.Session, err error) {
+		originalNewDiscord := utils.NewDiscordSession
+		defer func() { utils.NewDiscordSession = originalNewDiscord }()
+		utils.NewDiscordSession = func(token string) (s *discordgo.Session, err error) {
 			return nil, assert.AnError
 		}
 		assert.Panics(t, SetupRegister)
 	})
 	t.Run("should call AddHandler method of session if SetupConnection succeeds", func(t *testing.T) {
-		originalNewDiscord := NewDiscord
-		defer func() { NewDiscord = originalNewDiscord }()
-		NewDiscord = func(token string) (s *discordgo.Session, err error) {
+		originalNewDiscord := utils.NewDiscordSession
+		defer func() { utils.NewDiscordSession = originalNewDiscord }()
+		utils.NewDiscordSession = func(token string) (s *discordgo.Session, err error) {
 			mockSession := &discordgo.Session{
 				State: &discordgo.State{},
 			}

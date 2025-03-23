@@ -4,14 +4,13 @@ import (
 	constants "github.com/Real-Dev-Squad/discord-service/commands"
 	"github.com/Real-Dev-Squad/discord-service/config"
 	"github.com/Real-Dev-Squad/discord-service/models"
+	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 )
 
-var NewDiscord = discordgo.New
-
 func SetupRegister() {
-	session, err := NewDiscord("Bot " + config.AppConfig.BOT_TOKEN)
+	session, err := utils.NewDiscordSession("Bot " + config.AppConfig.BOT_TOKEN)
 	if err != nil {
 		logrus.Panic("Cannot create a new Discord session ", err)
 	}
@@ -24,7 +23,6 @@ func SetupRegister() {
 }
 
 var RegisterCommands = func(openSession models.SessionInterface) {
-	openSession.AddHandler()
 	err := openSession.Open()
 	defer openSession.Close()
 

@@ -42,4 +42,37 @@ func TestSessionWrapper(t *testing.T) {
 		}, "should panic when getUerId() is called")
 	})
 
+	t.Run("SessionWrapper should always implement guildMemberNickname() method", func(t *testing.T) {
+		assert.Panics(t, func() {
+			sessionWrapper.GuildMemberNickname("1", "2")
+		}, "should panic when guildMemberNickname() is called")
+	})
+
+	t.Run("SessionWrapper should always implement addHandler() method", func(t *testing.T) {
+		function := sessionWrapper.AddHandler()
+		assert.NotNil(t, function)
+		assert.NotPanics(t, func() {
+			function()
+		}, "should not panic when addHandler() is called")
+
+	})
+
+}
+
+func TestCreateSession(t *testing.T) {
+	t.Run("should create a new session", func(t *testing.T) {
+		session, err := CreateSession()
+		assert.NoError(t, err)
+		assert.NotNil(t, session)
+	})
+	t.Run("should return error if creating a new session fails", func(t *testing.T) {
+		originalNewDiscordSession := utils.NewDiscordSession
+		defer func() { utils.NewDiscordSession = originalNewDiscordSession }()
+		utils.NewDiscordSession = func(token string) (*discordgo.Session, error) {
+			return nil, assert.AnError
+		}
+		session, err := CreateSession()
+		assert.Error(t, err)
+		assert.Nil(t, session)
+	})
 }

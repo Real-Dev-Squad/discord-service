@@ -192,7 +192,7 @@ func TestPrepareHeaders(t *testing.T) {
 func MakeMockServer(response string, statusCode int) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.Header.Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(statusCode)
 		w.Write([]byte(response))
 	}))
 }

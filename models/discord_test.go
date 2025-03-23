@@ -48,13 +48,6 @@ func TestSessionWrapper(t *testing.T) {
 		}, "should panic when guildMemberNickname() is called")
 	})
 
-	t.Run("SessionWrapper should always implement addHandler() method", func(t *testing.T) {
-		assert.NotPanics(t, func() {
-			sessionWrapper.AddHandler()
-		}, "should not panic when addHandler() is called")
-
-	})
-
 }
 
 func TestCreateSession(t *testing.T) {

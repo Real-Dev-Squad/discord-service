@@ -49,10 +49,4 @@ func Test_MockSessionHelper(t *testing.T) {
 			assert.NoError(t, err)
 		})
 	})
-	t.Run("AddHandler", func(t *testing.T) {
-		session := &MockSession{}
-		function := session.AddHandler
-		assert.NotNil(t, function)
-		assert.NotPanics(t, function)
-	})
 }

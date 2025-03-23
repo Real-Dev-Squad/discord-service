@@ -6,11 +6,14 @@ import (
 	"math"
 	"time"
 
+	amqp "github.com/rabbitmq/amqp091-go"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 )
 
 var NewDiscordSession = discordgo.New
+var AMQPDial = amqp.Dial
 var ExponentialBackoffRetry = func(maxRetries int, operation func() error) error {
 	var err error
 	for i := 0; i < maxRetries; i++ {

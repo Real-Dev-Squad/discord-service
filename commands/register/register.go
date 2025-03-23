@@ -24,6 +24,7 @@ func SetupRegister() {
 }
 
 var RegisterCommands = func(openSession models.SessionInterface) {
+	openSession.AddHandler()
 	err := openSession.Open()
 	defer openSession.Close()
 

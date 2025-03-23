@@ -49,10 +49,8 @@ func TestSessionWrapper(t *testing.T) {
 	})
 
 	t.Run("SessionWrapper should always implement addHandler() method", func(t *testing.T) {
-		function := sessionWrapper.AddHandler()
-		assert.NotNil(t, function)
 		assert.NotPanics(t, func() {
-			function()
+			sessionWrapper.AddHandler()
 		}, "should not panic when addHandler() is called")
 
 	})

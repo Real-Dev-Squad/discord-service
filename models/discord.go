@@ -26,8 +26,8 @@ func (s *SessionWrapper) ApplicationCommandCreate(applicationID, guildID string,
 func (sw *SessionWrapper) GetUerId() string {
 	return sw.Session.State.User.ID
 }
-func (sw *SessionWrapper) AddHandler() func() {
-	return sw.Session.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
+func (sw *SessionWrapper) AddHandler() {
+	sw.Session.AddHandler(func() {
 		logrus.Info("Logged in as: ", sw.Session.State.User.Username, sw.Session.State.User.Discriminator)
 	})
 }
@@ -36,7 +36,7 @@ func (sw *SessionWrapper) GuildMemberNickname(userId string, newNickName string)
 }
 
 type SessionInterface interface {
-	AddHandler() func()
+	AddHandler()
 	Open() error
 	Close() error
 	ApplicationCommandCreate(applicationID, guildID string, command *discordgo.ApplicationCommand) (*discordgo.ApplicationCommand, error)

@@ -7,61 +7,91 @@ import (
 	"github.com/Real-Dev-Squad/discord-service/config"
 	"github.com/Real-Dev-Squad/discord-service/dtos"
 	_ "github.com/Real-Dev-Squad/discord-service/tests/setup"
-
 	"github.com/Real-Dev-Squad/discord-service/utils"
 	amqp "github.com/rabbitmq/amqp091-go"
-
 	"github.com/stretchr/testify/assert"
 )
 
-type mockQueue struct {
-	dialError    error
-	channelError error
-	queueError   error
+type MockQueue struct {
+	DialError    error
+	ChannelError error
+	QueueError   error
+	PublishError error
 }
 
-func (m *mockQueue) dial() error {
-	return m.dialError
+func (m *MockQueue) Dial() error {
+	return m.DialError
 }
 
-func (m *mockQueue) createChannel() error {
-	return m.channelError
+func (m *MockQueue) CreateChannel() error {
+	return m.ChannelError
 }
-func (m *mockQueue) declareQueue() error {
-	return m.queueError
+
+func (m *MockQueue) DeclareQueue() error {
+	return m.QueueError
+}
+func (m *MockQueue) PublishMessage(message []byte) error {
+	return m.PublishError
 }
 
 func TestInitQueueConnection(t *testing.T) {
 	config.AppConfig.MAX_RETRIES = 1
 	t.Run("should not panic when Dial() returns error", func(t *testing.T) {
-		mockQueue := &mockQueue{dialError: errors.New("connection failed")}
+		mockQueue := &MockQueue{DialError: errors.New("connection failed")}
 		assert.NotPanics(t, func() {
 			InitQueueConnection(mockQueue)
 		}, "InitQueueConnection should not panic when Dial is unsuccessful")
-
 	})
+	t.Run("should not throw error when Dial() is successful", func(t *testing.T) {
+		originalFunc := utils.AMQPDial
+		defer func() { utils.AMQPDial = originalFunc }()
+		utils.AMQPDial = func(url string) (*amqp.Connection, error) {
+			return &amqp.Connection{}, nil
+		}
+		mockQueue := &QueueWrapper{}
 
+		assert.NoError(t, mockQueue.Dial())
+	})
 	t.Run("should not panic when CreateChannel() returns error", func(t *testing.T) {
-		mockQueue := &mockQueue{channelError: errors.New("channel failed")}
+		mockQueue := &MockQueue{ChannelError: errors.New("channel failed")}
 		assert.NotPanics(t, func() {
 			InitQueueConnection(mockQueue)
 		}, "InitQueueConnection should not panic when CreateChannel is unsuccessful")
-
 	})
-
-	t.Run("should not panic when DeclareQueue() returns error", func(t *testing.T) {
-		mockQueue := &mockQueue{queueError: errors.New("queue failed")}
+	t.Run("should not panic when Connection.Channel() returns error", func(t *testing.T) {
+		mockQueue := &MockQueue{ChannelError: errors.New("channel failed")}
 		assert.NotPanics(t, func() {
 			InitQueueConnection(mockQueue)
-		}, "InitQueueConnection should not when DeclareQueue is unsuccessful")
-
+		}, "InitQueueConnection should not panic when CreateChannel is unsuccessful")
+	})
+	t.Run("should not panic when DeclareQueue() returns error", func(t *testing.T) {
+		mockQueue := &MockQueue{QueueError: errors.New("queue failed")}
+		assert.NotPanics(t, func() {
+			InitQueueConnection(mockQueue)
+		}, "InitQueueConnection should not panic when DeclareQueue is unsuccessful")
 	})
 
 	t.Run("should pass when no error is returned", func(t *testing.T) {
-		mockQueue := &mockQueue{}
+		mockQueue := &MockQueue{}
 		assert.NotPanics(t, func() {
 			InitQueueConnection(mockQueue)
 		})
+	})
+
+	t.Run("should not panic when PublishMessage() returns error", func(t *testing.T) {
+		mockQueue := &QueueWrapper{Publish: func(exchange, key string, mandatory, immediate bool, msg amqp.Publishing) error {
+			return nil
+		}}
+		assert.NotPanics(t, func() {
+			mockQueue.PublishMessage([]byte("message"))
+		}, "InitQueueConnection should not panic when DeclareQueue is unsuccessful")
+	})
+
+	t.Run("should return error when PublishMessage() returns error", func(t *testing.T) {
+		mockQueue := &QueueWrapper{Publish: func(exchange, key string, mandatory, immediate bool, msg amqp.Publishing) error {
+			return assert.AnError
+		}}
+		assert.Error(t, mockQueue.PublishMessage([]byte("message")))
 	})
 }
 
@@ -79,29 +109,39 @@ func TestGetQueueInstance(t *testing.T) {
 	})
 }
 
-func TestSessionWrapper(t *testing.T) {
-	sessionWrapper := &Queue{}
+func TestQueueWrapper(t *testing.T) {
+	queueWrapper := &QueueWrapper{}
 
-	t.Run("SessionWrapper should always implement dial() method", func(t *testing.T) {
-		err := sessionWrapper.dial()
+	t.Run("QueueWrapper should always implement Dial() method", func(t *testing.T) {
+		err := queueWrapper.Dial()
 		assert.Error(t, err)
 	})
 
-	t.Run("SessionWrapper should always implement createChannel() method", func(t *testing.T) {
-		sessionWrapper.Connection = &amqp.Connection{}
+	t.Run("QueueWrapper should always implement CreateChannel() method", func(t *testing.T) {
+		queueWrapper.Connection = &amqp.Connection{}
 		assert.Panics(t, func() {
-			sessionWrapper.createChannel()
-		})
-
-	})
-
-	t.Run("SessionWrapper should always implement declareQueue() method", func(t *testing.T) {
-		sessionWrapper.Channel = &amqp.Channel{}
-		assert.Panics(t, func() {
-			sessionWrapper.declareQueue()
+			queueWrapper.CreateChannel()
 		})
 	})
+	t.Run("CreateChannel should always handle error from ChannelFn() method", func(t *testing.T) {
+		mockQueue := &QueueWrapper{ChannelFn: func() (*amqp.Channel, error) {
+			return nil, errors.New("channel error")
+		}}
+		assert.Error(t, mockQueue.CreateChannel())
+	})
 
+	t.Run("CreateChannel should not throw error from ChannelFn() method", func(t *testing.T) {
+		mockQueue := &QueueWrapper{ChannelFn: func() (*amqp.Channel, error) {
+			return &amqp.Channel{}, nil
+		}}
+		assert.NoError(t, mockQueue.CreateChannel())
+	})
+	t.Run("QueueWrapper should always implement DeclareQueue() method", func(t *testing.T) {
+		queueWrapper.Channel = &amqp.Channel{}
+		assert.Panics(t, func() {
+			queueWrapper.DeclareQueue()
+		})
+	})
 }
 
 func TestSendMessage(t *testing.T) {
@@ -115,8 +155,9 @@ func TestSendMessage(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotPanics(t, func() {
 			SendMessage(bytes)
-		}, "SendMessage should panic when SendMessage returns error")
+		}, "SendMessage should not panic when SendMessage returns error")
 	})
+
 	t.Run("Should panic when trying to send message from queue without proper connection", func(t *testing.T) {
 		config.AppConfig.MAX_RETRIES = 1
 		message := dtos.DataPacket{
@@ -130,8 +171,8 @@ func TestSendMessage(t *testing.T) {
 		utils.ExponentialBackoffRetry = func(maxRetries int, operation func() error) error {
 			return nil
 		}
-		GetQueueInstance = func() *Queue {
-			return &Queue{
+		GetQueueInstance = func() *QueueWrapper {
+			return &QueueWrapper{
 				Channel: &amqp.Channel{},
 			}
 		}

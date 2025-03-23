@@ -34,8 +34,7 @@ func (m *MockSession) GetUerId() string {
 	m.GetUserIdCalled = true
 	return ""
 }
-func (m *MockSession) AddHandler() func() {
-	return func() {}
+func (m *MockSession) AddHandler() {
 }
 func (m *MockSession) GuildMemberNickname(userId string, newNickName string) error {
 	if m.GuildMemberNicknameError {

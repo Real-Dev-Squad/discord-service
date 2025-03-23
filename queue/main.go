@@ -11,60 +11,90 @@ import (
 )
 
 var (
-	queueInstance *Queue
+	queueInstance *QueueWrapper
 	once          sync.Once
 )
 
-type sessionInterface interface {
-	dial() error
-	createChannel() error
-	declareQueue() error
+type QueueInterface interface {
+	Dial() error
+	CreateChannel() error
+	DeclareQueue() error
+	PublishMessage(message []byte) error
 }
 
-type Queue struct {
+type QueueWrapper struct {
 	Connection *amqp.Connection
 	Queue      amqp.Queue
 	Name       string
+	ChannelFn  func() (*amqp.Channel, error)
 	Channel    *amqp.Channel
+	Publish    func(exchange string, key string, mandatory bool, immediate bool, msg amqp.Publishing) error
 }
 
-func (q *Queue) dial() error {
+func (q *QueueWrapper) Dial() error {
 	var err error
-	q.Connection, err = amqp.Dial(config.AppConfig.QUEUE_URL)
-	return err
+	q.Connection, err = utils.AMQPDial(config.AppConfig.QUEUE_URL)
+	if err != nil {
+		logrus.Errorf("Failed to establish connection to RabbitMQ: %v", err)
+		return err
+	}
+	q.ChannelFn = q.Connection.Channel
+	return nil
 }
 
-func (q *Queue) createChannel() error {
+func (q *QueueWrapper) CreateChannel() error {
 	var err error
-	q.Channel, err = q.Connection.Channel()
-	return err
+	q.Channel, err = q.ChannelFn()
+	if err != nil {
+		return err
+	}
+	q.Publish = q.Channel.Publish
+	return nil
 }
 
-func (q *Queue) declareQueue() error {
+func (q *QueueWrapper) DeclareQueue() error {
 	var err error
 	q.Queue, err = q.Channel.QueueDeclare(
-		config.AppConfig.QUEUE_NAME,     // name
-		true,                            // durable
-		false,                           // delete when unused
-		false,                           // exclusive
-		false,                           // no-wait
-		amqp.Table{"x-max-priority": 2}, // arguments
+		config.AppConfig.QUEUE_NAME,
+		true,
+		false,
+		false,
+		false,
+		amqp.Table{"x-max-priority": 2},
 	)
 	return err
 }
 
-func InitQueueConnection(openSession sessionInterface) {
+func (q *QueueWrapper) PublishMessage(message []byte) error {
+	if err := q.Publish(
+		"",
+		q.Queue.Name,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        message,
+		},
+	); err != nil {
+		logrus.Errorf("Failed to publish message: %v", err)
+		return err
+	}
+	logrus.Info("Message sent successfully")
+	return nil
+}
+
+func InitQueueConnection(queue QueueInterface) {
 	var err error
 	f := func() error {
-		err = openSession.dial()
+		err = queue.Dial()
 		if err != nil {
 			return err
 		}
-		err = openSession.createChannel()
+		err = queue.CreateChannel()
 		if err != nil {
 			return err
 		}
-		err = openSession.declareQueue()
+		err = queue.DeclareQueue()
 		return err
 	}
 
@@ -74,15 +104,14 @@ func InitQueueConnection(openSession sessionInterface) {
 		return
 	}
 	logrus.Infof("Established a connection to RabbitMQ named %s", config.AppConfig.QUEUE_NAME)
-
 }
 
 func queueHandler() {
-	queueInstance = &Queue{}
+	queueInstance = &QueueWrapper{}
 	InitQueueConnection(queueInstance)
 }
 
-var GetQueueInstance = func() *Queue {
+var GetQueueInstance = func() *QueueWrapper {
 	once.Do(queueHandler)
 	return queueInstance
 }
@@ -95,20 +124,6 @@ var SendMessage = func(message []byte) error {
 		return errors.New("Queue channel is not initialized")
 	}
 
-	err := queue.Channel.Publish(
-		"",               // default exchange
-		queue.Queue.Name, // use the actual queue name
-		false,            // mandatory
-		false,            // immediate
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        message,
-		})
+	return queue.PublishMessage(message)
 
-	if err != nil {
-		logrus.Errorf("Failed to publish message: %v", err)
-		return err
-	}
-	logrus.Info("Message sent successfully")
-	return nil
 }

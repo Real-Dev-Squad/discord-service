@@ -3,7 +3,8 @@ package register
 import (
 	"testing"
 
-	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
+	"github.com/Real-Dev-Squad/discord-service/tests"
+	_ "github.com/Real-Dev-Squad/discord-service/tests/setup"
 	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
 )
@@ -37,6 +38,7 @@ type mockSession struct {
 	applicationCommandCalled bool
 	closeCalled              bool
 	getUserIdCalled          bool
+	guildMemberNickname      bool
 }
 
 func (m *mockSession) Open() error {
@@ -59,42 +61,52 @@ func (m *mockSession) GetUerId() string {
 	m.getUserIdCalled = true
 	return ""
 }
+func (m *mockSession) AddHandler() func() {
+	return func() {}
+}
+func (m *mockSession) GuildMemberNickname(userId string, newNickName string) error {
+	if m.guildMemberNickname {
+		return assert.AnError
+	}
+	return nil
+}
 
 func TestRegisterCommands(t *testing.T) {
 	t.Run("should not panic when Open() returns no error", func(t *testing.T) {
-		mockSess := &mockSession{openError: nil, commandError: nil}
+
+		mockSess := &tests.MockSession{OpenError: nil, CommandError: nil}
 		assert.NotPanics(t, func() {
 			RegisterCommands(mockSess)
 		}, "RegisterCommands should not panic when Open is successful")
 
 	})
 	t.Run("should panic when Open() returns an error", func(t *testing.T) {
-		mockSess := &mockSession{openError: assert.AnError, commandError: nil}
+		mockSess := &tests.MockSession{OpenError: assert.AnError, CommandError: nil}
 		assert.Panics(t, func() {
 			RegisterCommands(mockSess)
 		}, "RegisterCommands should panic when Open returns an error")
 	})
 	t.Run("should panic when openSession.ApplicationCommandCreate() returns an error", func(t *testing.T) {
-		mockSess := &mockSession{openError: nil, commandError: assert.AnError}
+		mockSess := &tests.MockSession{OpenError: nil, CommandError: assert.AnError}
 
 		assert.Panics(t, func() {
 			RegisterCommands(mockSess)
 		}, "RegisterCommands should panic when ApplicationCommandCreate returns an error")
 	})
 	t.Run("should panic when openSession.ApplicationCommandCreate() returns an error", func(t *testing.T) {
-		mockSess := &mockSession{openError: nil, commandError: assert.AnError}
+		mockSess := &tests.MockSession{OpenError: nil, CommandError: assert.AnError}
 
 		assert.Panics(t, func() {
 			RegisterCommands(mockSess)
 		}, "RegisterCommands should panic when ApplicationCommandCreate returns an error")
 	})
 	t.Run("should call all methods when none of the methods returns no error", func(t *testing.T) {
-		mockSess := &mockSession{openError: nil, commandError: nil}
+		mockSess := &tests.MockSession{OpenError: nil, CommandError: nil}
 		assert.NotPanics(t, func() {
 			RegisterCommands(mockSess)
 		})
-		assert.True(t, mockSess.applicationCommandCalled)
-		assert.True(t, mockSess.getUserIdCalled)
-		assert.True(t, mockSess.closeCalled)
+		assert.True(t, mockSess.ApplicationCommandCalled)
+		assert.True(t, mockSess.GetUserIdCalled)
+		assert.True(t, mockSess.CloseCalled)
 	})
 }

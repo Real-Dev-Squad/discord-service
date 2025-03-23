@@ -3,7 +3,9 @@ package main
 import (
 	"testing"
 
-	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
+	"github.com/Real-Dev-Squad/discord-service/tests"
+	_ "github.com/Real-Dev-Squad/discord-service/tests/setup"
+	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
 )
@@ -11,17 +13,17 @@ import (
 func TestInit(t *testing.T) {
 
 	t.Run("should panic when SetupConnection returns an error", func(t *testing.T) {
-		originalNewDiscord := NewDiscordSession
-		defer func() { NewDiscordSession = originalNewDiscord }()
-		NewDiscordSession = func(token string) (s *discordgo.Session, err error) {
+		originalNewDiscord := utils.NewDiscordSession
+		defer func() { utils.NewDiscordSession = originalNewDiscord }()
+		utils.NewDiscordSession = func(token string) (s *discordgo.Session, err error) {
 			return nil, assert.AnError
 		}
 		assert.Panics(t, main)
 	})
 	t.Run("should call AddHandler method of session if SetupConnection succeeds", func(t *testing.T) {
-		originalNewDiscord := NewDiscordSession
-		defer func() { NewDiscordSession = originalNewDiscord }()
-		NewDiscordSession = func(token string) (s *discordgo.Session, err error) {
+		originalNewDiscord := utils.NewDiscordSession
+		defer func() { utils.NewDiscordSession = originalNewDiscord }()
+		utils.NewDiscordSession = func(token string) (s *discordgo.Session, err error) {
 			mockSession := &discordgo.Session{
 				State: &discordgo.State{},
 			}
@@ -31,70 +33,41 @@ func TestInit(t *testing.T) {
 	})
 }
 
-type mockSession struct {
-	openError                error
-	commandError             error
-	applicationCommandCalled bool
-	closeCalled              bool
-	getUserIdCalled          bool
-}
-
-func (m *mockSession) Open() error {
-	return m.openError
-}
-
-func (m *mockSession) Close() error {
-	m.closeCalled = true
-	return nil
-}
-
-func (m *mockSession) ApplicationCommandCreate(applicationID, guildID string, command *discordgo.ApplicationCommand) (*discordgo.ApplicationCommand, error) {
-	if m.commandError == nil {
-		m.applicationCommandCalled = true
-	}
-	return nil, m.commandError
-}
-
-func (m *mockSession) GetUerId() string {
-	m.getUserIdCalled = true
-	return ""
-}
-
 func TestRegisterCommands(t *testing.T) {
 	t.Run("should not panic when Open() returns no error", func(t *testing.T) {
-		mockSess := &mockSession{openError: nil, commandError: nil}
+		mockSess := &tests.MockSession{OpenError: nil, CommandError: nil}
 		assert.NotPanics(t, func() {
 			RegisterCommands(mockSess)
 		}, "RegisterCommands should not panic when Open is successful")
 
 	})
 	t.Run("should panic when Open() returns an error", func(t *testing.T) {
-		mockSess := &mockSession{openError: assert.AnError, commandError: nil}
+		mockSess := &tests.MockSession{OpenError: assert.AnError, CommandError: nil}
 		assert.Panics(t, func() {
 			RegisterCommands(mockSess)
 		}, "RegisterCommands should panic when Open returns an error")
 	})
 	t.Run("should panic when openSession.ApplicationCommandCreate() returns an error", func(t *testing.T) {
-		mockSess := &mockSession{openError: nil, commandError: assert.AnError}
+		mockSess := &tests.MockSession{OpenError: nil, CommandError: assert.AnError}
 
 		assert.Panics(t, func() {
 			RegisterCommands(mockSess)
 		}, "RegisterCommands should panic when ApplicationCommandCreate returns an error")
 	})
 	t.Run("should panic when openSession.ApplicationCommandCreate() returns an error", func(t *testing.T) {
-		mockSess := &mockSession{openError: nil, commandError: assert.AnError}
+		mockSess := &tests.MockSession{OpenError: nil, CommandError: assert.AnError}
 
 		assert.Panics(t, func() {
 			RegisterCommands(mockSess)
 		}, "RegisterCommands should panic when ApplicationCommandCreate returns an error")
 	})
 	t.Run("should call all methods when none of the methods returns no error", func(t *testing.T) {
-		mockSess := &mockSession{openError: nil, commandError: nil}
+		mockSess := &tests.MockSession{OpenError: nil, CommandError: nil}
 		assert.NotPanics(t, func() {
 			RegisterCommands(mockSess)
 		})
-		assert.True(t, mockSess.applicationCommandCalled)
-		assert.True(t, mockSess.getUserIdCalled)
-		assert.True(t, mockSess.closeCalled)
+		assert.True(t, mockSess.ApplicationCommandCalled)
+		assert.True(t, mockSess.GetUserIdCalled)
+		assert.True(t, mockSess.CloseCalled)
 	})
 }

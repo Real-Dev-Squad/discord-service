@@ -5,9 +5,10 @@ import (
 	"testing"
 
 	"github.com/Real-Dev-Squad/discord-service/dtos"
-	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
+	"github.com/Real-Dev-Squad/discord-service/models"
+	"github.com/Real-Dev-Squad/discord-service/tests"
+	_ "github.com/Real-Dev-Squad/discord-service/tests/setup"
 	"github.com/Real-Dev-Squad/discord-service/utils"
-	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -43,52 +44,26 @@ func TestMainHandler(t *testing.T) {
 	})
 }
 
-func TestCreateSession(t *testing.T) {
-	t.Run("should fail if NewDiscord returns an error", func(t *testing.T) {
-		originalNewDiscord := NewDiscord
-		defer func() { NewDiscord = originalNewDiscord }()
-		NewDiscord = func(token string) (s *discordgo.Session, err error) {
-			return nil, errors.New("testing error")
-		}
-		_, err := CreateSession()
+func TestUpdateNickname(t *testing.T) {
+	t.Run("should return error if nickname is more than 32 characters", func(t *testing.T) {
+		sessionWrapper := models.SessionWrapper{}
+		err := UpdateNickName("userID", "nicknameWithMoreThan32Characters.", &sessionWrapper)
 		assert.Error(t, err)
 	})
-	t.Run("should initiate open session if NewDiscord returns no error", func(t *testing.T) {
-		originalNewDiscord := NewDiscord
-		defer func() { NewDiscord = originalNewDiscord }()
-		NewDiscord = func(token string) (s *discordgo.Session, err error) {
-			return &discordgo.Session{}, nil
-		}
-		assert.Panics(t, func() { CreateSession() })
-	})
-}
-
-func mockCreateSession() (*discordgo.Session, error) {
-	return &discordgo.Session{}, nil
-}
-func TestUpdateNickName(t *testing.T) {
-
-	var originalCreateSession = CreateSession
-	defer func() { CreateSession = originalCreateSession }()
-
-	t.Run("should return error if newNickName is longer than 32 characters", func(t *testing.T) {
-		err := UpdateNickName("userID", "ThisIsAVeryLongNicknameThatExceedsTheLimit")
+	t.Run("should return error if nickname is more than 32 characters", func(t *testing.T) {
+		sessionWrapper := models.SessionWrapper{}
+		err := UpdateNickName("userID", "nicknameWithMoreThan32Characters.", &sessionWrapper)
 		assert.Error(t, err)
 		assert.Equal(t, "Must be 32 or fewer in length.", err.Error())
 	})
-
-	t.Run("should return error if CreateSession fails", func(t *testing.T) {
-		CreateSession = func() (*discordgo.Session, error) {
-			return nil, errors.New("failed to create session")
-		}
-		err := UpdateNickName("userID", "validNickname")
+	t.Run("should return error if GuildMemberNickname fails", func(t *testing.T) {
+		mockSess := &tests.MockSession{GuildMemberNicknameError: true}
+		err := UpdateNickName("userID", "nickname", mockSess)
 		assert.Error(t, err)
-		assert.Equal(t, "failed to create session", err.Error())
 	})
-	t.Run("should hit GuildMemberNickname if CreateSession succeeds", func(t *testing.T) {
-		CreateSession = mockCreateSession
-		assert.Panics(t, func() { UpdateNickName("userID", "validNickname") })
-
+	t.Run("should not return error if GuildMemberNickname succeeds", func(t *testing.T) {
+		mockSess := &tests.MockSession{GuildMemberNicknameError: false}
+		err := UpdateNickName("userID", "nickname", mockSess)
+		assert.NoError(t, err)
 	})
-
 }

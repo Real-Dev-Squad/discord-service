@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Real-Dev-Squad/discord-service/models"
 	"github.com/Real-Dev-Squad/discord-service/utils"
 )
 
@@ -15,5 +16,9 @@ func (s *CommandHandler) listeningHandler() error {
 	} else {
 		nickName = strings.TrimPrefix(strings.TrimSuffix(nickName, utils.NICKNAME_SUFFIX), utils.NICKNAME_PREFIX)
 	}
-	return UpdateNickName(s.discordMessage.UserID, nickName)
+	sessionWrapper, err := models.CreateSession()
+	if err != nil {
+		return err
+	}
+	return UpdateNickName(s.discordMessage.UserID, nickName, sessionWrapper)
 }

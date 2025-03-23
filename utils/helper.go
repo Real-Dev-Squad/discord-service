@@ -6,9 +6,11 @@ import (
 	"math"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 )
 
+var NewDiscordSession = discordgo.New
 var ExponentialBackoffRetry = func(maxRetries int, operation func() error) error {
 	var err error
 	for i := 0; i < maxRetries; i++ {

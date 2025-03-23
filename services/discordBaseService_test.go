@@ -10,7 +10,7 @@ import (
 	"github.com/Real-Dev-Squad/discord-service/dtos"
 	"github.com/Real-Dev-Squad/discord-service/fixtures"
 	service "github.com/Real-Dev-Squad/discord-service/services"
-	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
+	_ "github.com/Real-Dev-Squad/discord-service/tests/setup"
 	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
 )

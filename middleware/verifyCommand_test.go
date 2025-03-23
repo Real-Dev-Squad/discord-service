@@ -8,7 +8,7 @@ import (
 
 	"github.com/Real-Dev-Squad/discord-service/config"
 	"github.com/Real-Dev-Squad/discord-service/middleware"
-	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
+	_ "github.com/Real-Dev-Squad/discord-service/tests/setup"
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
 )

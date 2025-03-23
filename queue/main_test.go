@@ -6,7 +6,8 @@ import (
 
 	"github.com/Real-Dev-Squad/discord-service/config"
 	"github.com/Real-Dev-Squad/discord-service/dtos"
-	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
+	_ "github.com/Real-Dev-Squad/discord-service/tests/setup"
+
 	"github.com/Real-Dev-Squad/discord-service/utils"
 	amqp "github.com/rabbitmq/amqp091-go"
 

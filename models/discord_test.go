@@ -3,6 +3,7 @@ package models
 import (
 	"testing"
 
+	_ "github.com/Real-Dev-Squad/discord-service/tests/setup"
 	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"

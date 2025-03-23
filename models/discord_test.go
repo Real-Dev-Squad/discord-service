@@ -36,15 +36,15 @@ func TestSessionWrapper(t *testing.T) {
 		}, "should panic when applicationCommandCreate() is called")
 	})
 
-	t.Run("SessionWrapper should always implement getUerId() method", func(t *testing.T) {
+	t.Run("SessionWrapper should always implement GetUserId() method", func(t *testing.T) {
 		assert.Panics(t, func() {
-			sessionWrapper.GetUerId()
-		}, "should panic when getUerId() is called")
+			sessionWrapper.GetUserId()
+		}, "should panic when GetUserId() is called")
 	})
 
 	t.Run("SessionWrapper should always implement guildMemberNickname() method", func(t *testing.T) {
 		assert.Panics(t, func() {
-			sessionWrapper.GuildMemberNickname("1", "2")
+			_ = sessionWrapper.GuildMemberNickname("1", "2")
 		}, "should panic when guildMemberNickname() is called")
 	})
 

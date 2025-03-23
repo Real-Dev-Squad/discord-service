@@ -58,7 +58,7 @@ func (m *mockSession) ApplicationCommandCreate(applicationID, guildID string, co
 	return nil, m.commandError
 }
 
-func (m *mockSession) GetUerId() string {
+func (m *mockSession) GetUserId() string {
 	m.getUserIdCalled = true
 	return ""
 }

@@ -52,12 +52,6 @@ func TestInitQueueConnection(t *testing.T) {
 
 		assert.NoError(t, mockQueue.Dial())
 	})
-	t.Run("should not panic when CreateChannel() returns error", func(t *testing.T) {
-		mockQueue := &MockQueue{ChannelError: errors.New("channel failed")}
-		assert.NotPanics(t, func() {
-			InitQueueConnection(mockQueue)
-		}, "InitQueueConnection should not panic when CreateChannel is unsuccessful")
-	})
 	t.Run("should not panic when Connection.Channel() returns error", func(t *testing.T) {
 		mockQueue := &MockQueue{ChannelError: errors.New("channel failed")}
 		assert.NotPanics(t, func() {
@@ -78,13 +72,11 @@ func TestInitQueueConnection(t *testing.T) {
 		})
 	})
 
-	t.Run("should not panic when PublishMessage() returns error", func(t *testing.T) {
+	t.Run("should not return error when PublishMessage() is successful", func(t *testing.T) {
 		mockQueue := &QueueWrapper{Publish: func(exchange, key string, mandatory, immediate bool, msg amqp.Publishing) error {
 			return nil
 		}}
-		assert.NotPanics(t, func() {
-			mockQueue.PublishMessage([]byte("message"))
-		}, "InitQueueConnection should not panic when DeclareQueue is unsuccessful")
+		assert.NoError(t, mockQueue.PublishMessage([]byte("message")))
 	})
 
 	t.Run("should return error when PublishMessage() returns error", func(t *testing.T) {
@@ -142,6 +134,7 @@ func TestQueueWrapper(t *testing.T) {
 			queueWrapper.DeclareQueue()
 		})
 	})
+
 }
 
 func TestSendMessage(t *testing.T) {

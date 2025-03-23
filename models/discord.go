@@ -23,7 +23,7 @@ func (s *SessionWrapper) ApplicationCommandCreate(applicationID, guildID string,
 	return s.Session.ApplicationCommandCreate(applicationID, guildID, command)
 }
 
-func (sw *SessionWrapper) GetUerId() string {
+func (sw *SessionWrapper) GetUserId() string {
 	return sw.Session.State.User.ID
 }
 func (sw *SessionWrapper) GuildMemberNickname(userId string, newNickName string) error {
@@ -34,7 +34,7 @@ type SessionInterface interface {
 	Open() error
 	Close() error
 	ApplicationCommandCreate(applicationID, guildID string, command *discordgo.ApplicationCommand) (*discordgo.ApplicationCommand, error)
-	GetUerId() string
+	GetUserId() string
 	GuildMemberNickname(userId string, newNickName string) error
 }
 

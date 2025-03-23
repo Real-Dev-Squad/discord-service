@@ -31,7 +31,7 @@ func Test_MockSessionHelper(t *testing.T) {
 
 	t.Run("GetUserId", func(t *testing.T) {
 		session := &MockSession{}
-		userId := session.GetUerId()
+		userId := session.GetUserId()
 		assert.Equal(t, "", userId)
 		assert.True(t, session.GetUserIdCalled)
 	})
@@ -39,12 +39,12 @@ func Test_MockSessionHelper(t *testing.T) {
 	t.Run("GuildMemberNickname", func(t *testing.T) {
 		session := &MockSession{}
 		t.Run("should return error if GuildMemberNickname fails", func(t *testing.T) {
-			session.GuildMemberNicknameError = true
+			session.ForceErrorForGuildMemberNickname = true
 			err := session.GuildMemberNickname("", "")
 			assert.Error(t, err)
 		})
 		t.Run("should not return error if GuildMemberNickname succeeds", func(t *testing.T) {
-			session.GuildMemberNicknameError = false
+			session.ForceErrorForGuildMemberNickname = false
 			err := session.GuildMemberNickname("", "")
 			assert.NoError(t, err)
 		})

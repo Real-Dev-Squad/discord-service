@@ -6,12 +6,12 @@ import (
 )
 
 type MockSession struct {
-	OpenError                error
-	CommandError             error
-	ApplicationCommandCalled bool
-	CloseCalled              bool
-	GetUserIdCalled          bool
-	GuildMemberNicknameError bool
+	OpenError                        error
+	CommandError                     error
+	ApplicationCommandCalled         bool
+	CloseCalled                      bool
+	GetUserIdCalled                  bool
+	ForceErrorForGuildMemberNickname bool
 }
 
 func (m *MockSession) Open() error {
@@ -30,13 +30,13 @@ func (m *MockSession) ApplicationCommandCreate(applicationID, guildID string, co
 	return nil, m.CommandError
 }
 
-func (m *MockSession) GetUerId() string {
+func (m *MockSession) GetUserId() string {
 	m.GetUserIdCalled = true
 	return ""
 }
 
 func (m *MockSession) GuildMemberNickname(userId string, newNickName string) error {
-	if m.GuildMemberNicknameError {
+	if m.ForceErrorForGuildMemberNickname {
 		return assert.AnError
 	}
 	return nil

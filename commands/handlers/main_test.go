@@ -49,20 +49,15 @@ func TestUpdateNickname(t *testing.T) {
 		sessionWrapper := models.SessionWrapper{}
 		err := UpdateNickName("userID", "nicknameWithMoreThan32Characters.", &sessionWrapper)
 		assert.Error(t, err)
-	})
-	t.Run("should return error if nickname is more than 32 characters", func(t *testing.T) {
-		sessionWrapper := models.SessionWrapper{}
-		err := UpdateNickName("userID", "nicknameWithMoreThan32Characters.", &sessionWrapper)
-		assert.Error(t, err)
 		assert.Equal(t, "Must be 32 or fewer in length.", err.Error())
 	})
 	t.Run("should return error if GuildMemberNickname fails", func(t *testing.T) {
-		mockSess := &tests.MockSession{GuildMemberNicknameError: true}
+		mockSess := &tests.MockSession{ForceErrorForGuildMemberNickname: true}
 		err := UpdateNickName("userID", "nickname", mockSess)
 		assert.Error(t, err)
 	})
 	t.Run("should not return error if GuildMemberNickname succeeds", func(t *testing.T) {
-		mockSess := &tests.MockSession{GuildMemberNicknameError: false}
+		mockSess := &tests.MockSession{ForceErrorForGuildMemberNickname: false}
 		err := UpdateNickName("userID", "nickname", mockSess)
 		assert.NoError(t, err)
 	})

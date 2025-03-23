@@ -52,7 +52,7 @@ func TestInitQueueConnection(t *testing.T) {
 
 		assert.NoError(t, mockQueue.Dial())
 	})
-	t.Run("should not panic when Connection.Channel() returns error", func(t *testing.T) {
+	t.Run("should not panic when CreateChannel() returns error", func(t *testing.T) {
 		mockQueue := &MockQueue{ChannelError: errors.New("channel failed")}
 		assert.NotPanics(t, func() {
 			InitQueueConnection(mockQueue)

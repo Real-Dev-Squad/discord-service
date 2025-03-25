@@ -9,4 +9,5 @@ var CommandNames = dtos.CommandNameTypes{
 	Hello:     "hello",
 	Listening: "listening",
 	Verify:    "verify",
+	MentionEach: "mention-each",
 }

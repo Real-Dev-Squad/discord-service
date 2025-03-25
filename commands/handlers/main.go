@@ -28,6 +28,8 @@ func MainHandler(dataPacket []byte) func() error {
 	switch packetData.CommandName {
 	case utils.CommandNames.Listening:
 		return CS.listeningHandler
+	case utils.CommandNames.MentionEach:
+		return CS.mentionEachHandler
 	default:
 		logrus.Warn("Invalid Command Received: ", packetData.CommandName)
 		return nil
@@ -68,5 +70,10 @@ func UpdateNickName(userId string, newNickName string) error {
 		logrus.Errorf("Cannot update nickname: %v", err)
 		return nil
 	}
+	return nil
+}
+
+func (c *CommandHandler) mentionEachHandler() error {
+	logrus.Info("mentionEach command received")
 	return nil
 }

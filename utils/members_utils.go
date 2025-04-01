@@ -2,12 +2,13 @@ package utils
 
 import (
 	"fmt"
-	"slices"
 	"github.com/bwmarrin/discordgo"
+	"slices"
 )
 
 type DiscordSessionInterface interface {
 	GuildMembers(guildID, after string, limit int) ([]*discordgo.Member, error)
+	ChannelMessageSend(channelID, content string) (*discordgo.Message, error)
 }
 
 func GetUsersWithRole(session DiscordSessionInterface, guildID string, roleID string) ([]*discordgo.Member, error) {

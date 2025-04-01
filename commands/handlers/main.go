@@ -72,8 +72,3 @@ func UpdateNickName(userId string, newNickName string) error {
 	}
 	return nil
 }
-
-func (c *CommandHandler) mentionEachHandler() error {
-	logrus.Info("mentionEach command received")
-	return nil
-}

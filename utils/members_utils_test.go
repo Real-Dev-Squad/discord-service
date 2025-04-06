@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/bwmarrin/discordgo"
@@ -153,31 +154,39 @@ func TestFormatMentionResponse(t *testing.T) {
 }
 func TestFormatDevTitleResponse(t *testing.T) {
 	roleID := "123456789"
+	roleMention := "<@&" + roleID + ">"
 
 	t.Run("formats response with no users", func(t *testing.T) {
 		response := FormatDevTitleResponse([]string{}, roleID)
-		assert.Equal(t, "Sorry, no user found with <@&123456789> role.", response)
+		expected := fmt.Sprintf("Found 0 users with the %s role", roleMention)
+		assert.Equal(t, expected, response)
 	})
 
 	t.Run("formats response with single user", func(t *testing.T) {
 		mentions := []string{"<@123>"}
 		response := FormatDevTitleResponse(mentions, roleID)
-		assert.Equal(t, "The user with <@&123456789> role is <@123>.", response)
+		expected := fmt.Sprintf("Found 1 user with the %s role: %s", roleMention, mentions[0])
+		assert.Equal(t, expected, response)
 	})
 
 	t.Run("formats response with multiple users", func(t *testing.T) {
 		mentions := []string{"<@123>", "<@456>"}
 		response := FormatDevTitleResponse(mentions, roleID)
-		assert.Equal(t, "The users with <@&123456789> role are <@123>, <@456>.", response)
+		expected := fmt.Sprintf("Found %d users with the %s role: %s", len(mentions), roleMention, JoinMentions(mentions, ", "))
+		assert.Equal(t, expected, response)
 	})
 
 	t.Run("handles nil mentions", func(t *testing.T) {
 		response := FormatDevTitleResponse(nil, roleID)
-		assert.Equal(t, "Sorry, no user found with <@&123456789> role.", response)
+		expected := fmt.Sprintf("Found 0 users with the %s role", roleMention)
+		assert.Equal(t, expected, response)
 	})
 
 	t.Run("handles empty role ID", func(t *testing.T) {
+		mentions := []string{"<@123>"}
+		emptyRoleMention := "<@&>"
 		response := FormatDevTitleResponse([]string{"<@123>"}, "")
-		assert.Equal(t, "The user with <@&> role is <@123>.", response)
+		expected := fmt.Sprintf("Found 1 user with the %s role: %s", emptyRoleMention, mentions[0])
+		assert.Equal(t, expected, response)
 	})
 }

@@ -59,11 +59,11 @@ func (s *CommandService) MentionEachService(response http.ResponseWriter, reques
 
 	var responseContent string
 	if devTitle {
-		responseContent = fmt.Sprintf("Fetching users with the %s...", roleID)
+		responseContent = fmt.Sprintf("Fetching users with the <@&%s>", roleID)
 	} else if dev {
-		responseContent = fmt.Sprintf("Sending individual mentions to users with the %s...", roleID)
+		responseContent = fmt.Sprintf("Sending individual mentions to users with the <@&%s>", roleID)
 	} else {
-		responseContent = fmt.Sprintf("Mentioning all users with the %s...", roleID)
+		responseContent = fmt.Sprintf("Mentioning all users with the <@&%s>", roleID)
 	}
 
 	metaData := map[string]string{
@@ -100,7 +100,7 @@ func (s *CommandService) MentionEachService(response http.ResponseWriter, reques
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: responseContent,
-			Flags:   discordgo.MessageFlagsEphemeral,
+			Flags:   0,
 		},
 	}
 

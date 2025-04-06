@@ -14,39 +14,34 @@ import (
 )
 
 func TestMentionEachService(t *testing.T) {
-	// Save original SendMessage function and restore after tests
+
 	originalSendMessage := queue.SendMessage
 	defer func() {
 		queue.SendMessage = originalSendMessage
 	}()
 
-	// Create role option - now a string instead of a map
-	roleOption := &discordgo.ApplicationCommandInteractionDataOption{
-		Name:  "role",
-		Value: "123456789", // Now just the role ID as a string
-	}
-
-	// Create base Discord message
-	mockData := &dtos.Data{
-		GuildId: "876543210987654321",
-		ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
-			Name:    utils.CommandNames.MentionEach,
-			Options: []*discordgo.ApplicationCommandInteractionDataOption{roleOption},
-		},
-	}
-
-	discordMessage := &dtos.DiscordMessage{
-		Data:      mockData,
-		ChannelId: "987654321",
-		Member: &discordgo.Member{
-			User: &discordgo.User{
-				ID: "user123",
+	roleID := "123456789"
+	createDefaultDiscordMessage := func(options []*discordgo.ApplicationCommandInteractionDataOption) *dtos.DiscordMessage {
+		return &dtos.DiscordMessage{
+			Data: &dtos.Data{
+				GuildId: "876543210987654321",
+				ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
+					Name:    utils.CommandNames.MentionEach,
+					Options: options,
+				},
 			},
-		},
+			ChannelId: "987654321",
+			Member: &discordgo.Member{
+				User: &discordgo.User{ID: "user123"},
+			},
+		}
 	}
 
 	t.Run("should queue message with role option only", func(t *testing.T) {
-		// Mock queue.SendMessage
+		opts := []*discordgo.ApplicationCommandInteractionDataOption{
+			{Name: "role", Value: roleID},
+		}
+		discordMessage := createDefaultDiscordMessage(opts)
 		var capturedPacket *dtos.DataPacket
 		queue.SendMessage = func(message []byte) error {
 			packetData := &dtos.DataPacket{}
@@ -56,18 +51,12 @@ func TestMentionEachService(t *testing.T) {
 			return nil
 		}
 
-		// Create request
 		req, _ := http.NewRequest("POST", "/mention-each", bytes.NewBuffer([]byte("{}")))
 		rr := httptest.NewRecorder()
-
-		// Call service
 		commandService := &CommandService{discordMessage: discordMessage}
 		commandService.MentionEachService(rr, req)
-
-		// Verify response - updated to match new message format
-		assert.Contains(t, rr.Body.String(), "Mentioning all users with the 123456789")
-
-		// Verify queued message - no role_name in metadata
+		expectedSubString := "Mentioning all users with the \\u003c@\\u0026" + roleID + "\\u003e"
+		assert.Contains(t, rr.Body.String(), expectedSubString)
 		assert.NotNil(t, capturedPacket)
 		assert.Equal(t, utils.CommandNames.MentionEach, capturedPacket.CommandName)
 		assert.Equal(t, "user123", capturedPacket.UserID)
@@ -78,25 +67,14 @@ func TestMentionEachService(t *testing.T) {
 	})
 
 	t.Run("should include optional parameters when provided", func(t *testing.T) {
-		// Add more options
-		messageOption := &discordgo.ApplicationCommandInteractionDataOption{
-			Name:  "message",
-			Value: "Hello everyone!",
+		opts := []*discordgo.ApplicationCommandInteractionDataOption{
+			{Name: "role", Value: roleID},
+			{Name: "message", Value: "Hello everyone!"},
+			{Name: "dev", Value: true},
+			{Name: "dev_title", Value: true},
 		}
+		discordMessage := createDefaultDiscordMessage(opts)
 
-		devOption := &discordgo.ApplicationCommandInteractionDataOption{
-			Name:  "dev",
-			Value: true,
-		}
-
-		// Update options
-		mockData.Options = []*discordgo.ApplicationCommandInteractionDataOption{
-			roleOption,
-			messageOption,
-			devOption,
-		}
-
-		// Mock queue.SendMessage
 		var capturedPacket *dtos.DataPacket
 		queue.SendMessage = func(message []byte) error {
 			packetData := &dtos.DataPacket{}
@@ -106,50 +84,40 @@ func TestMentionEachService(t *testing.T) {
 			return nil
 		}
 
-		// Create request
 		req, _ := http.NewRequest("POST", "/mention-each", bytes.NewBuffer([]byte("{}")))
 		rr := httptest.NewRecorder()
 
-		// Call service
 		commandService := &CommandService{discordMessage: discordMessage}
 		commandService.MentionEachService(rr, req)
+		expectedSubString := "Fetching users with the \\u003c@\\u0026" + roleID + "\\u003e"
 
-		// Verify response - updated message
-		assert.Contains(t, rr.Body.String(), "Sending individual mentions to users with the 123456789")
-
-		// Verify queued message
+		assert.Contains(t, rr.Body.String(), expectedSubString)
 		assert.NotNil(t, capturedPacket)
 		assert.Equal(t, "Hello everyone!", capturedPacket.MetaData["message"])
 		assert.Equal(t, "true", capturedPacket.MetaData["dev"])
 	})
 
 	t.Run("should handle queue errors", func(t *testing.T) {
-		// Mock queue.SendMessage to fail
+		opts := []*discordgo.ApplicationCommandInteractionDataOption{{Name: "role", Value: roleID}}
+		discordMessage := createDefaultDiscordMessage(opts)
 		queue.SendMessage = func(message []byte) error {
 			return assert.AnError
 		}
 
-		// Create request
 		req, _ := http.NewRequest("POST", "/mention-each", bytes.NewBuffer([]byte("{}")))
 		rr := httptest.NewRecorder()
 
-		// Call service
 		commandService := &CommandService{discordMessage: discordMessage}
 		commandService.MentionEachService(rr, req)
-
-		// Verify error response - updated message
 		assert.Contains(t, rr.Body.String(), "Failed to process your request")
 	})
 
 	t.Run("should handle missing role option", func(t *testing.T) {
-		// Empty options
-		mockData.Options = []*discordgo.ApplicationCommandInteractionDataOption{}
+		discordMessage := createDefaultDiscordMessage([]*discordgo.ApplicationCommandInteractionDataOption{})
 
-		// Create request
 		req, _ := http.NewRequest("POST", "/mention-each", bytes.NewBuffer([]byte("{}")))
 		rr := httptest.NewRecorder()
 
-		// Call service
 		commandService := &CommandService{discordMessage: discordMessage}
 		commandService.MentionEachService(rr, req)
 
@@ -157,19 +125,100 @@ func TestMentionEachService(t *testing.T) {
 	})
 
 	t.Run("should handle nil checks", func(t *testing.T) {
+		// Test with nil discordMessage
+		req, _ := http.NewRequest("POST", "/mention-each", bytes.NewBuffer([]byte("{}")))
+		rr := httptest.NewRecorder()
+		commandService := &CommandService{discordMessage: nil}
+		commandService.MentionEachService(rr, req)
+		assert.Contains(t, rr.Body.String(), "Invalid request data")
 
-		brokenMessage := &dtos.DiscordMessage{
-			Data: mockData,
+		// Test with nil Data
+		rr = httptest.NewRecorder()
+		discordMessage := createDefaultDiscordMessage(nil)
+		discordMessage.Data = nil
+		commandService = &CommandService{discordMessage: discordMessage}
+		commandService.MentionEachService(rr, req)
+		assert.Contains(t, rr.Body.String(), "Invalid request data")
+
+		// Test with nil Member
+		rr = httptest.NewRecorder()
+		discordMessage = createDefaultDiscordMessage(nil)
+		discordMessage.Member = nil
+		commandService = &CommandService{discordMessage: discordMessage}
+		commandService.MentionEachService(rr, req)
+		assert.Contains(t, rr.Body.String(), "Invalid request data")
+
+		// Test with nil User
+		rr = httptest.NewRecorder()
+		discordMessage = createDefaultDiscordMessage(nil)
+		discordMessage.Member.User = nil
+		commandService = &CommandService{discordMessage: discordMessage}
+		commandService.MentionEachService(rr, req)
+		assert.Contains(t, rr.Body.String(), "Invalid request data")
+	})
+
+	t.Run("should handle invalid role format (non-string)", func(t *testing.T) {
+		opts := []*discordgo.ApplicationCommandInteractionDataOption{
+			{Name: "role", Value: 12345},
+		}
+		discordMessage := createDefaultDiscordMessage(opts)
+
+		req, _ := http.NewRequest("POST", "/mention-each", bytes.NewBuffer([]byte("{}")))
+		rr := httptest.NewRecorder()
+		commandService := &CommandService{discordMessage: discordMessage}
+
+		commandService.MentionEachService(rr, req)
+		assert.Contains(t, rr.Body.String(), "Invalid role format")
+	})
+
+	t.Run("should set correct response content for dev_title=true", func(t *testing.T) {
+		opts := []*discordgo.ApplicationCommandInteractionDataOption{
+			{Name: "role", Value: roleID},
+			{Name: "dev_title", Value: true},
+		}
+		discordMessage := createDefaultDiscordMessage(opts)
+
+		queue.SendMessage = func(message []byte) error { return nil }
+
+		req, _ := http.NewRequest("POST", "/mention-each", bytes.NewBuffer([]byte("{}")))
+		rr := httptest.NewRecorder()
+		commandService := &CommandService{discordMessage: discordMessage}
+
+		commandService.MentionEachService(rr, req)
+		expectedSubString := "Fetching users with the \\u003c@\\u0026" + roleID + "\\u003e"
+		assert.Contains(t, rr.Body.String(), expectedSubString)
+	})
+
+	t.Run("should set correct response content for dev=true", func(t *testing.T) {
+		opts := []*discordgo.ApplicationCommandInteractionDataOption{
+			{Name: "role", Value: roleID},
+			{Name: "message", Value: "Dev message"},
+			{Name: "dev", Value: true},
+		}
+		discordMessage := createDefaultDiscordMessage(opts)
+		var capturedPacket *dtos.DataPacket
+		queue.SendMessage = func(message []byte) error {
+			packetData := &dtos.DataPacket{}
+			err := packetData.FromByte(message)
+			assert.NoError(t, err)
+			capturedPacket = packetData
+			return nil
 		}
 
 		req, _ := http.NewRequest("POST", "/mention-each", bytes.NewBuffer([]byte("{}")))
 		rr := httptest.NewRecorder()
-
-		commandService := &CommandService{discordMessage: brokenMessage}
+		commandService := &CommandService{discordMessage: discordMessage}
 		commandService.MentionEachService(rr, req)
 
-		assert.Contains(t, rr.Body.String(), "Invalid request data")
+		expectedSubString := "Sending individual mentions to users with the \\u003c@\\u0026" + roleID + "\\u003e"
+		assert.Contains(t, rr.Body.String(), expectedSubString)
+		assert.NotNil(t, capturedPacket)
+		assert.Equal(t, "Dev message", capturedPacket.MetaData["message"])
+		assert.Equal(t, "true", capturedPacket.MetaData["dev"])
+		assert.Equal(t, "false", capturedPacket.MetaData["dev_title"])
+
 	})
+
 }
 
 func TestFindOption(t *testing.T) {

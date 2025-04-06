@@ -47,147 +47,232 @@ func (s *DiscordSessionWrapper) ChannelMessageSend(channelID, content string) (*
 
 var _ utils.DiscordSessionInterface = (*DiscordSessionWrapper)(nil)
 
+var (
+	extractCommandParamsFunc = func(metaData map[string]string) (CommandParams, error) {
+		params := CommandParams{
+			RoleID:    metaData["role_id"],
+			ChannelID: metaData["channel_id"],
+			GuildID:   metaData["guild_id"],
+			Message:   metaData["message"],
+		}
+
+		if params.RoleID == "" || params.ChannelID == "" || params.GuildID == "" {
+			logrus.WithFields(logrus.Fields{
+				"role_id":    params.RoleID,
+				"channel_id": params.ChannelID,
+				"guild_id":   params.GuildID,
+				"metadata":   metaData,
+			}).Error("Missing required parameters for mention-each command")
+			return params, fmt.Errorf("failed to extract command params: missing role_id, channel_id, or guild_id")
+		}
+
+		if devStr := metaData["dev"]; devStr != "" {
+			dev, err := strconv.ParseBool(devStr)
+			if err == nil {
+				params.Dev = dev
+			} else {
+				logrus.Warnf("Invalid boolean value for 'dev' flag: '%s' Defaulting to false.", devStr)
+			}
+		}
+
+		if devTitleStr := metaData["dev_title"]; devTitleStr != "" {
+			devTitle, err := strconv.ParseBool(devTitleStr)
+			if err == nil {
+				params.DevTitle = devTitle
+			} else {
+				logrus.Warnf("Invalid boolean value for 'dev-title' flag: '%s' Defaulting to false.", devTitleStr)
+			}
+		}
+
+		return params, nil
+	}
+
+	fetchMembersWithRoleFunc = func(session utils.DiscordSessionInterface, guildID, roleID, channelID string) ([]*discordgo.Member, error) {
+		members, err := utils.GetUsersWithRole(session, guildID, roleID)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"guild_id":   guildID,
+				"role_id":    roleID,
+				"channel_id": channelID,
+			}).Errorf("GetUserWithRole failed withing fetchMembersWithRole: %v", err)
+			errorMsg := fmt.Sprintf("Failed to fetch members with role: <@&%s>. Error: %v", roleID, err)
+			_, sendErr := session.ChannelMessageSend(channelID, errorMsg)
+			if sendErr != nil {
+				logrus.WithFields(logrus.Fields{
+					"originalError": err,
+					"sendError":     sendErr,
+					"channelID":     channelID,
+				}).Errorf("Failed to send error message: %v", sendErr)
+			}
+			return nil, err
+		}
+		return members, nil
+	}
+
+	sendNoMembersMessageFunc = func(session utils.DiscordSessionInterface, channelID string) error {
+		messageContent := "Sorry, no members found with this role"
+		_, err := session.ChannelMessageSend(channelID, messageContent)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"channel_id": channelID,
+				"error":      err,
+			}).Errorf("Failed to 'no members found' message: %v", err)
+			return err
+		}
+		logrus.WithField("channelID", channelID).Info("Successfully sent 'no members found' message.")
+		return nil
+	}
+
+	handleDevModeFunc = func(session utils.DiscordSessionInterface, mentions []string, params CommandParams) error {
+		logrus.WithFields(logrus.Fields{
+			"channelID": params.ChannelID,
+			"roleID":    params.RoleID,
+			"mentions":  len(mentions),
+			"batchSize": BatchSize,
+		}).Info("Handling Dev Mode: Sending mentions in batches")
+
+		if len(mentions) == 0 {
+			logrus.Warn("No members found to mention in Dev Mode")
+			return nil
+		}
+
+		var failedMentions []string
+		for i := 0; i < len(mentions); i += BatchSize {
+			end := i + BatchSize
+			if end > len(mentions) {
+				end = len(mentions)
+			}
+
+			currentBatch := mentions[i:end]
+			logrus.Debugf("processing batch: %d-%d", i, end-1)
+
+			for _, mention := range currentBatch {
+				msgContent := mention
+				if params.Message != "" {
+					msgContent = fmt.Sprintf("%s %s", params.Message, mention)
+				}
+
+				_, err := session.ChannelMessageSend(params.ChannelID, msgContent)
+
+				if err != nil {
+					logrus.WithFields(logrus.Fields{
+						"channelID": params.ChannelID,
+						"mention":   mention,
+						"error":     err,
+					}).Error("Failed to send individual mention in Dev Mode batch")
+
+					failedMentions = append(failedMentions, mention)
+
+					return fmt.Errorf("failed sending mention to %s: %w", mention, err)
+				}
+
+				logrus.Debugf("Successfully sent mention: %s", mention)
+			}
+
+			if end < len(mentions) {
+				logrus.Infof("Rate limiting: sleeping for %v", BatchDelay)
+				time.Sleep(BatchDelay)
+			}
+		}
+
+		if len(failedMentions) > 0 {
+			logrus.Warnf("Failed to send mentions to: %v", failedMentions)
+		} else {
+			logrus.Infof("Dev Mode completed successfully")
+		}
+
+		return nil
+	}
+
+	handleDevTitleModeFunc = func(session utils.DiscordSessionInterface, mentions []string, params CommandParams) error {
+		response := utils.FormatDevTitleResponse(mentions, params.RoleID)
+		logrus.WithFields(logrus.Fields{
+			"channelID":          params.ChannelID,
+			"roleID":             params.RoleID,
+			"response":           response,
+			"GENERATED_RESPONSE": response,
+		}).Info("Handling Dev Title Mode: Sending response")
+
+		_, err := session.ChannelMessageSend(params.ChannelID, response)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"channelID": params.ChannelID,
+				"roleID":    params.RoleID,
+				"error":     err,
+			}).Error("Failed to send dev_title response")
+			return err
+		}
+		logrus.Infof("Successfully sent dev_title response")
+		return nil
+	}
+	handleStandardModeFunc = func(session utils.DiscordSessionInterface, mentions []string, params CommandParams) error {
+		response := utils.FormatMentionResponse(mentions, params.Message)
+		logrus.WithFields(logrus.Fields{
+			"channelID": params.ChannelID,
+			"roleID":    params.RoleID,
+			"response":  response,
+		}).Info("Handling Standard Mode: Sending response")
+		_, err := session.ChannelMessageSend(params.ChannelID, response)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"channelID": params.ChannelID,
+				"roleID":    params.RoleID,
+				"error":     err,
+			}).Error("Failed to send mention response")
+			return err
+		}
+		logrus.Infof("Successfully sent mention response")
+		return nil
+	}
+)
+
 func (s *CommandHandler) mentionEachHandler() error {
 	logrus.Info("Processing mention-each command")
 
-	params, err := extractCommandParams(s.discordMessage.MetaData)
+	params, err := extractCommandParamsFunc(s.discordMessage.MetaData)
 	if err != nil {
-		logrus.Errorf("Parameter extraction failed: %v", err)
-		return err
+		return fmt.Errorf("failed to extract command params: %w", err)
 	}
+
+	logrus.WithFields(logrus.Fields{
+		"roleID":    params.RoleID,
+		"channelID": params.ChannelID,
+		"guildID":   params.GuildID,
+		"message":   params.Message,
+		"dev":       params.Dev,
+		"devTitle":  params.DevTitle,
+	}).Info("Extracted command parameters")
 
 	discordSession, err := CreateSession()
 	if err != nil {
-		logrus.Errorf("Error creating session: %v", err)
-		return err
+		logrus.Error("Failed to create Discord session: ", err)
+		return fmt.Errorf("failed to create Discord session: %w", err)
 	}
 
-	session := &DiscordSessionWrapper{discordSession}
+	sessionWrapper := &DiscordSessionWrapper{discordSession}
 
 	defer func() {
-		if closeErr := session.Close(); closeErr != nil {
+		if closeErr := discordSession.Close(); closeErr != nil {
 			logrus.Errorf("Error closing session: %v", closeErr)
 		}
 	}()
 
-	members, err := fetchMembersWithRole(session, params.GuildID, params.RoleID, params.ChannelID)
+	members, err := fetchMembersWithRoleFunc(sessionWrapper, params.GuildID, params.RoleID, params.ChannelID)
 	if err != nil {
 		return err
 	}
 
 	if len(members) == 0 {
-		return sendNoMembersMessage(session, params.ChannelID)
+		return sendNoMembersMessageFunc(sessionWrapper, params.ChannelID)
 	}
 
 	mentions := utils.FormatUserMentions(members)
 
 	if params.DevTitle {
-		return handleDevTitleMode(session, mentions, params)
+		return handleDevTitleModeFunc(sessionWrapper, mentions, params)
 	} else if params.Dev {
-		return handleDevMode(session, mentions, params)
+		return handleDevModeFunc(sessionWrapper, mentions, params)
 	} else {
-		return handleStandardMode(session, mentions, params)
+		return handleStandardModeFunc(sessionWrapper, mentions, params)
 	}
-}
-
-func extractCommandParams(metaData map[string]string) (CommandParams, error) {
-	params := CommandParams{
-		RoleID:    metaData["role_id"],
-		ChannelID: metaData["channel_id"],
-		GuildID:   metaData["guild_id"],
-		Message:   metaData["message"],
-	}
-
-	if params.RoleID == "" || params.ChannelID == "" || params.GuildID == "" {
-		return params, fmt.Errorf("failed to extract command params")
-	}
-
-	if devStr := metaData["dev"]; devStr != "" {
-		dev, err := strconv.ParseBool(devStr)
-		if err == nil {
-			params.Dev = dev
-		}
-	}
-
-	if devTitleStr := metaData["dev_title"]; devTitleStr != "" {
-		devTitle, err := strconv.ParseBool(devTitleStr)
-		if err == nil {
-			params.DevTitle = devTitle
-		}
-	}
-
-	return params, nil
-}
-func fetchMembersWithRole(session utils.DiscordSessionInterface, guildID, roleID, channelID string) ([]*discordgo.Member, error) {
-	members, err := utils.GetUsersWithRole(session, guildID, roleID)
-	if err != nil {
-		logrus.Errorf("Failed to fetch members with role: %v", err)
-		errorMsg := fmt.Sprintf("Failed to fetch members with role: %v", err)
-		_, sendErr := session.ChannelMessageSend(channelID, errorMsg)
-		if sendErr != nil {
-			logrus.Errorf("Failed to send error message: %v", sendErr)
-		}
-		return nil, err
-	}
-
-	return members, nil
-}
-
-func sendNoMembersMessage(session utils.DiscordSessionInterface, channelID string) error {
-	_, err := session.ChannelMessageSend(channelID, "Sorry, no members found with this role")
-	if err != nil {
-		logrus.Errorf("Failed to send empty response: %v", err)
-		return err
-	}
-	return nil
-}
-func handleDevMode(session utils.DiscordSessionInterface, mentions []string, params CommandParams) error {
-	for i := 0; i < len(mentions); i += BatchSize {
-		end := i + BatchSize
-		if end > len(mentions) {
-			end = len(mentions)
-		}
-
-		// Process current batch
-		for j := i; j < end; j++ {
-			msgContent := mentions[j]
-			if params.Message != "" {
-				msgContent = fmt.Sprintf("%s %s", params.Message, mentions[j])
-			}
-
-			_, err := session.ChannelMessageSend(params.ChannelID, msgContent)
-			if err != nil {
-				logrus.Errorf("Failed to send individual mention: %v", err)
-				return err
-			}
-		}
-
-		// Rate limiting between batches
-		if end < len(mentions) {
-			logrus.Infof("Rate limiting between batches")
-			time.Sleep(BatchDelay)
-		}
-	}
-
-	return nil
-}
-func handleDevTitleMode(session utils.DiscordSessionInterface, mentions []string, params CommandParams) error {
-	response := utils.FormatDevTitleResponse(mentions, params.RoleID)
-	_, err := session.ChannelMessageSend(params.ChannelID, response)
-	if err != nil {
-		logrus.Errorf("Failed to send dev_title response: %v", err)
-		return err
-	}
-	return nil
-}
-func handleStandardMode(session utils.DiscordSessionInterface, mentions []string, params CommandParams) error {
-	response := utils.FormatMentionResponse(mentions, params.Message)
-	_, err := session.ChannelMessageSend(params.ChannelID, response)
-	if err != nil {
-		logrus.Errorf("Failed to send mention response: %v", err)
-		return err
-	}
-
-	logrus.Infof("Successfully processed mention-each command for role: %s", params.RoleID)
-	return nil
 }

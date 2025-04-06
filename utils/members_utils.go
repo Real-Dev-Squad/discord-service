@@ -69,11 +69,16 @@ func FormatMentionResponse(mentions []string, message string) string {
 }
 
 func FormatDevTitleResponse(mentions []string, roleID string) string {
-	if mentions == nil || len(mentions) == 0 {
-		return fmt.Sprintf("Sorry, no user found with <@&%s> role.", roleID)
-	} else if len(mentions) == 1 {
-		return fmt.Sprintf("The user with <@&%s> role is %s.", roleID, mentions[0])
-	} else {
-		return fmt.Sprintf("The users with <@&%s> role are %s.", roleID, JoinMentions(mentions, ", "))
+	count := len(mentions)
+	roleMention := FormatRoleMention(roleID)
+
+	switch count {
+	case 0:
+		return fmt.Sprintf("Found 0 users with the %s role", roleMention)
+	case 1:
+		return fmt.Sprintf("Found 1 user with the %s role: %s", roleMention, mentions[0])
+	default:
+		userList := JoinMentions(mentions, ", ")
+		return fmt.Sprintf("Found %d users with the %s role: %s", count, roleMention, userList)
 	}
 }

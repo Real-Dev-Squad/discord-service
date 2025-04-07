@@ -25,27 +25,11 @@ func (m *MockDiscordSession) GuildMembers(guildID, after string, limit int) ([]*
 		return members, args.Error(1)
 	}
 
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-
-	if members, ok := args.Get(0).([]*discordgo.Member); ok {
-		return members, args.Error(1)
-	}
-
 	panic(fmt.Sprintf("mock return value for GuildMember is not of type []*discordgo.Member: %T", args.Get(0)))
 }
 
 func (m *MockDiscordSession) ChannelMessageSend(ChannelID, content string) (*discordgo.Message, error) {
 	args := m.Called(ChannelID, content)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-
-	if msg, ok := args.Get(0).(*discordgo.Message); ok {
-		return msg, args.Error(1)
-	}
-
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}

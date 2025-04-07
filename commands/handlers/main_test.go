@@ -22,6 +22,18 @@ func TestMainHandler(t *testing.T) {
 		handler := MainHandler(data)
 		assert.NotNil(t, handler)
 	})
+	t.Run("should return mentionEachHandler for 'mention-each' command", func(t *testing.T) {
+		dataPacket := &dtos.DataPacket {
+			CommandName: utils.CommandNames.MentionEach,
+		}
+
+		data, err := dataPacket.ToByte()
+		assert.NoError(t, err)
+
+		handler := MainHandler(data)
+		assert.NotNil(t, handler, "Handler should not be nil for mention-each command")
+
+	})
 	t.Run("should return nil for invalid data", func(t *testing.T) {
 		invalidData := []byte(`{"invalid": "data"}`)
 		handler := MainHandler(invalidData)

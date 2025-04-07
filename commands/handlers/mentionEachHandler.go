@@ -6,6 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -137,6 +138,7 @@ var (
 		}
 
 		var failedMentions []string
+		var firstError error
 		for i := 0; i < len(mentions); i += BatchSize {
 			end := i + BatchSize
 			if end > len(mentions) {
@@ -162,8 +164,10 @@ var (
 					}).Error("Failed to send individual mention in Dev Mode batch")
 
 					failedMentions = append(failedMentions, mention)
-
-					return fmt.Errorf("failed sending mention to %s: %w", mention, err)
+					if firstError == nil {
+						firstError = err
+					}
+					continue
 				}
 
 				logrus.Debugf("Successfully sent mention: %s", mention)
@@ -176,7 +180,10 @@ var (
 		}
 
 		if len(failedMentions) > 0 {
-			logrus.Warnf("Failed to send mentions to: %v", failedMentions)
+			logrus.Warnf("Completed Dev Mode processing, but failed to send mentions to %d users: %v", len(failedMentions), failedMentions)
+			summaryMsg := fmt.Sprintf("Finished mentioning, but failed for %d users: %s", len(failedMentions), strings.Join(failedMentions, ", "))
+			_, _ = session.ChannelMessageSend(params.ChannelID, summaryMsg)
+			return fmt.Errorf("failed to send %d out of %d mentions", len(failedMentions), len(mentions))
 		} else {
 			logrus.Infof("Dev Mode completed successfully")
 		}

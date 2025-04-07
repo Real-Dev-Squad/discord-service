@@ -598,14 +598,20 @@ func TestHandleDevModeLogic(t *testing.T) {
 		mockSession.AssertExpectations(t)
 	})
 
-	t.Run("Error during sending first batch", func(t *testing.T) {
+	t.Run("Error during sending some mentions", func(t *testing.T) {
 		mockSession := new(MockDiscordSession)
-		mockSession.On("ChannelMessageSend", params.ChannelID, fmt.Sprintf("%s %s", params.Message, mentions[0])).Return(nil, mockErr).Once()
-		err := handleDevModeFunc(mockSession, mentions, params)
+		shortMentions := []string{"<@uA>", "<@uB>", "<@uC>"}
+		mockSession.On("ChannelMessageSend", params.ChannelID, fmt.Sprintf("%s %s", params.Message, shortMentions[0])).Return(&discordgo.Message{}, nil).Once()
+		mockSession.On("ChannelMessageSend", params.ChannelID, fmt.Sprintf("%s %s", params.Message, shortMentions[1])).Return(nil, mockErr).Once() // Fail here
+		mockSession.On("ChannelMessageSend", params.ChannelID, fmt.Sprintf("%s %s", params.Message, shortMentions[2])).Return(&discordgo.Message{}, nil).Once()
+
+		expectedSummaryMsg := fmt.Sprintf("Finished mentioning, but failed for 1 users: %s", shortMentions[1])
+		mockSession.On("ChannelMessageSend", params.ChannelID, expectedSummaryMsg).Return(&discordgo.Message{}, nil).Once() // Expect summary message
+
+		err := handleDevModeFunc(mockSession, shortMentions, params)
 
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, mockErr)
-		assert.Contains(t, err.Error(), "failed sending mention to <@u1>")
+		assert.EqualError(t, err, "failed to send 1 out of 3 mentions")
 		mockSession.AssertExpectations(t)
 	})
 

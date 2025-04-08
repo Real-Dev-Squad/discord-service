@@ -219,6 +219,19 @@ func TestMentionEachService(t *testing.T) {
 
 	})
 
+	t.Run("should handle invalid role format (empty string)", func(t *testing.T) {
+		opts := []*discordgo.ApplicationCommandInteractionDataOption{
+			{Name: "role", Value: ""},
+		}
+		discordMessage := createDefaultDiscordMessage(opts)
+
+		req, _ := http.NewRequest("POST", "/mention-each", bytes.NewBuffer([]byte("{}")))
+		rr := httptest.NewRecorder()
+		commandService := &CommandService{discordMessage: discordMessage}
+		commandService.MentionEachService(rr, req)
+		assert.Contains(t, rr.Body.String(), "Invalid role format (empty ID)")
+	})
+
 }
 
 func TestFindOption(t *testing.T) {

@@ -34,7 +34,14 @@ func (s *CommandService) MentionEachService(response http.ResponseWriter, reques
 
 	roleID, ok := roleOption.Value.(string)
 	if !ok {
-		errorMsg := "Invalid role format"
+		errorMsg := "Invalid role format(not a String)"
+		logrus.Errorf("%s: Expected string, got %T", errorMsg, roleOption.Value)
+		sendErrorResponse(response, errorMsg)
+		return
+	}
+
+	if roleID == "" {
+		errorMsg := "Invalid role format (empty ID)"
 		logrus.Error(errorMsg)
 		sendErrorResponse(response, errorMsg)
 		return

@@ -95,7 +95,7 @@ var (
 				"guild_id":   guildID,
 				"role_id":    roleID,
 				"channel_id": channelID,
-			}).Errorf("GetUserWithRole failed withing fetchMembersWithRole: %v", err)
+			}).Errorf("GetUserWithRole failed within fetchMembersWithRole: %v", err)
 			errorMsg := fmt.Sprintf("Failed to fetch members with role: <@&%s>. Error: %v", roleID, err)
 			_, sendErr := session.ChannelMessageSend(channelID, errorMsg)
 			if sendErr != nil {

@@ -55,9 +55,7 @@ func TestGetUsersWithRole(t *testing.T) {
 		result, err := GetUsersWithRole(mockSession, guildID, roleID)
 		assert.NoError(t, err)
 		assert.Len(t, result, 1)
-		if len(result) > 0 {
-			assert.Equal(t, "123", result[0].User.ID)
-		}
+		assert.Equal(t, "123", result[0].User.ID)
 		mockSession.AssertExpectations(t)
 	})
 
@@ -121,12 +119,10 @@ func TestFormatUserMentions(t *testing.T) {
 	})
 	t.Run("handles empty member list", func(t *testing.T) {
 		mentions := FormatUserMentions([]*discordgo.Member{})
-		assert.Equal(t, []string{}, mentions)
 		assert.Empty(t, mentions)
 	})
 	t.Run("handles nil members list", func(t *testing.T) {
 		mentions := FormatUserMentions(nil)
-		assert.Equal(t, []string{}, mentions)
 		assert.Empty(t, mentions)
 	})
 }

@@ -16,56 +16,99 @@ type MockDiscordSession struct {
 
 func (m *MockDiscordSession) GuildMembers(guildID, after string, limit int) ([]*discordgo.Member, error) {
 	args := m.Called(guildID, after, limit)
-	return args.Get(0).([]*discordgo.Member), args.Error(1)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	if members, ok := args.Get(0).([]*discordgo.Member); ok {
+		return members, args.Error(1)
+	}
+	panic(fmt.Sprintf("mock return value for GuildMembers is not []*discordgo.Member: %T", args.Get(0)))
 }
 
 func (m *MockDiscordSession) ChannelMessageSend(channelID, content string) (*discordgo.Message, error) {
 	args := m.Called(channelID, content)
-	return args.Get(0).(*discordgo.Message), args.Error(1)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	if msg, ok := args.Get(0).(*discordgo.Message); ok {
+		return msg, args.Error(1)
+	}
+	panic(fmt.Sprintf("mock return value for ChannelMessageSend is not *discordgo.Message: %T", args.Get(0)))
 }
 
+// TestGetUsersWithRole tests the GetUsersWithRole function which is responsible for
+// fetching members with a specific role, handling pagination implicitly via the session interface.
+// It uses MockDiscordSession to simulate responses from the Discord API (GuildMembers call).
 func TestGetUsersWithRole(t *testing.T) {
 	guildID := "testGuild"
 	roleID := "testRole"
 
-	t.Run("returns users with matching role", func(t *testing.T) {
+	member1 := &discordgo.Member{User: &discordgo.User{ID: "123"}, Roles: []string{roleID}}
+	member2 := &discordgo.Member{User: &discordgo.User{ID: "456"}, Roles: []string{"otherRole"}}
+	member3 := &discordgo.Member{User: &discordgo.User{ID: "789"}, Roles: []string{roleID, "anotherRole"}}
+
+	t.Run("returns single user with matching role", func(t *testing.T) {
 		mockSession := new(MockDiscordSession)
-		members := []*discordgo.Member{
-			{User: &discordgo.User{ID: "123"}, Roles: []string{"testRole"}},
-			{User: &discordgo.User{ID: "456"}, Roles: []string{"otherRole"}},
-		}
-		mockSession.On("GuildMembers", guildID, "", 1000).Return(members, nil)
-		mockSession.On("ChannelMessageSend", mock.Anything, mock.Anything).Return(&discordgo.Message{}, nil)
+		membersInput := []*discordgo.Member{member1, member2}
+		mockSession.On("GuildMembers", guildID, "", 1000).Return(membersInput, nil).Once()
 
 		result, err := GetUsersWithRole(mockSession, guildID, roleID)
 		assert.NoError(t, err)
-		assert.Equal(t, 1, len(result))
-		assert.Equal(t, "123", result[0].User.ID)
+		assert.Len(t, result, 1)
+		if len(result) > 0 {
+			assert.Equal(t, "123", result[0].User.ID)
+		}
+		mockSession.AssertExpectations(t)
+	})
+
+	t.Run("returns multiple users with matching role", func(t *testing.T) {
+		mockSession := new(MockDiscordSession)
+		membersInput := []*discordgo.Member{member1, member2, member3}
+		mockSession.On("GuildMembers", guildID, "", 1000).Return(membersInput, nil).Once()
+
+		result, err := GetUsersWithRole(mockSession, guildID, roleID)
+
+		assert.NoError(t, err)
+		assert.Len(t, result, 2)
+		foundIDs := make(map[string]bool)
+		for _, m := range result {
+			if m != nil && m.User != nil {
+				foundIDs[m.User.ID] = true
+			}
+		}
+		assert.True(t, foundIDs["123"], "Member 123 should be found")
+		assert.True(t, foundIDs["789"], "Member 789 should be found")
+		assert.False(t, foundIDs["456"], "Member 456 should not be found")
+		mockSession.AssertExpectations(t)
 	})
 
 	t.Run("handles error from GuildMembers", func(t *testing.T) {
 		mockSession := new(MockDiscordSession)
-		mockSession.On("GuildMembers", guildID, "", 1000).Return([]*discordgo.Member{}, errors.New("API error"))
-		mockSession.On("ChannelMessageSend", mock.Anything, mock.Anything).Return(&discordgo.Message{}, nil)
+		mockErr := errors.New("API error")
+		mockSession.On("GuildMembers", guildID, "", 1000).Return(nil, mockErr).Once()
 
 		_, err := GetUsersWithRole(mockSession, guildID, roleID)
+
 		assert.Error(t, err)
+		assert.ErrorContains(t, err, mockErr.Error())
+		mockSession.AssertExpectations(t)
 	})
 
 	t.Run("returns empty slice when no users have the role", func(t *testing.T) {
 		mockSession := new(MockDiscordSession)
-		members := []*discordgo.Member{
-			{User: &discordgo.User{ID: "123"}, Roles: []string{"otherRole"}},
-		}
-		mockSession.On("GuildMembers", guildID, "", 1000).Return(members, nil)
-		mockSession.On("ChannelMessageSend", mock.Anything, mock.Anything).Return(&discordgo.Message{}, nil)
+		membersInput := []*discordgo.Member{member2}
+		mockSession.On("GuildMembers", guildID, "", 1000).Return(membersInput, nil).Once()
 
 		result, err := GetUsersWithRole(mockSession, guildID, roleID)
+
 		assert.NoError(t, err)
-		assert.Equal(t, 0, len(result))
+		assert.Empty(t, result)
+		mockSession.AssertExpectations(t)
 	})
 }
 
+// TestFormatUserMentions tests the utility function for converting member objects
+// into Discord mention strings.
 func TestFormatUserMentions(t *testing.T) {
 	t.Run("formats user Mentions correctly", func(t *testing.T) {
 		members := []*discordgo.Member{
@@ -79,13 +122,17 @@ func TestFormatUserMentions(t *testing.T) {
 	t.Run("handles empty member list", func(t *testing.T) {
 		mentions := FormatUserMentions([]*discordgo.Member{})
 		assert.Equal(t, []string{}, mentions)
+		assert.Empty(t, mentions)
 	})
 	t.Run("handles nil members list", func(t *testing.T) {
 		mentions := FormatUserMentions(nil)
 		assert.Equal(t, []string{}, mentions)
+		assert.Empty(t, mentions)
 	})
 }
 
+// TestFormatRoleMention tests the utility function for formatting role IDs
+// into Discord role mention strings.
 func TestFormatRoleMention(t *testing.T) {
 	t.Run("format roleID as mention", func(t *testing.T) {
 		roleID := "123456789"
@@ -98,6 +145,8 @@ func TestFormatRoleMention(t *testing.T) {
 	})
 }
 
+// TestJoinMentions tests the utility function
+// for concatenating mention strings with a given separator.
 func TestJoinMentions(t *testing.T) {
 	t.Run("joins mentions with space separator", func(t *testing.T) {
 		mentions := []string{"<@123>", "<@456>"}
@@ -128,6 +177,8 @@ func TestJoinMentions(t *testing.T) {
 	})
 }
 
+// TestFormatMentionResponse tests the utility function for creating the final message
+// content for the standard mention-each mode.
 func TestFormatMentionResponse(t *testing.T) {
 	t.Run("formats response with message and mentions", func(t *testing.T) {
 		mentions := []string{"<@123>", "<@456>"}

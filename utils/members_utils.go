@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"slices"
+	"strings"
 )
 
 type DiscordSessionInterface interface {
@@ -44,16 +45,10 @@ func FormatRoleMention(roleID string) string {
 }
 
 func JoinMentions(mentions []string, separator string) string {
-	if mentions == nil || len(mentions) == 0 {
+	if len(mentions) == 0 {
 		return ""
 	}
-
-	results := mentions[0]
-	for i := 1; i < len(mentions); i++ {
-		results += separator + mentions[i]
-	}
-
-	return results
+	return strings.Join(mentions, separator)
 }
 
 func FormatMentionResponse(mentions []string, message string) string {

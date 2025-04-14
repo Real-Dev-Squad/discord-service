@@ -33,7 +33,7 @@ var Commands = []*discordgo.ApplicationCommand{
 			// Role Option(Required)
 			{
 				Name:        "role",
-				Description: "The role whose members will be mentioned",
+				Description: "The role whose members are to be mentioned",
 				Type:        discordgo.ApplicationCommandOptionRole,
 				Required:    true,
 			},

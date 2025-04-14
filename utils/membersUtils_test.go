@@ -150,12 +150,32 @@ func TestFormatUserMentions(t *testing.T) {
 		assert.Equal(t, []string{"<@123>", "<@456>"}, mentions)
 	})
 	t.Run("handles empty member list", func(t *testing.T) {
-		mentions := FormatUserMentions([]*discordgo.Member{})
+		var members []*discordgo.Member
+		mentions := FormatUserMentions(members)
 		assert.Empty(t, mentions)
 	})
 	t.Run("handles nil members list", func(t *testing.T) {
 		mentions := FormatUserMentions(nil)
 		assert.Empty(t, mentions)
+	})
+	t.Run("handles members with nil User safely", func(t *testing.T) {
+		members := []*discordgo.Member{
+			{User: &discordgo.User{ID: "123"}},
+			{User: nil},
+			{User: &discordgo.User{ID: "456"}},
+		}
+
+		mentions := FormatUserMentions(members)
+		assert.Equal(t, []string{"<@123>", "[invalid user data]", "<@456>"}, mentions)
+	})
+	t.Run("handles nil member in list safely", func(t *testing.T) {
+		members := []*discordgo.Member{
+			{User: &discordgo.User{ID: "123"}},
+			nil,
+			{User: &discordgo.User{ID: "456"}},
+		}
+		mentions := FormatUserMentions(members)
+		assert.Equal(t, []string{"<@123>", "[invalid user data]", "<@456>"}, mentions)
 	})
 }
 

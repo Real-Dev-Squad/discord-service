@@ -16,23 +16,15 @@ func GetUsersWithRole(session DiscordSessionInterface, guildID string, roleID st
 	var membersWithRole []*discordgo.Member
 	lastMemberID := ""
 	limit := 1000
-
-	logrus.Debugf("Fetching members with role %s in guild %s", roleID, guildID)
-
 	for {
-		logrus.Debugf("Fetching members chunk after user ID: '%s', limit: '%d'", lastMemberID, limit)
-
 		membersChunk, err := session.GuildMembers(guildID, lastMemberID, limit)
 		if err != nil {
 			logrus.Errorf("failed to fetch guild members chunk for guild %s: %v", guildID, err)
 			return nil, fmt.Errorf("failed to fetch guild members chunk: %w", err)
 		}
-		logrus.Debugf("Fetched %d members in this chunk for guild %s", len(membersChunk), guildID)
-
 		if len(membersChunk) == 0 {
 			break
 		}
-
 		foundInChunk := 0
 		for _, member := range membersChunk {
 			if member == nil || member.User == nil {
@@ -45,8 +37,6 @@ func GetUsersWithRole(session DiscordSessionInterface, guildID string, roleID st
 			}
 			lastMemberID = member.User.ID
 		}
-		logrus.Debugf("Found %d members with role %s in this chunk (Guild %s)", foundInChunk, roleID, guildID)
-
 		if len(membersChunk) < limit {
 			break
 		}

@@ -26,6 +26,7 @@ func GetUsersWithRole(session DiscordSessionInterface, guildID string, roleID st
 			break
 		}
 		foundInChunk := 0
+		lastIdInChunk := ""
 		for _, member := range membersChunk {
 			if member == nil || member.User == nil {
 				logrus.Warnf("Guild %s: Member object or User data is nil, skipping member: %+v", guildID, member)
@@ -35,11 +36,9 @@ func GetUsersWithRole(session DiscordSessionInterface, guildID string, roleID st
 				membersWithRole = append(membersWithRole, member)
 				foundInChunk++
 			}
-			lastMemberID = member.User.ID
+			lastIdInChunk = member.User.ID
 		}
-		if len(membersChunk) < limit {
-			break
-		}
+		lastMemberID = lastIdInChunk
 	}
 
 	logrus.Infof("Finished fetching. Found %d total members with role %s in guild %s", len(membersWithRole), roleID, guildID)

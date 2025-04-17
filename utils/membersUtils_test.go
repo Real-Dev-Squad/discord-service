@@ -56,20 +56,24 @@ func TestGetUsersWithRole(t *testing.T) {
 	t.Run("returns single user with matching role", func(t *testing.T) {
 		mockSession := new(MockDiscordSession)
 		membersInput := []*discordgo.Member{member1, member2}
+		var emptyMemberList []*discordgo.Member
 		mockSession.On("GuildMembers", guildID, "", 1000).Return(membersInput, nil).Once()
-
+		mockSession.On("GuildMembers", guildID, member2.User.ID, 1000).Return(emptyMemberList, nil).Once()
 		result, err := GetUsersWithRole(mockSession, guildID, roleID)
 		assert.NoError(t, err)
 		assert.Len(t, result, 1)
-		assert.Equal(t, "123", result[0].User.ID)
+		if len(result) > 0 {
+			assert.Equal(t, "123", result[0].User.ID)
+		}
 		mockSession.AssertExpectations(t)
 	})
 
 	t.Run("returns multiple users with matching role", func(t *testing.T) {
 		mockSession := new(MockDiscordSession)
 		membersInput := []*discordgo.Member{member1, member2, member3}
+		var emptyMemberList []*discordgo.Member
 		mockSession.On("GuildMembers", guildID, "", 1000).Return(membersInput, nil).Once()
-
+		mockSession.On("GuildMembers", guildID, member3.User.ID, 1000).Return(emptyMemberList, nil).Once()
 		result, err := GetUsersWithRole(mockSession, guildID, roleID)
 
 		assert.NoError(t, err)
@@ -100,8 +104,9 @@ func TestGetUsersWithRole(t *testing.T) {
 	t.Run("returns empty slice when no users have the role", func(t *testing.T) {
 		mockSession := new(MockDiscordSession)
 		membersInput := []*discordgo.Member{member2}
+		var emptyMemberList []*discordgo.Member
 		mockSession.On("GuildMembers", guildID, "", 1000).Return(membersInput, nil).Once()
-
+		mockSession.On("GuildMembers", guildID, member2.User.ID, 1000).Return(emptyMemberList, nil).Once()
 		result, err := GetUsersWithRole(mockSession, guildID, roleID)
 
 		assert.NoError(t, err)
@@ -121,11 +126,53 @@ func TestGetUsersWithRole(t *testing.T) {
 	t.Run("skips members with nil User or nil Roles safely", func(t *testing.T) {
 		mockSession := new(MockDiscordSession)
 		membersInput := []*discordgo.Member{member1, memberNilUser, memberNilRoles, memberNil, member3}
+		var emptyMemberList []*discordgo.Member
 		mockSession.On("GuildMembers", guildID, "", 1000).Return(membersInput, nil).Once()
+		mockSession.On("GuildMembers", guildID, member3.User.ID, 1000).Return(emptyMemberList, nil).Once()
 		result, err := GetUsersWithRole(mockSession, guildID, roleID)
 		assert.NoError(t, err)
 		assert.Len(t, result, 2)
 		expectedIDs := []string{"123", "789"}
+		var actualIDs []string
+		for _, m := range result {
+			if m != nil && m.User != nil {
+				actualIDs = append(actualIDs, m.User.ID)
+			}
+		}
+		assert.ElementsMatch(t, expectedIDs, actualIDs)
+		mockSession.AssertExpectations(t)
+	})
+
+	t.Run("handles pagination correctly", func(t *testing.T) {
+		mockSession := new(MockDiscordSession)
+		guildID := "paginationGuild"
+		roleID := "pageRole"
+		limit := 1000
+
+		// Define members for the first page (fewer than limit to test loop continuation)
+		memberP1R1 := &discordgo.Member{User: &discordgo.User{ID: "p1u1"}, Roles: []string{roleID}}
+		memberP1Other := &discordgo.Member{User: &discordgo.User{ID: "p1u2"}, Roles: []string{"other"}}
+		memberP1R2 := &discordgo.Member{User: &discordgo.User{ID: "p1u3"}, Roles: []string{roleID, "another"}} // Last member of page 1
+		membersPage1 := []*discordgo.Member{memberP1R1, memberP1Other, memberP1R2}
+
+		// Define members for the second page
+		memberP2R1 := &discordgo.Member{User: &discordgo.User{ID: "p2u1"}, Roles: []string{roleID}}
+		memberP2R2 := &discordgo.Member{User: &discordgo.User{ID: "p2u2"}, Roles: []string{roleID}} // Last member of page 2
+		membersPage2 := []*discordgo.Member{memberP2R1, memberP2R2}
+
+		// Define an empty list for the final API call
+		var emptyMemberList []*discordgo.Member
+
+		mockSession.On("GuildMembers", guildID, "", limit).Return(membersPage1, nil).Once()
+		mockSession.On("GuildMembers", guildID, memberP1R2.User.ID, limit).Return(membersPage2, nil).Once()
+		mockSession.On("GuildMembers", guildID, memberP2R2.User.ID, limit).Return(emptyMemberList, nil).Once()
+
+		result, err := GetUsersWithRole(mockSession, guildID, roleID)
+
+		assert.NoError(t, err)
+		assert.Len(t, result, 4)
+
+		expectedIDs := []string{"p1u1", "p1u3", "p2u1", "p2u2"}
 		var actualIDs []string
 		for _, m := range result {
 			if m != nil && m.User != nil {

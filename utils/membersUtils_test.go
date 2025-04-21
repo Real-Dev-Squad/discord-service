@@ -205,38 +205,25 @@ func TestFormatUserMentions(t *testing.T) {
 		mentions := FormatUserMentions(nil)
 		assert.Empty(t, mentions)
 	})
-	t.Run("handles members with nil User safely", func(t *testing.T) {
+	t.Run("skips members with nil User", func(t *testing.T) {
 		members := []*discordgo.Member{
 			{User: &discordgo.User{ID: "123"}},
 			{User: nil},
 			{User: &discordgo.User{ID: "456"}},
 		}
-
 		mentions := FormatUserMentions(members)
-		assert.Equal(t, []string{"<@123>", "[invalid user data]", "<@456>"}, mentions)
+		assert.Equal(t, []string{"<@123>", "<@456>"}, mentions)
+		assert.Len(t, mentions, 2)
 	})
-	t.Run("handles nil member in list safely", func(t *testing.T) {
+	t.Run("skips nil member in list", func(t *testing.T) {
 		members := []*discordgo.Member{
 			{User: &discordgo.User{ID: "123"}},
 			nil,
 			{User: &discordgo.User{ID: "456"}},
 		}
 		mentions := FormatUserMentions(members)
-		assert.Equal(t, []string{"<@123>", "[invalid user data]", "<@456>"}, mentions)
-	})
-}
-
-// TestFormatRoleMention tests the utility function for formatting role IDs
-// into Discord role mention strings.
-func TestFormatRoleMention(t *testing.T) {
-	t.Run("format roleID as mention", func(t *testing.T) {
-		roleID := "123456789"
-		mention := FormatRoleMention(roleID)
-		assert.Equal(t, "<@&123456789>", mention)
-	})
-	t.Run("handles empty roleID", func(t *testing.T) {
-		mention := FormatRoleMention("")
-		assert.Equal(t, "<@&>", mention)
+		assert.Equal(t, []string{"<@123>", "<@456>"}, mentions)
+		assert.Len(t, mentions, 2)
 	})
 }
 
@@ -256,14 +243,10 @@ func TestFormatMentionResponse(t *testing.T) {
 		assert.Equal(t, "<@123> <@456>", response)
 	})
 
-	t.Run("handles empty mentions", func(t *testing.T) {
-		response := FormatMentionResponse([]string{}, "Hello")
-		assert.Equal(t, "Sorry no user found under this role.", response)
-	})
-
-	t.Run("handles nil mentions", func(t *testing.T) {
-		response := FormatMentionResponse(nil, "Hello")
-		assert.Equal(t, "Sorry no user found under this role.", response)
+	t.Run("formats response with only mentions", func(t *testing.T) {
+		mentions := []string{"<@123>", "<@456>"}
+		response := FormatMentionResponse(mentions, "")
+		assert.Equal(t, "<@123> <@456>", response)
 	})
 }
 func TestFormatDevTitleResponse(t *testing.T) {
@@ -304,5 +287,41 @@ func TestFormatDevTitleResponse(t *testing.T) {
 		response := FormatDevTitleResponse([]string{"<@123>"}, "")
 		expected := fmt.Sprintf("Found 1 user with the %s role: %s", emptyRoleMention, mentions[0])
 		assert.Equal(t, expected, response)
+	})
+}
+
+func TestHasRole(t *testing.T) {
+	roleID := "testRole123"
+	otherRole := "otherRole456"
+
+	memberWithRole := &discordgo.Member{User: &discordgo.User{ID: "u1"}, Roles: []string{otherRole, roleID}}
+	memberWithoutRole := &discordgo.Member{User: &discordgo.User{ID: "u2"}, Roles: []string{otherRole, "anotherRole"}}
+	memberWithOnlyOther := &discordgo.Member{User: &discordgo.User{ID: "u3"}, Roles: []string{otherRole}}
+	memberNilRoles := &discordgo.Member{User: &discordgo.User{ID: "u6"}, Roles: nil}
+	var memberNil *discordgo.Member = nil
+
+	t.Run("should return true when member has the role", func(t *testing.T) {
+		assert.True(t, HasRole(memberWithRole, roleID))
+	})
+
+	t.Run("should return false when member does not have the role", func(t *testing.T) {
+		assert.False(t, HasRole(memberWithoutRole, roleID))
+	})
+
+	t.Run("should return false when member has other roles but not target", func(t *testing.T) {
+		assert.False(t, HasRole(memberWithOnlyOther, roleID))
+	})
+
+	t.Run("should return false when member is nil", func(t *testing.T) {
+		assert.False(t, HasRole(memberNil, roleID))
+	})
+
+	t.Run("should return false when member roles slice is nil", func(t *testing.T) {
+		assert.False(t, HasRole(memberNilRoles, roleID))
+	})
+
+	t.Run("should return false when member roles slice is empty", func(t *testing.T) {
+		memberEmptyRoles := &discordgo.Member{User: &discordgo.User{ID: "u7"}, Roles: []string{}}
+		assert.False(t, HasRole(memberEmptyRoles, roleID))
 	})
 }

@@ -7,11 +7,6 @@ import (
 	"strings"
 )
 
-type DiscordSessionInterface interface {
-	GuildMembers(guildID, after string, limit int) ([]*discordgo.Member, error)
-	ChannelMessageSend(channelID, content string) (*discordgo.Message, error)
-}
-
 func GetUsersWithRole(session DiscordSessionInterface, guildID string, roleID string) ([]*discordgo.Member, error) {
 	var membersWithRole []*discordgo.Member
 	lastMemberID := ""
@@ -60,29 +55,21 @@ func HasRole(member *discordgo.Member, roleID string) bool {
 }
 
 func FormatUserMentions(members []*discordgo.Member) []string {
-	if members == nil || len(members) == 0 {
+	if members == nil {
 		return []string{}
 	}
-	mentions := make([]string, len(members))
+	mentions := make([]string, 0, len(members))
 	for i, member := range members {
 		if member != nil && member.User != nil {
-			mentions[i] = fmt.Sprintf("<@%s>", member.User.ID)
+			mentions = append(mentions, fmt.Sprintf("<@%s>", member.User.ID))
 		} else {
-			logrus.Warnf("Attempted to format mention for nil member or user at index %d", i)
-			mentions[i] = "[invalid user data]"
+			logrus.Warnf("Skipping formatting mention for nil member or user at input index %d", i)
 		}
 	}
 	return mentions
 }
 
-func FormatRoleMention(roleID string) string {
-	return fmt.Sprintf("<@&%s>", roleID)
-}
-
 func FormatMentionResponse(mentions []string, message string) string {
-	if len(mentions) == 0 {
-		return "Sorry no user found under this role."
-	}
 
 	mentionStrings := strings.Join(mentions, " ")
 	if message == "" {
@@ -95,7 +82,7 @@ func FormatMentionResponse(mentions []string, message string) string {
 
 func FormatDevTitleResponse(mentions []string, roleID string) string {
 	count := len(mentions)
-	roleMention := FormatRoleMention(roleID)
+	roleMention := fmt.Sprintf("<@&%s>", roleID)
 
 	switch count {
 	case 0:

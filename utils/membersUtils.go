@@ -2,24 +2,33 @@ package utils
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
-	"strings"
 )
 
 func GetUsersWithRole(session DiscordSessionInterface, guildID string, roleID string) ([]*discordgo.Member, error) {
 	var membersWithRole []*discordgo.Member
 	lastMemberID := ""
 	limit := 1000
+
+	logrus.Debugf("Fetching members with role %s in guild %s", roleID, guildID)
+
 	for {
+		logrus.Debugf("Fetching members chunk after user ID: '%s', limit: '%d'", lastMemberID, limit)
+
 		membersChunk, err := session.GuildMembers(guildID, lastMemberID, limit)
 		if err != nil {
 			logrus.Errorf("failed to fetch guild members chunk for guild %s: %v", guildID, err)
 			return nil, fmt.Errorf("failed to fetch guild members chunk: %w", err)
 		}
+		logrus.Debugf("Fetched %d members in this chunk for guild %s", len(membersChunk), guildID)
+
 		if len(membersChunk) == 0 {
 			break
 		}
+
 		foundInChunk := 0
 		lastIdInChunk := ""
 		for _, member := range membersChunk {
@@ -27,31 +36,23 @@ func GetUsersWithRole(session DiscordSessionInterface, guildID string, roleID st
 				logrus.Warnf("Guild %s: Member object or User data is nil, skipping member: %+v", guildID, member)
 				continue
 			}
-			if HasRole(member, roleID) {
-				membersWithRole = append(membersWithRole, member)
-				foundInChunk++
+			if member.Roles != nil {
+				for _, r := range member.Roles {
+					if r == roleID {
+						membersWithRole = append(membersWithRole, member)
+						foundInChunk++
+						break
+					}
+				}
 			}
 			lastIdInChunk = member.User.ID
 		}
 		lastMemberID = lastIdInChunk
+		logrus.Debugf("Found %d members with role %s in this chunk (Guild %s)", foundInChunk, roleID, guildID)
 	}
 
 	logrus.Infof("Finished fetching. Found %d total members with role %s in guild %s", len(membersWithRole), roleID, guildID)
 	return membersWithRole, nil
-}
-
-func HasRole(member *discordgo.Member, roleID string) bool {
-	if member == nil || member.Roles == nil {
-		return false
-	}
-
-	for _, r := range member.Roles {
-		if r == roleID {
-			return true
-		}
-	}
-
-	return false
 }
 
 func FormatUserMentions(members []*discordgo.Member) []string {
@@ -70,7 +71,6 @@ func FormatUserMentions(members []*discordgo.Member) []string {
 }
 
 func FormatMentionResponse(mentions []string, message string) string {
-
 	mentionStrings := strings.Join(mentions, " ")
 	if message == "" {
 		return mentionStrings
@@ -80,7 +80,7 @@ func FormatMentionResponse(mentions []string, message string) string {
 
 }
 
-func FormatDevTitleResponse(mentions []string, roleID string) string {
+func FormatUserListResponse(mentions []string, roleID string) string {
 	count := len(mentions)
 	roleMention := fmt.Sprintf("<@&%s>", roleID)
 

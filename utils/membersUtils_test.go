@@ -249,19 +249,19 @@ func TestFormatMentionResponse(t *testing.T) {
 		assert.Equal(t, "<@123> <@456>", response)
 	})
 }
-func TestFormatDevTitleResponse(t *testing.T) {
+func TestFormatUserListResponse(t *testing.T) {
 	roleID := "123456789"
 	roleMention := "<@&" + roleID + ">"
 
 	t.Run("formats response with no users", func(t *testing.T) {
-		response := FormatDevTitleResponse([]string{}, roleID)
+		response := FormatUserListResponse([]string{}, roleID)
 		expected := fmt.Sprintf("Found 0 users with the %s role", roleMention)
 		assert.Equal(t, expected, response)
 	})
 
 	t.Run("formats response with single user", func(t *testing.T) {
 		mentions := []string{"<@123>"}
-		response := FormatDevTitleResponse(mentions, roleID)
+		response := FormatUserListResponse(mentions, roleID)
 		expected := fmt.Sprintf("Found 1 user with the %s role: %s", roleMention, mentions[0])
 		assert.Equal(t, expected, response)
 	})
@@ -270,13 +270,13 @@ func TestFormatDevTitleResponse(t *testing.T) {
 		roleID := "123456789"
 		roleMention := "<@&" + roleID + ">"
 		mentions := []string{"<@123>", "<@456>"}
-		response := FormatDevTitleResponse(mentions, roleID)
+		response := FormatUserListResponse(mentions, roleID)
 		expected := fmt.Sprintf("Found %d users with the %s role: %s", len(mentions), roleMention, strings.Join(mentions, ", "))
 		assert.Equal(t, expected, response)
 	})
 
 	t.Run("handles nil mentions", func(t *testing.T) {
-		response := FormatDevTitleResponse(nil, roleID)
+		response := FormatUserListResponse(nil, roleID)
 		expected := fmt.Sprintf("Found 0 users with the %s role", roleMention)
 		assert.Equal(t, expected, response)
 	})
@@ -284,44 +284,8 @@ func TestFormatDevTitleResponse(t *testing.T) {
 	t.Run("handles empty role ID", func(t *testing.T) {
 		mentions := []string{"<@123>"}
 		emptyRoleMention := "<@&>"
-		response := FormatDevTitleResponse([]string{"<@123>"}, "")
+		response := FormatUserListResponse([]string{"<@123>"}, "")
 		expected := fmt.Sprintf("Found 1 user with the %s role: %s", emptyRoleMention, mentions[0])
 		assert.Equal(t, expected, response)
-	})
-}
-
-func TestHasRole(t *testing.T) {
-	roleID := "testRole123"
-	otherRole := "otherRole456"
-
-	memberWithRole := &discordgo.Member{User: &discordgo.User{ID: "u1"}, Roles: []string{otherRole, roleID}}
-	memberWithoutRole := &discordgo.Member{User: &discordgo.User{ID: "u2"}, Roles: []string{otherRole, "anotherRole"}}
-	memberWithOnlyOther := &discordgo.Member{User: &discordgo.User{ID: "u3"}, Roles: []string{otherRole}}
-	memberNilRoles := &discordgo.Member{User: &discordgo.User{ID: "u6"}, Roles: nil}
-	var memberNil *discordgo.Member = nil
-
-	t.Run("should return true when member has the role", func(t *testing.T) {
-		assert.True(t, HasRole(memberWithRole, roleID))
-	})
-
-	t.Run("should return false when member does not have the role", func(t *testing.T) {
-		assert.False(t, HasRole(memberWithoutRole, roleID))
-	})
-
-	t.Run("should return false when member has other roles but not target", func(t *testing.T) {
-		assert.False(t, HasRole(memberWithOnlyOther, roleID))
-	})
-
-	t.Run("should return false when member is nil", func(t *testing.T) {
-		assert.False(t, HasRole(memberNil, roleID))
-	})
-
-	t.Run("should return false when member roles slice is nil", func(t *testing.T) {
-		assert.False(t, HasRole(memberNilRoles, roleID))
-	})
-
-	t.Run("should return false when member roles slice is empty", func(t *testing.T) {
-		memberEmptyRoles := &discordgo.Member{User: &discordgo.User{ID: "u7"}, Roles: []string{}}
-		assert.False(t, HasRole(memberEmptyRoles, roleID))
 	})
 }

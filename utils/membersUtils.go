@@ -11,7 +11,7 @@ import (
 func GetUsersWithRole(session DiscordSessionInterface, guildID string, roleID string) ([]*discordgo.Member, error) {
 	var membersWithRole []*discordgo.Member
 	lastMemberID := ""
-	limit := 1000
+	limit := DiscordGuildMembersAPILimit
 
 	logrus.Debugf("Fetching members with role %s in guild %s", roleID, guildID)
 

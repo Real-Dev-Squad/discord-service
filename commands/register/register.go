@@ -4,7 +4,6 @@ import (
 	constants "github.com/Real-Dev-Squad/discord-service/commands"
 	"github.com/Real-Dev-Squad/discord-service/config"
 	"github.com/Real-Dev-Squad/discord-service/models"
-	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 )
@@ -33,10 +32,6 @@ var RegisterCommands = func(openSession models.SessionInterface) {
 	}
 
 	for _, v := range constants.Commands {
-		if v.Name == utils.CommandNames.MentionEach && !config.AppConfig.MENTION_EACH_ENABLED {
-			logrus.Infof("Skipping registration for disabled command: %s", v.Name)
-			continue
-		}
 		_, err := openSession.ApplicationCommandCreate(openSession.GetUerId(), config.AppConfig.GUILD_ID, v)
 		if err != nil {
 			logrus.Panic("Cannot create ", v.Name, "command: ", err)

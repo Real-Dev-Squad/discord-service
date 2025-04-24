@@ -123,7 +123,7 @@ func TestGetUsersWithRole(t *testing.T) {
 		mockSession.AssertExpectations(t)
 	})
 
-	t.Run("skips members with nil User or nil Roles safely", func(t *testing.T) {
+	t.Run("ignores invalid member data during filtering", func(t *testing.T) {
 		mockSession := new(MockDiscordSession)
 		membersInput := []*discordgo.Member{member1, memberNilUser, memberNilRoles, memberNil, member3}
 		var emptyMemberList []*discordgo.Member

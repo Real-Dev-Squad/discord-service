@@ -4,21 +4,21 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Real-Dev-Squad/discord-service/models"
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 )
 
-func GetUsersWithRole(session DiscordSessionInterface, guildID string, roleID string) ([]*discordgo.Member, error) {
-	var membersWithRole []*discordgo.Member
+func GetUsersWithRole(session models.SessionInterface, guildID string, roleID string) ([]discordgo.Member, error) {
+	var membersWithRole []discordgo.Member
 	lastMemberID := ""
-	limit := DiscordGuildMembersAPILimit
 
 	logrus.Debugf("Fetching members with role %s in guild %s", roleID, guildID)
 
 	for {
-		logrus.Debugf("Fetching members chunk after user ID: '%s', limit: '%d'", lastMemberID, limit)
+		logrus.Debugf("Fetching members chunk after user ID: '%s', limit: '%d'", lastMemberID, DISCORD_GUILD_MEMBER_API_LIMIT)
 
-		membersChunk, err := session.GuildMembers(guildID, lastMemberID, limit)
+		membersChunk, err := session.GuildMembers(guildID, lastMemberID, DISCORD_GUILD_MEMBER_API_LIMIT)
 		if err != nil {
 			logrus.Errorf("failed to fetch guild members chunk for guild %s: %v", guildID, err)
 			return nil, fmt.Errorf("failed to fetch guild members chunk: %w", err)
@@ -32,19 +32,18 @@ func GetUsersWithRole(session DiscordSessionInterface, guildID string, roleID st
 		foundInChunk := 0
 		lastIdInChunk := ""
 		for _, member := range membersChunk {
-			if member == nil || member.User == nil {
+			if member.User == nil {
 				logrus.Warnf("Guild %s: Member object or User data is nil, skipping member: %+v", guildID, member)
 				continue
 			}
-			if member.Roles != nil {
-				for _, r := range member.Roles {
-					if r == roleID {
-						membersWithRole = append(membersWithRole, member)
-						foundInChunk++
-						break
-					}
+			for _, r := range member.Roles {
+				if r == roleID {
+					membersWithRole = append(membersWithRole, *member)
+					foundInChunk++
+					break
 				}
 			}
+
 			lastIdInChunk = member.User.ID
 		}
 		lastMemberID = lastIdInChunk
@@ -55,13 +54,10 @@ func GetUsersWithRole(session DiscordSessionInterface, guildID string, roleID st
 	return membersWithRole, nil
 }
 
-func FormatUserMentions(members []*discordgo.Member) []string {
-	if members == nil {
-		return []string{}
-	}
+func FormatUserMentions(members []discordgo.Member) []string {
 	mentions := make([]string, 0, len(members))
 	for i, member := range members {
-		if member != nil && member.User != nil {
+		if member.User != nil {
 			mentions = append(mentions, fmt.Sprintf("<@%s>", member.User.ID))
 		} else {
 			logrus.Warnf("Skipping formatting mention for nil member or user at input index %d", i)

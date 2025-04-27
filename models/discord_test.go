@@ -3,13 +3,14 @@ package models
 import (
 	"testing"
 
-	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
 )
 
+const helloCommandName = "hello"
+
 var command = &discordgo.ApplicationCommand{
-	Name:        utils.CommandNames.Hello,
+	Name:        helloCommandName,
 	Description: "Greets back with hello!",
 }
 
@@ -37,8 +38,19 @@ func TestSessionWrapper(t *testing.T) {
 
 	t.Run("SessionWrapper should always implement getUerId() method", func(t *testing.T) {
 		assert.Panics(t, func() {
-			sessionWrapper.GetUerId()
+			sessionWrapper.GetUserId()
 		}, "should panic when getUerId() is called")
+	})
+	t.Run("SessionWrapper should implement GuildMembers() method", func(t *testing.T) {
+		assert.Panics(t, func() {
+			_, _ = sessionWrapper.GuildMembers("guild1", "", 100)
+		}, "should panic when GuildMembers() is called on dummy session")
+	})
+
+	t.Run("SessionWrapper should implement ChannelMessageSend() method", func(t *testing.T) {
+		assert.Panics(t, func() {
+			_, _ = sessionWrapper.ChannelMessageSend("chan1", "hello")
+		}, "should panic when ChannelMessageSend() is called on dummy session")
 	})
 
 }

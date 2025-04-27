@@ -32,7 +32,7 @@ var RegisterCommands = func(openSession models.SessionInterface) {
 	}
 
 	for _, v := range constants.Commands {
-		_, err := openSession.ApplicationCommandCreate(openSession.GetUerId(), config.AppConfig.GUILD_ID, v)
+		_, err := openSession.ApplicationCommandCreate(openSession.GetUserId(), config.AppConfig.GUILD_ID, v)
 		if err != nil {
 			logrus.Panic("Cannot create ", v.Name, "command: ", err)
 		}

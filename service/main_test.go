@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/Real-Dev-Squad/discord-service/queue"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/Real-Dev-Squad/discord-service/queue"
 
 	"github.com/Real-Dev-Squad/discord-service/dtos"
 	"github.com/Real-Dev-Squad/discord-service/fixtures"
@@ -84,10 +85,11 @@ func TestMainService(t *testing.T) {
 					Name: utils.CommandNames.MentionEach,
 					Options: []*discordgo.ApplicationCommandInteractionDataOption{
 						{Name: "role", Value: roleID},
+						{Name: "ff_enabled", Value: true},
 					},
 				},
 			},
-			Member:    &discordgo.Member{User: &discordgo.User{ID: "mentionUser"}, Permissions: discordgo.PermissionMentionEveryone}, // Need member + perms
+			Member:    &discordgo.Member{User: &discordgo.User{ID: "mentionUser"}, Permissions: discordgo.PermissionMentionEveryone},
 			ChannelId: "chan123",
 		}
 
@@ -96,7 +98,6 @@ func TestMainService(t *testing.T) {
 			queueCalled = true
 			return nil
 		}
-
 		handler := MainService(discordMessage)
 		w := httptest.NewRecorder()
 		r, _ := http.NewRequest("POST", "/", bytes.NewBuffer([]byte{}))

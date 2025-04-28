@@ -2,12 +2,13 @@ package service
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/Real-Dev-Squad/discord-service/dtos"
 	"github.com/Real-Dev-Squad/discord-service/queue"
 	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
 func (s *CommandService) MentionEachService(response http.ResponseWriter, request *http.Request) {
@@ -18,6 +19,22 @@ func (s *CommandService) MentionEachService(response http.ResponseWriter, reques
 		errorMsg := "Invalid request data"
 		logrus.Error(errorMsg)
 		sendErrorResponse(response, errorMsg)
+		return
+	}
+	var featureEnabled bool
+	ffOption := findOption(s.discordMessage.Data.Options, "ff_enabled")
+	if ffOption != nil && ffOption.Value != nil {
+		var ok bool
+		featureEnabled, ok = ffOption.Value.(bool)
+		if !ok {
+			logrus.Warnf("Invalid non-boolean value provided for 'ff_enabled' flag: Type=%T, Value=%v. Treating as disabled.", ffOption.Value, ffOption.Value)
+			featureEnabled = false
+		}
+	}
+
+	if !featureEnabled {
+		logrus.Warnf("Mention-each command run without 'ff_enabled:true'. User: %s", s.discordMessage.Member.User.ID)
+		sendErrorResponse(response, "Sorry, the /mention-each command requires the `ff_enabled:True` option to run currently.")
 		return
 	}
 

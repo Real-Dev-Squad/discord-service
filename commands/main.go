@@ -58,6 +58,12 @@ var Commands = []*discordgo.ApplicationCommand{
 				Type:        discordgo.ApplicationCommandOptionBoolean,
 				Required:    false,
 			},
+			{
+				Name:        "ff_enabled",
+				Description: "Set True to run this command",
+				Type:        discordgo.ApplicationCommandOptionBoolean,
+				Required:    false,
+			},
 		},
 	},
 }

@@ -75,7 +75,7 @@ func TestMakeAPICall(t *testing.T) {
 		defer mockServer.Close()
 
 		wb := &WebsiteBackend{
-			AuthToken: nil,
+			AuthToken: "",
 			Method:    http.MethodPost,
 			URL:       mockServer.URL,
 		}
@@ -91,7 +91,7 @@ func TestMakeAPICall(t *testing.T) {
 
 	t.Run("should return error if json.Marshal fails", func(t *testing.T) {
 		wb := &WebsiteBackend{
-			AuthToken: nil,
+			AuthToken: "",
 			Method:    http.MethodPost,
 			URL:       "http://example.com/api",
 		}
@@ -103,7 +103,7 @@ func TestMakeAPICall(t *testing.T) {
 
 	t.Run("should return error if http.NewRequest fails", func(t *testing.T) {
 		wb := &WebsiteBackend{
-			AuthToken: nil,
+			AuthToken: "",
 			Method:    "invalid method", // This will cause http.NewRequest to fail
 			URL:       "http://example.com/api",
 		}
@@ -118,7 +118,7 @@ func TestMakeAPICall(t *testing.T) {
 		mockServer := MakeMockServer(`{"success": true, "data" : [{"name" : "joy", "age" : 20}]}`, http.StatusOK)
 		defer mockServer.Close()
 		wb := &WebsiteBackend{
-			AuthToken: nil,
+			AuthToken: "",
 			Method:    http.MethodPost,
 			URL:       mockServer.URL,
 		}
@@ -137,7 +137,7 @@ func TestMakeAPICall(t *testing.T) {
 		defer mockServer.Close()
 
 		wb := &WebsiteBackend{
-			AuthToken: nil,
+			AuthToken: "",
 			Method:    http.MethodPost,
 			URL:       mockServer.URL,
 		}
@@ -154,7 +154,7 @@ func TestMakeAPICall(t *testing.T) {
 		defer mockServer.Close()
 
 		wb := &WebsiteBackend{
-			AuthToken: nil,
+			AuthToken: "",
 			Method:    http.MethodPost,
 			URL:       mockServer.URL,
 		}
@@ -167,7 +167,7 @@ func TestMakeAPICall(t *testing.T) {
 func TestPrepareHeaders(t *testing.T) {
 	t.Run("should set Content-Type header", func(t *testing.T) {
 		wb := &WebsiteBackend{
-			AuthToken: nil,
+			AuthToken: "",
 		}
 		req, err := http.NewRequest(http.MethodGet, "http://example.com/api", nil)
 		assert.NoError(t, err)
@@ -179,7 +179,7 @@ func TestPrepareHeaders(t *testing.T) {
 	t.Run("should set Authorization header if AuthToken is provided", func(t *testing.T) {
 		token := "test-token"
 		wb := &WebsiteBackend{
-			AuthToken: &token,
+			AuthToken: token,
 		}
 		req, err := http.NewRequest(http.MethodGet, "http://example.com/api", nil)
 		assert.NoError(t, err)

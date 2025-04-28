@@ -13,7 +13,7 @@ import (
 )
 
 type WebsiteBackend struct {
-	AuthToken *string
+	AuthToken string
 	Method    string
 	URL       string
 }
@@ -64,7 +64,7 @@ func (wb *WebsiteBackend) MakeAPICall(body interface{}, result interface{}) erro
 
 func (wb *WebsiteBackend) PrepareHeaders(req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
-	if wb.AuthToken != nil {
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", *wb.AuthToken))
+	if wb.AuthToken != "" {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", wb.AuthToken))
 	}
 }

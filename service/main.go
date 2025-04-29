@@ -22,6 +22,8 @@ func MainService(discordMessage *dtos.DiscordMessage) func(response http.Respons
 		return CS.ListeningService
 	case utils.CommandNames.Verify:
 		return CS.VerifyService
+	case utils.CommandNames.MentionEach:
+		return CS.MentionEachService
 	default:
 		return func(response http.ResponseWriter, request *http.Request) {
 			response.WriteHeader(http.StatusOK)

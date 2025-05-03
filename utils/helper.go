@@ -21,3 +21,8 @@ var ExponentialBackoffRetry = func(maxRetries int, operation func() error) error
 	}
 	return err
 }
+
+// TODO: Implement the logic for generating a unique token.
+func GenerateToken(uuidToken []byte) (string, error) {
+	return "", nil
+}

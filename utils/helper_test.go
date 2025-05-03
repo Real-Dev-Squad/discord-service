@@ -56,3 +56,11 @@ func TestExponentialBackoffRetry_ImmediateSuccess(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 1, attempts)
 }
+
+func TestGenerateToken(t *testing.T) {
+	t.Run("Should be implemented", func(t *testing.T) {
+		GenerateToken(make([]byte, 16))
+	})
+	t.Skip("Should return a unique token")
+	t.Skip("Should return an error if the random UUID generation fails")
+}

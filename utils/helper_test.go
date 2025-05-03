@@ -58,7 +58,7 @@ func TestExponentialBackoffRetry_ImmediateSuccess(t *testing.T) {
 }
 
 func TestGenerateToken(t *testing.T) {
-	t.Run("Should be implemented", func(t *testing.T) {
+	t.Run("Should generate a token from valid input", func(t *testing.T) {
 		GenerateToken(make([]byte, 16))
 	})
 	t.Skip("Should return a unique token")

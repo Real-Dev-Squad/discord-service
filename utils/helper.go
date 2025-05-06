@@ -12,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type WebsiteBackend struct {
+type HTTPClientService struct {
 	AuthToken string
 	Method    string
 	URL       string
@@ -33,28 +33,29 @@ var ExponentialBackoffRetry = func(maxRetries int, operation func() error) error
 	return err
 }
 
-func (wb *WebsiteBackend) MakeAPICall(body interface{}, result interface{}) error {
+func (hcp *HTTPClientService) prepareRequest(body interface{}) (*http.Request, error) {
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
-		logrus.Errorf("Failed to marshal message: %v", err)
-		return err
+		logrus.Errorf("Failed to marshal body in MakeAPICall: %v", err)
+		return nil, err
 	}
-	req, err := http.NewRequest(wb.Method, wb.URL, strings.NewReader(string(jsonBody)))
-	if err != nil {
-		return err
-	}
-	client := &http.Client{
-		Timeout: config.AppConfig.TIMEOUT,
-	}
-	wb.PrepareHeaders(req)
-	resp, err := client.Do(req)
-	if err != nil {
-		logrus.Errorf("Failed to make request: %v", err)
-		return err
-	}
-	defer resp.Body.Close()
 
-	err = json.NewDecoder(resp.Body).Decode(result)
+	req, err := http.NewRequest(hcp.Method, hcp.URL, strings.NewReader(string(jsonBody)))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	if hcp.AuthToken != "" {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", hcp.AuthToken))
+	}
+
+	return req, nil
+}
+
+func (hcp *HTTPClientService) readResponseBody(resp *http.Response, result interface{}) error {
+	err := json.NewDecoder(resp.Body).Decode(result)
+
 	if err != nil {
 		logrus.Errorf("Failed to unmarshal message: %v", err)
 		return err
@@ -62,9 +63,22 @@ func (wb *WebsiteBackend) MakeAPICall(body interface{}, result interface{}) erro
 	return nil
 }
 
-func (wb *WebsiteBackend) PrepareHeaders(req *http.Request) {
-	req.Header.Set("Content-Type", "application/json")
-	if wb.AuthToken != "" {
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", wb.AuthToken))
+func (hcp *HTTPClientService) MakeAPICall(body interface{}, result interface{}) error {
+	req, err := hcp.prepareRequest(body)
+	if err != nil {
+		return err
 	}
+
+	client := &http.Client{
+		Timeout: config.AppConfig.TIMEOUT,
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		logrus.Errorf("Failed to make request: %v", err)
+		return err
+	}
+
+	defer resp.Body.Close()
+	return hcp.readResponseBody(resp, result)
 }

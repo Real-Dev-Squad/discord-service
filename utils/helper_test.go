@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"bytes"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,6 +12,14 @@ import (
 	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
 	"github.com/stretchr/testify/assert"
 )
+
+type MockHTTPClient struct {
+	DoFunc func(req *http.Request) (*http.Response, error)
+}
+
+func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
+	return m.DoFunc(req)
+}
 
 func TestExponentialBackoffRetry_Success(t *testing.T) {
 	attempts := 0
@@ -74,7 +84,7 @@ func TestMakeAPICall(t *testing.T) {
 		mockServer := MakeMockServer(`{"success": true, "data" : [{"name" : "joy", "age" : 20}]}`, http.StatusOK)
 		defer mockServer.Close()
 
-		wb := &WebsiteBackend{
+		wb := &HTTPClientService{
 			AuthToken: "",
 			Method:    http.MethodPost,
 			URL:       mockServer.URL,
@@ -90,7 +100,7 @@ func TestMakeAPICall(t *testing.T) {
 	})
 
 	t.Run("should return error if json.Marshal fails", func(t *testing.T) {
-		wb := &WebsiteBackend{
+		wb := &HTTPClientService{
 			AuthToken: "",
 			Method:    http.MethodPost,
 			URL:       "http://example.com/api",
@@ -102,7 +112,7 @@ func TestMakeAPICall(t *testing.T) {
 	})
 
 	t.Run("should return error if http.NewRequest fails", func(t *testing.T) {
-		wb := &WebsiteBackend{
+		wb := &HTTPClientService{
 			AuthToken: "",
 			Method:    "invalid method", // This will cause http.NewRequest to fail
 			URL:       "http://example.com/api",
@@ -117,7 +127,7 @@ func TestMakeAPICall(t *testing.T) {
 
 		mockServer := MakeMockServer(`{"success": true, "data" : [{"name" : "joy", "age" : 20}]}`, http.StatusOK)
 		defer mockServer.Close()
-		wb := &WebsiteBackend{
+		wb := &HTTPClientService{
 			AuthToken: "",
 			Method:    http.MethodPost,
 			URL:       mockServer.URL,
@@ -136,7 +146,7 @@ func TestMakeAPICall(t *testing.T) {
 		mockServer := MakeMockServer(`{"success":false}`, http.StatusInternalServerError)
 		defer mockServer.Close()
 
-		wb := &WebsiteBackend{
+		wb := &HTTPClientService{
 			AuthToken: "",
 			Method:    http.MethodPost,
 			URL:       mockServer.URL,
@@ -153,7 +163,7 @@ func TestMakeAPICall(t *testing.T) {
 		mockServer := MakeMockServer(`{success:false}`, http.StatusInternalServerError)
 		defer mockServer.Close()
 
-		wb := &WebsiteBackend{
+		wb := &HTTPClientService{
 			AuthToken: "",
 			Method:    http.MethodPost,
 			URL:       mockServer.URL,
@@ -164,29 +174,65 @@ func TestMakeAPICall(t *testing.T) {
 	})
 }
 
-func TestPrepareHeaders(t *testing.T) {
-	t.Run("should set Content-Type header", func(t *testing.T) {
-		wb := &WebsiteBackend{
-			AuthToken: "",
-		}
-		req, err := http.NewRequest(http.MethodGet, "http://example.com/api", nil)
-		assert.NoError(t, err)
-		wb.PrepareHeaders(req)
+func TestPrepareRequest(t *testing.T) {
 
+	t.Run("should prepare request with valid body and headers", func(t *testing.T) {
+		hcp := &HTTPClientService{
+			AuthToken: "test-token",
+			Method:    http.MethodPost,
+			URL:       "http://example.com",
+		}
+
+		body := map[string]string{"key": "value"}
+		req, err := hcp.prepareRequest(body)
+
+		assert.NoError(t, err)
 		assert.Equal(t, "application/json", req.Header.Get("Content-Type"))
-	})
-
-	t.Run("should set Authorization header if AuthToken is provided", func(t *testing.T) {
-		token := "test-token"
-		wb := &WebsiteBackend{
-			AuthToken: token,
-		}
-		req, err := http.NewRequest(http.MethodGet, "http://example.com/api", nil)
-		assert.NoError(t, err)
-		wb.PrepareHeaders(req)
-
 		assert.Equal(t, "Bearer test-token", req.Header.Get("Authorization"))
+		assert.Equal(t, http.MethodPost, req.Method)
+		assert.Equal(t, "http://example.com", req.URL.String())
 	})
+
+	t.Run("should return error if json.Marshal fails", func(t *testing.T) {
+		hcp := &HTTPClientService{
+			Method: http.MethodPost,
+			URL:    "http://example.com",
+		}
+
+		body := make(chan int) // This will cause json.Marshal to fail
+		_, err := hcp.prepareRequest(body)
+
+		assert.Error(t, err)
+	})
+
+	t.Run("should return error if http.NewRequest fails", func(t *testing.T) {
+		mockServer := MakeMockServer(`{"success": true, "data" : [{"name" : "joy", "age" : 20}]}`, http.StatusOK)
+		defer mockServer.Close()
+
+		hcp := &HTTPClientService{
+			Method: "invalid-method",
+			URL:    mockServer.URL,
+		}
+
+		body := interface{}(nil)
+		err := hcp.MakeAPICall(body, nil)
+
+		assert.Error(t, err)
+	})
+}
+
+func TestReadResponseBody(t *testing.T) {
+	hcp := &HTTPClientService{}
+	respBody := `{"key": "value"}`
+	resp := &http.Response{
+		Body: io.NopCloser(bytes.NewReader([]byte(respBody))),
+	}
+
+	var result map[string]string
+	err := hcp.readResponseBody(resp, &result)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "value", result["key"])
 }
 
 func MakeMockServer(response string, statusCode int) *httptest.Server {

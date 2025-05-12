@@ -23,8 +23,19 @@ func TestMainHandler(t *testing.T) {
 		assert.NotNil(t, handler)
 	})
 	t.Run("should return nil for invalid data", func(t *testing.T) {
-		invalidData := []byte(`{"invalid": "data"}`)
+		invalidData := []byte(`{"invalid': "data"}`)
 		handler := MainHandler(invalidData)
+		assert.Nil(t, handler)
+	})
+
+	t.Run("Should return nil for unknown commands", func(t *testing.T) {
+		dp := &dtos.DataPacket{
+			CommandName: "unknown",
+		}
+		data, err := dp.ToByte()
+		assert.NoError(t, err)
+
+		handler := MainHandler(data)
 		assert.Nil(t, handler)
 	})
 }

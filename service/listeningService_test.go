@@ -132,7 +132,6 @@ func TestListeningService(t *testing.T) {
 
 		commandService := &CommandService{discordMessage: discordMessage}
 		commandService.ListeningService(rr, req)
-
 		assert.Contains(t, rr.Body.String(), "Your nickname will be updated shortly.")
 	})
 
@@ -144,8 +143,6 @@ func TestListeningService(t *testing.T) {
 		}
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("POST", "/listening", nil)
-		
-
 		cs := &CommandService{discordMessage: discordMessageForFailureTest}
 		cs.ListeningService(w, r)
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
@@ -157,7 +154,6 @@ func TestListeningService(t *testing.T) {
 		}
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("POST", "/listening", nil)
-
 		cs := &CommandService{discordMessage: discordMessageForFailureTest}
 		cs.ListeningService(w, r)
 		assert.Equal(t, http.StatusInternalServerError, w.Code)

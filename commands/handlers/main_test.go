@@ -16,7 +16,7 @@ func TestMainHandler(t *testing.T) {
 		dataPacket := &dtos.DataPacket{
 			CommandName: utils.CommandNames.Listening,
 		}
-		data, err := dataPacket.ToByte()
+		data, err := dtos.ToByte(dataPacket)
 		assert.NoError(t, err)
 
 		handler := MainHandler(data)

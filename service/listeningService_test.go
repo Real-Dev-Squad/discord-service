@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -35,6 +36,17 @@ func TestListeningService(t *testing.T) {
 			},
 		},
 	}
+
+	discordMessageForFailureTest := &dtos.DiscordMessage{
+		Data: mockData,
+		Member: &discordgo.Member{
+			Nick: "testNick",
+			User: &discordgo.User{
+				ID: "1",
+			},
+		},
+	}
+
 	t.Run("should return 'You are already set to listen.' if nickname contains suffix and value is true", func(t *testing.T) {
 		data := dtos.DataPacket{
 			UserID: "userID",
@@ -124,4 +136,30 @@ func TestListeningService(t *testing.T) {
 		assert.Contains(t, rr.Body.String(), "Your nickname will be updated shortly.")
 	})
 
+	t.Run("should return internal server error when fails to unmarshal data packet", func(t *testing.T) {
+		originalFunc := dtos.ToByte
+		defer func() { dtos.ToByte = originalFunc }()
+		dtos.ToByte = func(d *dtos.DataPacket) ([]byte, error) {
+			return nil, errors.New("error")
+		}
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("POST", "/listening", nil)
+		
+
+		cs := &CommandService{discordMessage: discordMessageForFailureTest}
+		cs.ListeningService(w, r)
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+	})
+
+	t.Run("should return internal server error when fails to send message to queue", func(t *testing.T) {
+		queue.SendMessage = func(message []byte) error {
+			return errors.New("error")
+		}
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("POST", "/listening", nil)
+
+		cs := &CommandService{discordMessage: discordMessageForFailureTest}
+		cs.ListeningService(w, r)
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+	})
 }

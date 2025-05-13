@@ -19,7 +19,7 @@ func TestDiscordBaseService(t *testing.T) {
 		w := httptest.NewRecorder()
 		DiscordBaseService(w, r)
 		assert.Equal(t, http.StatusBadRequest, w.Code)
-		assert.Equal(t, fmt.Sprintln(`{"success": false, "message": "Invalid Request Payload", "status": 400}`), w.Body.String())
+		assert.Equal(t, `{"success": false, "message": "Invalid Request Payload", "status": 400}` + "\n", w.Body.String())
 	})
 
 	t.Run("should return internal server error when fails to unmarshal request payload", func(t *testing.T) {
@@ -27,7 +27,7 @@ func TestDiscordBaseService(t *testing.T) {
 		w := httptest.NewRecorder()
 		DiscordBaseService(w, r)
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		assert.Equal(t, fmt.Sprintln(`{"success": false, "message": "Internal Server Error", "status": 500}`), w.Body.String())
+		assert.Equal(t, `{"success": false, "message": "Internal Server Error", "status": 500}`+ "\n", w.Body.String())
 	})
 
 	t.Run("should return 200 status code when message type is unkown", func(t *testing.T) {
@@ -46,7 +46,7 @@ func TestDiscordBaseService(t *testing.T) {
 		w := httptest.NewRecorder()
 		DiscordBaseService(w, r)
 		assert.Equal(t, http.StatusOK, w.Code)
-		assert.Equal(t, fmt.Sprintln(fmt.Sprintf(`{"type":%d}`, discordgo.InteractionResponsePong)), w.Body.String())
+		assert.Equal(t, fmt.Sprintf(`{"type":%d}`+"\n", discordgo.InteractionResponsePong), w.Body.String())
 	})
 
 	t.Run("should return success response when message type is interaction application command", func(t *testing.T) {

@@ -20,4 +20,10 @@ func TestNewDiscordResponse(t *testing.T) {
 		Success.NewDiscordResponse(w, "test", nil)
 		assert.Equal(t, `{"success": true, "status": 200, "message": "test"}`, w.Body.String())
 	})
+
+	t.Run("should write success response when data is not nil", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		Success.NewDiscordResponse(w, "test", map[string]string{"value": "hello"})
+		assert.Equal(t, `{"value":"hello"}`+"\n", w.Body.String())
+	})
 }

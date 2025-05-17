@@ -30,7 +30,7 @@ func TestDiscordBaseService(t *testing.T) {
 		assert.Equal(t, `{"success": false, "message": "Internal Server Error", "status": 500}`+ "\n", w.Body.String())
 	})
 
-	t.Run("should return 200 status code when message type is unkown", func(t *testing.T) {
+	t.Run("should return 200 status code when message type is unknown", func(t *testing.T) {
 		msgByte, err := json.Marshal(dtos.DiscordMessage{Type: 3})
 		assert.NoError(t, err)
 		r := httptest.NewRequest("POST", "/", bytes.NewBuffer([]byte(msgByte)))

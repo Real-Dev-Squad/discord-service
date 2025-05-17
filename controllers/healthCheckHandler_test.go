@@ -41,7 +41,7 @@ func TestHealthCheckHandler(t *testing.T) {
 		assert.NoError(t, err, "timestamp should be in RFC3339 format")
 	})
 
-	t.Run("should write error response if json encoding fails", func(t *testing.T) {
+	t.Run("should return error response if json encoding fails", func(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		originalFunc := controllers.WriteResponse

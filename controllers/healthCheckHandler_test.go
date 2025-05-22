@@ -3,13 +3,13 @@ package controllers_test
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/Real-Dev-Squad/discord-service/controllers"
+	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -44,15 +44,15 @@ func TestHealthCheckHandler(t *testing.T) {
 	t.Run("should return error response if json encoding fails", func(t *testing.T) {
 		w := httptest.NewRecorder()
 
-		originalFunc := controllers.WriteResponse
-		controllers.WriteResponse = func(data interface{}, response http.ResponseWriter) error {
+		originalFunc := utils.WriteResponse
+		utils.WriteResponse = func(data interface{}, response http.ResponseWriter) error {
 			return errors.New("test error")
 		}
-		defer func() { controllers.WriteResponse = originalFunc }()
+		defer func() { utils.WriteResponse = originalFunc }()
 
 		handler.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		assert.Equal(t, fmt.Sprintln(`{"status":"error","message":"Internal Server Error"}`), w.Body.String())
+		assert.Equal(t, `{"status":"error","message":"Internal Server Error"}` + "\n", w.Body.String())
 	})
 }

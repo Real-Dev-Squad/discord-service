@@ -135,7 +135,7 @@ func TestListeningService(t *testing.T) {
 		assert.Contains(t, rr.Body.String(), "Your nickname will be updated shortly.")
 	})
 
-	t.Run("should return internal server error when fails to unmarshal data packet", func(t *testing.T) {
+	t.Run("should return internal server error when fails to marshal data packet in json string bytes", func(t *testing.T) {
 		originalFunc := dtos.ToByte
 		defer func() { dtos.ToByte = originalFunc }()
 		dtos.ToByte = func(d *dtos.DataPacket) ([]byte, error) {

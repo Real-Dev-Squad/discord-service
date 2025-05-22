@@ -18,9 +18,8 @@ func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 	}
 	defer request.Body.Close()
 	var message dtos.DiscordMessage
-	err = json.Unmarshal(payload, &message)
-	if err != nil {
-		utils.Errors.NewInternalError(response)
+	if err = json.Unmarshal(payload, &message); err != nil {
+		utils.Errors.NewBadRequestError(response, "Invalid Request Payload")
 		return
 	}
 	switch message.Type {
@@ -35,6 +34,6 @@ func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 		return
 
 	default:
-		response.WriteHeader(http.StatusOK)
+		response.WriteHeader(http.StatusBadRequest)
 	}
 }

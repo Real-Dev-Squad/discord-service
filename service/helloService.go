@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/Real-Dev-Squad/discord-service/utils"
@@ -11,7 +12,7 @@ func (s *CommandService) HelloService(response http.ResponseWriter, request *htt
 	messageResponse := &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: utils.ResponseGenerator.HelloResponse(s.discordMessage.Member.User.ID),
+			Content: fmt.Sprintf("Hey there <@%s>! Congratulations, you just executed your first slash command", s.discordMessage.Member.User.ID),
 		},
 	}
 	utils.Success.NewDiscordResponse(response, "Success", messageResponse)

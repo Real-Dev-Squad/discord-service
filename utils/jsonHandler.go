@@ -6,10 +6,10 @@ type jsonHandler struct{}
 
 var Json *jsonHandler = &jsonHandler{}
 
-func (Json *jsonHandler) ToJson(data interface{}) string {
+func (Json *jsonHandler) ToJson(data interface{}) (string, error) {
 	bytes, err := json.Marshal(data)
 	if err != nil {
-		return ""
+		return "", err
 	}
-	return string(bytes)
+	return string(bytes), nil
 }

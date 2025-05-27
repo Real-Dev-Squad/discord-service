@@ -43,7 +43,7 @@ Before running the project, ensure that you have the following installed:
    ```sh
       PORT = "8999" # Default :8999
       DISCORD_PUBLIC_KEY = "<DISCORD_PUBLIC_KEY>" # Add the correct value from bot setup
-      GUILD_ID = "<DISCORD_GUILD_ID>" # Add the dicord server id
+      GUILD_ID = "<DISCORD_GUILD_ID>" # Add the discord server id
       BOT_TOKEN = "<BOT_TOKEN>" # Add the correct value from bot setup
       QUEUE_URL = "amqp://localhost" # Default :amqp://localhost
       ENV = "development" # Other: production, staging
@@ -58,7 +58,7 @@ Ensure Docker is installed and running on your machine.
 2. Start RabbitMQ Container using below command
    ```sh
    docker compose up rabbitmq
-   docker compose up -d  rabbitmq # To run container in background
+   docker compose up -d rabbitmq # To run container in background
    ```
 3. Verify that RabbitMQ is running by accessing the management interface at [http://localhost:15672](http://localhost:15672). The default username and password are both `guest`.
 

@@ -7,9 +7,9 @@ import (
 )
 
 type DataPacket struct {
-	UserID      string
-	CommandName string
-	MetaData    map[string]string
+	UserID      string `json:"userId"`
+	CommandName string `json:"commandName"`
+	MetaData    map[string]string `json:"metaData"`
 }
 
 func (d *DataPacket) ToByte() ([]byte, error) {

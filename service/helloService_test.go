@@ -3,13 +3,13 @@ package service
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/Real-Dev-Squad/discord-service/fixtures"
 	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
-	"github.com/Real-Dev-Squad/discord-service/utils"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
@@ -30,6 +30,6 @@ func TestHelloService(t *testing.T) {
 		err := json.NewDecoder(w.Body).Decode(&response)
 		assert.NoError(t, err)
 		assert.Equal(t, discordgo.InteractionResponseChannelMessageWithSource, response.Type)
-		assert.Equal(t, utils.ResponseGenerator.HelloResponse(fixtures.HelloCommand.Member.User.ID), response.Data.Content)
+		assert.Equal(t, fmt.Sprintf("Hey there <@%s>! Congratulations, you just executed your first slash command", fixtures.HelloCommand.Member.User.ID), response.Data.Content)
 	})
 }

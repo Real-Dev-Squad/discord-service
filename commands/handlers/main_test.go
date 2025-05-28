@@ -32,7 +32,7 @@ func TestMainHandler(t *testing.T) {
 		dp := &dtos.DataPacket{
 			CommandName: "unknown",
 		}
-		data, err := dp.ToByte()
+		data, err := dtos.ToByte(dp)
 		assert.NoError(t, err)
 
 		handler := MainHandler(data)

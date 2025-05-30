@@ -9,6 +9,12 @@ type successPackage struct{}
 
 var Success *successPackage = &successPackage{}
 
+type SuccessResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+	Status  int    `json:"status"`
+}
+
 func (Success *successPackage) NewDiscordResponse(response http.ResponseWriter, message string, data interface{}) {
 	response.WriteHeader(http.StatusOK)
 	if data != nil {
@@ -18,6 +24,11 @@ func (Success *successPackage) NewDiscordResponse(response http.ResponseWriter, 
 			return
 		}
 	} else {
-		response.Write([]byte(`{"success": true, "status": 200, "message": "` + message + `"}`))
+		res, _:= Json.ToJson(SuccessResponse{
+			Success: true,
+			Message: message,
+			Status:  200,
+		})
+		response.Write([]byte(res))
 	}
 }

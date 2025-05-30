@@ -12,13 +12,23 @@ func TestNewDiscordResponse(t *testing.T) {
 	t.Run("should return error response", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		Success.NewDiscordResponse(w, "test", make(chan int))
-		assert.Equal(t, fmt.Sprintln(`{"success": false, "message": "Internal Server Error", "status": 500}`), w.Body.String())
+		error, _:= Json.ToJson(ErrorResponse{
+			Success: false,
+			Message: "Internal Server Error",
+			Status:  500,
+		})
+		assert.Equal(t, fmt.Sprintln(error), w.Body.String())
 	})
 
 	t.Run("should return success response when data is nil", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		Success.NewDiscordResponse(w, "test", nil)
-		assert.Equal(t, `{"success": true, "status": 200, "message": "test"}`, w.Body.String())
+		res, _:= Json.ToJson(SuccessResponse{
+			Success: true,
+			Message: "test",
+			Status:  200,
+		})
+		assert.Equal(t, res, w.Body.String())
 	})
 
 	t.Run("should return success response when data is not nil", func(t *testing.T) {

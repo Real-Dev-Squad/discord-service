@@ -12,12 +12,12 @@ func TestNewDiscordResponse(t *testing.T) {
 	t.Run("should return error response", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		Success.NewDiscordResponse(w, "test", make(chan int))
-		error, _:= Json.ToJson(ErrorResponse{
+		res, _:= Json.ToJson(ErrorResponse{
 			Success: false,
 			Message: "Internal Server Error",
 			Status:  500,
 		})
-		assert.Equal(t, fmt.Sprintln(error), w.Body.String())
+		assert.Equal(t, fmt.Sprintln(res), w.Body.String())
 	})
 
 	t.Run("should return success response when data is nil", func(t *testing.T) {

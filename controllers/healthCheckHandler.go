@@ -22,7 +22,12 @@ func HealthCheckHandler(response http.ResponseWriter, request *http.Request, par
 	}
 
 	if err := utils.WriteResponse(data, response); err != nil {
-		http.Error(response, `{"status":"error","message":"Internal Server Error"}`, http.StatusInternalServerError)
+		res, _ := utils.Json.ToJson(utils.ErrorResponse{
+			Success: false,
+			Message: "Internal Server Error",
+			Status:  http.StatusInternalServerError,
+		})
+		http.Error(response, res, http.StatusInternalServerError)
 		return
 	}
 }

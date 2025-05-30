@@ -34,10 +34,10 @@ func (errorPackage) NewInternalError(response http.ResponseWriter) {
 func formatError(response http.ResponseWriter, message string, status int) {
 	logrus.Error("Message : ", message)
 	response.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	error, _:= Json.ToJson(ErrorResponse{
+	res, _:= Json.ToJson(ErrorResponse{
 		Success: false,
 		Message: message,
 		Status:  status,
 	})
-	http.Error(response, error, status)
+	http.Error(response, res, status)
 }

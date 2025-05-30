@@ -3,6 +3,7 @@ package controllers_test
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -53,6 +54,11 @@ func TestHealthCheckHandler(t *testing.T) {
 		handler.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		assert.Equal(t, `{"status":"error","message":"Internal Server Error"}` + "\n", w.Body.String())
+		res, _ := utils.Json.ToJson(utils.ErrorResponse{
+			Success: false,
+			Message: "Internal Server Error",
+			Status:  http.StatusInternalServerError,
+		})
+		assert.Equal(t, fmt.Sprintln(res), w.Body.String())
 	})
 }

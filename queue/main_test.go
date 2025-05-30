@@ -110,7 +110,7 @@ func TestSendMessage(t *testing.T) {
 			UserID:      "1",
 			CommandName: utils.CommandNames.Listening,
 		}
-		bytes, err := message.ToByte()
+		bytes, err := dtos.ToByte(&message)
 		assert.NoError(t, err)
 		assert.NotPanics(t, func() {
 			SendMessage(bytes)

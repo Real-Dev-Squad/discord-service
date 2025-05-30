@@ -36,12 +36,10 @@ func (s *CommandService) ListeningService(response http.ResponseWriter, request 
 		}
 		bytePacket, err := dtos.ToByte(&dataPacket)
 		if err != nil {
-			msg = "Failed to update your nickname."
 			response.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		if err := queue.SendMessage(bytePacket); err != nil {
-			msg = "Failed to update your nickname."
 			response.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -49,7 +47,7 @@ func (s *CommandService) ListeningService(response http.ResponseWriter, request 
 	messageResponse := &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: fmt.Sprintf(msg),
+			Content: msg,
 			Flags:   64, // Ephemeral message flag
 		},
 	}

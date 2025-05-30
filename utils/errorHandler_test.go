@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Real-Dev-Squad/discord-service/dtos"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,7 +14,7 @@ func TestNewBadRequestError(t *testing.T) {
 		w := httptest.NewRecorder()
 		Errors.NewBadRequestError(w, "test")
 		assert.Equal(t, 400, w.Code)
-		res, _:= Json.ToJson(ErrorResponse{
+		res, _:= Json.ToJson(dtos.Response{
 			Success: false,
 			Message: "test",
 			Status:  400,
@@ -27,7 +28,7 @@ func TestNewUnauthorisedError(t *testing.T) {
 		w := httptest.NewRecorder()
 		Errors.NewUnauthorisedError(w, "test")
 		assert.Equal(t, 401, w.Code)
-		res, _:= Json.ToJson(ErrorResponse{
+		res, _:= Json.ToJson(dtos.Response{
 			Success: false,
 			Message: "test",
 			Status:  401,
@@ -38,7 +39,7 @@ func TestNewUnauthorisedError(t *testing.T) {
 		w := httptest.NewRecorder()
 		Errors.NewUnauthorisedError(w)
 		assert.Equal(t, 401, w.Code)
-		res, _:= Json.ToJson(ErrorResponse{
+		res, _:= Json.ToJson(dtos.Response{
 			Success: false,
 			Message: "Unauthorized Access",
 			Status:  401,

@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Real-Dev-Squad/discord-service/dtos"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -12,7 +13,7 @@ func TestNewDiscordResponse(t *testing.T) {
 	t.Run("should return error response", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		Success.NewDiscordResponse(w, "test", make(chan int))
-		res, _:= Json.ToJson(ErrorResponse{
+		res, _:= Json.ToJson(dtos.Response{
 			Success: false,
 			Message: "Internal Server Error",
 			Status:  500,
@@ -23,7 +24,7 @@ func TestNewDiscordResponse(t *testing.T) {
 	t.Run("should return success response when data is nil", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		Success.NewDiscordResponse(w, "test", nil)
-		res, _:= Json.ToJson(SuccessResponse{
+		res, _:= Json.ToJson(dtos.Response{
 			Success: true,
 			Message: "test",
 			Status:  200,

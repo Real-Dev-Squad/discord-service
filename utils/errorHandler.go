@@ -3,18 +3,13 @@ package utils
 import (
 	"net/http"
 
+	"github.com/Real-Dev-Squad/discord-service/dtos"
 	"github.com/sirupsen/logrus"
 )
 
 type errorPackage struct{}
 
 var Errors *errorPackage = &errorPackage{}
-
-type ErrorResponse struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-	Status  int    `json:"status"`
-}
 
 func (errorPackage) NewBadRequestError(response http.ResponseWriter, message string) {
 	formatError(response, message, http.StatusBadRequest)
@@ -34,7 +29,7 @@ func (errorPackage) NewInternalError(response http.ResponseWriter) {
 func formatError(response http.ResponseWriter, message string, status int) {
 	logrus.Error("Message : ", message)
 	response.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	res, _:= Json.ToJson(ErrorResponse{
+	res, _:= Json.ToJson(dtos.Response{
 		Success: false,
 		Message: message,
 		Status:  status,

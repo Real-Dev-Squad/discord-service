@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Real-Dev-Squad/discord-service/dtos"
 	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/julienschmidt/httprouter"
 )
@@ -22,7 +23,7 @@ func HealthCheckHandler(response http.ResponseWriter, request *http.Request, par
 	}
 
 	if err := utils.WriteResponse(data, response); err != nil {
-		res, _ := utils.Json.ToJson(utils.ErrorResponse{
+		res, _ := utils.Json.ToJson(dtos.Response{
 			Success: false,
 			Message: "Internal Server Error",
 			Status:  http.StatusInternalServerError,

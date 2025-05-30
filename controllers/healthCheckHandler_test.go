@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Real-Dev-Squad/discord-service/controllers"
+	"github.com/Real-Dev-Squad/discord-service/dtos"
 	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -54,7 +55,7 @@ func TestHealthCheckHandler(t *testing.T) {
 		handler.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		res, _ := utils.Json.ToJson(utils.ErrorResponse{
+		res, _ := utils.Json.ToJson(dtos.Response{
 			Success: false,
 			Message: "Internal Server Error",
 			Status:  http.StatusInternalServerError,

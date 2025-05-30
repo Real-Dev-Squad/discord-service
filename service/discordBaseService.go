@@ -12,11 +12,11 @@ import (
 
 func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 	payload, err := io.ReadAll(request.Body)
+	defer request.Body.Close()
 	if err != nil || len(payload) == 0 {
 		utils.Errors.NewBadRequestError(response, "Invalid Request Payload")
 		return
 	}
-	defer request.Body.Close()
 	var message dtos.DiscordMessage
 	if err = json.Unmarshal(payload, &message); err != nil {
 		utils.Errors.NewBadRequestError(response, "Invalid Request Payload")

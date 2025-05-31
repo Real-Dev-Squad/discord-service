@@ -39,12 +39,9 @@ func init() {
 		QUEUE_NAME:         loadEnv("QUEUE_NAME"),
 		ENV:                Environment(loadEnv("ENV")).Validate(),
 		MAX_RETRIES:        5,
+		RDS_BASE_API_URL:   loadEnv("RDS_BASE_API_URL"),
+		VERIFICATION_SITE_URL: loadEnv("VERIFICATION_SITE_URL"),
 	}
-
-	// Loading Constants
-	AppConfig.RDS_BASE_API_URL = EnvironmentURLs[AppConfig.ENV].RDS_BASE_API_URL
-	AppConfig.VERIFICATION_SITE_URL = EnvironmentURLs[AppConfig.ENV].VERIFICATION_SITE_URL
-
 }
 
 func loadEnv(key string) string {

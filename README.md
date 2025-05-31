@@ -23,22 +23,25 @@ Before running the project, ensure that you have the following installed:
 ### Installation
 
 1. **Install Go**
+
    If you don't have Go installed, follow the official guide to install it:[Go Installation Guide](https://go.dev/doc/install).
-2. **Install Make**
+3. **Install Make**
+
    To install Make, follow the installations steps from here based on your OS:
 
    a. For Mac/Linux - [Make Installation Guide.](https://www.geeksforgeeks.org/how-to-install-make-on-ubuntu/)
 
    b. For window - [Install choco](https://chocolatey.org/install)
+
       Then run below command
       ```sh
          choco install make
       ```
 
-4. **Install Ngrok**
+5. **Install Ngrok**
    To install Ngrok, follow the installation steps here:
    [Ngrok Installation Guide](https://download.ngrok.com/).
-5. **Install Air**
+6. **Install Air**
    To install Air, follow the installation steps here:
    [Air Installation Guide](https://github.com/air-verse/air)
 

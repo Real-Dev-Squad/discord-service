@@ -31,7 +31,7 @@ Before running the project, ensure that you have the following installed:
 
    a. For Mac/Linux - [Make Installation Guide.](https://www.geeksforgeeks.org/how-to-install-make-on-ubuntu/)
 
-   b. For window - [Install choco](https://chocolatey.org/install)
+   b. For Windows - [Install choco](https://chocolatey.org/install)
 
       Then run below command
       ```sh

@@ -78,15 +78,6 @@ Ensure Docker is installed and running on your machine.
    docker compose up -d server # To run the server in background
    ```
 2. Verify that Server is running by making an http request at [http://localhost:8080/health](http://localhost:8080/health).
-
-## Start Server and RabbitMq with Docker
-```sh
-   docker compose up 
-   docker compose up -d # To run server and rabbitmq container
-```
-1. Verify that RabbitMQ is running by accessing the management interface at [http://localhost:15672](http://localhost:15672). The default username and password are both `guest`.
-2. Verify that Server is running by making an http request at [http://localhost:8080/health](http://localhost:8080/health).
-
 ## Start the Server without Docker
 
 1. **Install Packages**
@@ -115,6 +106,13 @@ Ensure Docker is installed and running on your machine.
    ```
 5. **Verify that Server is running by making an http request at [http://localhost:8999/health](http://localhost:8999/health).**
 
+## Start Server and RabbitMq with Docker
+```sh
+   docker compose up 
+   docker compose up -d # To run server and rabbitmq container
+```
+1. Verify that RabbitMQ is running by accessing the management interface at [http://localhost:15672](http://localhost:15672). The default username and password are both `guest`.
+2. Verify that Server is running by making an http request at [http://localhost:8080/health](http://localhost:8080/health).
 
 ## Running the Project Using Make
 

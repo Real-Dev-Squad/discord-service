@@ -15,7 +15,6 @@ type Config struct {
 	BOT_TOKEN             string
 	QUEUE_URL             string
 	QUEUE_NAME            string
-	ENV                   Environment
 	MAX_RETRIES           int
 	RDS_BASE_API_URL      string
 	VERIFICATION_SITE_URL string
@@ -37,7 +36,6 @@ func init() {
 		GUILD_ID:           loadEnv("GUILD_ID"),
 		BOT_TOKEN:          loadEnv("BOT_TOKEN"),
 		QUEUE_NAME:         loadEnv("QUEUE_NAME"),
-		ENV:                Environment(loadEnv("ENV")).Validate(),
 		MAX_RETRIES:        5,
 		RDS_BASE_API_URL:   loadEnv("RDS_BASE_API_URL"),
 		VERIFICATION_SITE_URL: loadEnv("VERIFICATION_SITE_URL"),

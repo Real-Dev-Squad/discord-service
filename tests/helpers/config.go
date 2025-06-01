@@ -12,4 +12,6 @@ func init() {
 	os.Setenv("QUEUE_NAME", "DISCORD_QUEUE")
 	os.Setenv("QUEUE_URL", "local:5672")
 	os.Setenv("ENV", "development")
+	os.Setenv("RDS_BASE_API_URL", "http://localhost:3000")
+	os.Setenv("VERIFICATION_SITE_URL", "http://localhost:3443")
 }

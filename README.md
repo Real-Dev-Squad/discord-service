@@ -23,48 +23,65 @@ Before running the project, ensure that you have the following installed:
 ### Installation
 
 1. **Install Go**
+
    If you don't have Go installed, follow the official guide to install it:[Go Installation Guide](https://go.dev/doc/install).
-2. **Install Make**
+3. **Install Make**
+
    To install Make, follow the installations steps from here based on your OS:
-   [Make Installation Guide.](https://www.geeksforgeeks.org/how-to-install-make-on-ubuntu/)
-3. **Install Ngrok**
+
+   a. For Mac/Linux - [Make Installation Guide.](https://www.geeksforgeeks.org/how-to-install-make-on-ubuntu/)
+
+   b. For Windows - [Install choco](https://chocolatey.org/install)
+
+      Then run below command
+      ```sh
+         choco install make
+      ```
+
+5. **Install Ngrok**
    To install Ngrok, follow the installation steps here:
    [Ngrok Installation Guide](https://download.ngrok.com/).
-4. **Install Air**
+6. **Install Air**
    To install Air, follow the installation steps here:
    [Air Installation Guide](https://github.com/air-verse/air)
 
-## Setup env
+### Discord Bot Setup
+ - Refer to [Setup](./SETUP.md)
+
+### Setup env
 1. Create .env file in root directory
-2. Copy .env.example content in .env
-
-## Running RabbitMQ with Docker
-
-1. Ensure Docker is installed and running on your machine.
-2. Navigate to the project directory.
-3. Create a `docker-compose.yml` file with the following content:
-
-   ```yaml
-   version: '3.8'
-
-   services:
-     rabbitmq:
-       image: rabbitmq:3.13-management
-       container_name: rabbitmq
-       ports:
-         - '5672:5672'
-         - '15672:15672'
+2. Copy .env.example content in .env and replace with correct value
+   ```sh
+      PORT = "8999" # Default :8999
+      DISCORD_PUBLIC_KEY = "<DISCORD_PUBLIC_KEY>" # Add the correct value from bot setup
+      GUILD_ID = "<DISCORD_GUILD_ID>" # Add the discord server id
+      BOT_TOKEN = "<BOT_TOKEN>" # Add the correct value from bot setup
+      QUEUE_URL = "amqp://localhost" # Default :amqp://localhost
+      ENV = "development" # Other: production, staging
+      QUEUE_NAME = "DISCORD_QUEUE"  #Default: "DISCORD_QUEUE"
    ```
 
-4. Start the RabbitMQ container:
+## Start RabbitMQ with Docker
+
+Ensure Docker is installed and running on your machine.
+
+1. Navigate to the project directory.
+2. Start RabbitMQ Container using below command
+   ```sh
+   docker compose up rabbitmq
+   docker compose up -d rabbitmq # To run container in background
+   ```
+3. Verify that RabbitMQ is running by accessing the management interface at [http://localhost:15672](http://localhost:15672). The default username and password are both `guest`.
+
+## Start Server with Docker
+1. Start server using below command
 
    ```sh
-   docker-compose up -d
+   docker compose up server
+   docker compose up -d server # To run the server in background
    ```
-
-5. Verify that RabbitMQ is running by accessing the management interface at [http://localhost:15672](http://localhost:15672). The default username and password are both `guest`.
-
-## Running the Project Using Go
+2. Verify that Server is running by making an http request at [http://localhost:8080/health](http://localhost:8080/health).
+## Start the Server without Docker
 
 1. **Install Packages**
 
@@ -90,6 +107,15 @@ Before running the project, ensure that you have the following installed:
    ```bash
    air
    ```
+5. **Verify that Server is running by making an http request at [http://localhost:8999/health](http://localhost:8999/health).**
+
+## Start Server and RabbitMq with Docker
+```sh
+   docker compose up 
+   docker compose up -d # To run server and rabbitmq container
+```
+1. Verify that RabbitMQ is running by accessing the management interface at [http://localhost:15672](http://localhost:15672). The default username and password are both `guest`.
+2. Verify that Server is running by making an http request at [http://localhost:8080/health](http://localhost:8080/health).
 
 ## Running the Project Using Make
 
@@ -118,25 +144,6 @@ You can run the project using the `Makefile`, which provides several commands fo
 
    ```bash
    make air
-   ```
-
-## Run the Project Using Docker
-
-You can run the project using the `Docker`, using the following steps
-
-1. **Compose the Image**
-
-   ```bash
-   docker-compose up --build
-   ```
-
-   You can also run the command above in _detach_ mode by specifying `-d` flag in the end
-
-2. **Remove the Image**
-   If you are done with running the docker image and want to remove the image, run the ocmmand below
-
-   ```bash
-   docker-compose down
    ```
 
 ## Other Commands Usage

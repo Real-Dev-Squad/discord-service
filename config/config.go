@@ -18,6 +18,7 @@ type Config struct {
 	MAX_RETRIES           int
 	RDS_BASE_API_URL      string
 	VERIFICATION_SITE_URL string
+	BOT_PRIVATE_KEY       string
 }
 
 var AppConfig Config
@@ -39,6 +40,7 @@ func init() {
 		MAX_RETRIES:        5,
 		RDS_BASE_API_URL:   loadEnv("RDS_BASE_API_URL"),
 		VERIFICATION_SITE_URL: loadEnv("VERIFICATION_SITE_URL"),
+		BOT_PRIVATE_KEY:       loadEnv("BOT_PRIVATE_KEY"),
 	}
 }
 

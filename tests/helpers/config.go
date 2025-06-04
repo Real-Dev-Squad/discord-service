@@ -14,4 +14,5 @@ func init() {
 	os.Setenv("ENV", "development")
 	os.Setenv("RDS_BASE_API_URL", "http://localhost:3000")
 	os.Setenv("VERIFICATION_SITE_URL", "http://localhost:3443")
+	os.Setenv("BOT_PRIVATE_KEY", "<discord-bot-private-key>")
 }

@@ -17,7 +17,7 @@ type Config struct {
 	QUEUE_NAME            string
 	MAX_RETRIES           int
 	RDS_BASE_API_URL      string
-	VERIFICATION_SITE_URL string
+	MAIN_SITE_URL         string
 	BOT_PRIVATE_KEY       string
 }
 
@@ -39,8 +39,8 @@ func init() {
 		QUEUE_NAME:         loadEnv("QUEUE_NAME"),
 		MAX_RETRIES:        5,
 		RDS_BASE_API_URL:   loadEnv("RDS_BASE_API_URL"),
-		VERIFICATION_SITE_URL: loadEnv("VERIFICATION_SITE_URL"),
-		BOT_PRIVATE_KEY:       loadEnv("BOT_PRIVATE_KEY"),
+		MAIN_SITE_URL:      loadEnv("MAIN_SITE_URL"),
+		BOT_PRIVATE_KEY:    loadEnv("BOT_PRIVATE_KEY"),
 	}
 }
 

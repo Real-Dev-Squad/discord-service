@@ -1,11 +1,14 @@
 package service
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/Real-Dev-Squad/discord-service/queue"
 
 	"github.com/Real-Dev-Squad/discord-service/dtos"
 	"github.com/Real-Dev-Squad/discord-service/fixtures"
@@ -71,6 +74,38 @@ func TestMainService(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, messageResponse.Data.Content, "Work in progress for Verify command")
 		assert.Equal(t, http.StatusOK, w.Code)
+	})
+
+	t.Run("should trigger MentionEachService when command name is mention-each", func(t *testing.T) {
+		roleID := "role987"
+		discordMessage := &dtos.DiscordMessage{
+			Data: &dtos.Data{
+				GuildId: "guild123",
+				ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
+					Name: utils.CommandNames.MentionEach,
+					Options: []*discordgo.ApplicationCommandInteractionDataOption{
+						{Name: "role", Value: roleID},
+						{Name: "ff_enabled", Value: true},
+					},
+				},
+			},
+			Member:    &discordgo.Member{User: &discordgo.User{ID: "mentionUser"}, Permissions: discordgo.PermissionMentionEveryone},
+			ChannelId: "chan123",
+		}
+
+		queueCalled := false
+		queue.SendMessage = func(message []byte) error {
+			queueCalled = true
+			return nil
+		}
+		handler := MainService(discordMessage)
+		w := httptest.NewRecorder()
+		r, _ := http.NewRequest("POST", "/", bytes.NewBuffer([]byte{}))
+		handler(w, r)
+		assert.Equal(t, http.StatusOK, w.Code)
+		expectedSubString := "Mentioning all users with the \\u003c@\\u0026" + roleID + "\\u003e"
+		assert.Contains(t, w.Body.String(), expectedSubString)
+		assert.True(t, queueCalled, "queue.SendMessage should have been called for mention-each")
 	})
 
 	t.Run("should return default handler when command name is not in record", func(t *testing.T) {

@@ -2,10 +2,9 @@ package config
 
 import (
 	"fmt"
-	"os"
-
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
+	"os"
 )
 
 type Config struct {

@@ -37,6 +37,10 @@ type mockSession struct {
 	applicationCommandCalled bool
 	closeCalled              bool
 	getUserIdCalled          bool
+	channelMessageSendCalled bool
+	channelMessageSendError  error
+	guildMembersCalled       bool
+	guildMembersError        error
 }
 
 func (m *mockSession) Open() error {
@@ -55,9 +59,19 @@ func (m *mockSession) ApplicationCommandCreate(applicationID, guildID string, co
 	return nil, m.commandError
 }
 
-func (m *mockSession) GetUerId() string {
+func (m *mockSession) GetUserId() string {
 	m.getUserIdCalled = true
 	return ""
+}
+
+func (m *mockSession) GuildMembers(guildID, after string, limit int) ([]*discordgo.Member, error) {
+	m.guildMembersCalled = true
+	return nil, m.guildMembersError
+}
+
+func (m *mockSession) ChannelMessageSend(channelID string, content string) (*discordgo.Message, error) {
+	m.channelMessageSendCalled = true
+	return nil, m.channelMessageSendError
 }
 
 func TestRegisterCommands(t *testing.T) {

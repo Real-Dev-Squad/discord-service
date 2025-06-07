@@ -23,10 +23,15 @@ func QueueHandler(response http.ResponseWriter, request *http.Request, params ht
 		logrus.Errorf("Failed to read request body: %v", err)
 		response.Header().Set("Content-Type", "application/json")
 		response.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(response).Encode(Response{
+		if err := json.NewEncoder(response).Encode(Response{
 			Status:  "error",
 			Message: "Failed to read request body",
-		})
+		}); err != nil {
+			logrus.Errorf("Failed to encode error response: %v", err)
+			// Fallback response if JSON encoding fails
+			response.WriteHeader(http.StatusInternalServerError)
+			response.Write([]byte("Internal server error"))
+		}
 		return
 	}
 

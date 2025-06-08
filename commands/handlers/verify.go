@@ -2,9 +2,12 @@ package handlers
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/Real-Dev-Squad/discord-service/config"
 	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/sirupsen/logrus"
 )
 
@@ -13,10 +16,25 @@ func (CS *CommandHandler) verify() error {
 	applicationId := metaData["applicationId"]
 	
 	_, err := utils.TokenHelper.GenerateUniqueToken()
-	// if err != nil {
-		// return err
-	// }
-	// logrus.Infof("Verification token: %s", token)
+	if err != nil {
+		return err
+	}
+
+	rsaPrivateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(config.AppConfig.BOT_PRIVATE_KEY))
+	if err != nil {
+		return err
+	}
+
+	authToken, err:= utils.TokenHelper.GenerateAuthToken(jwt.SigningMethodRS256, jwt.MapClaims{
+		"expiry": time.Now().Add(time.Second * 2).Unix(),
+		"name": "Discord Service",
+	}, rsaPrivateKey)
+	if err != nil {
+		return err
+	}
+	
+	logrus.Infof("Auth token: %s generated at %v", authToken, time.Now().Unix())
+
 	session, err := CreateSession()
 	if err != nil {
 		return err

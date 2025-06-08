@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
@@ -44,4 +45,15 @@ func (t *tokenHelper) GenerateUniqueToken() (string, error) {
 	token := hex.EncodeToString(hashBytes)
 	fmt.Println("Token: ", token)
 	return token, nil
+}
+
+
+func (t *tokenHelper) GenerateAuthToken(method jwt.SigningMethod, claims jwt.Claims, privateKey any) (string, error) {
+	logrus.Infof("Generating auth token with method: %s, claims: %v, privateKey: %v", method, claims, privateKey)
+	token:= jwt.NewWithClaims(method, claims)
+	tokenString, err := token.SignedString(privateKey)
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
 }

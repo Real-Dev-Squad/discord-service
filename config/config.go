@@ -19,6 +19,7 @@ type Config struct {
 	RDS_BASE_API_URL      string
 	MAIN_SITE_URL         string
 	BOT_PRIVATE_KEY       string
+	VERIFICATION_SITE_URL string
 }
 
 var AppConfig Config
@@ -41,6 +42,7 @@ func init() {
 		RDS_BASE_API_URL:   loadEnv("RDS_BASE_API_URL"),
 		MAIN_SITE_URL:      loadEnv("MAIN_SITE_URL"),
 		BOT_PRIVATE_KEY:    loadEnv("BOT_PRIVATE_KEY"),
+		VERIFICATION_SITE_URL: loadEnv("VERIFICATION_SITE_URL"),
 	}
 }
 

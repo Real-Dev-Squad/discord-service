@@ -17,8 +17,6 @@ type Config struct {
 	QUEUE_NAME            string
 	MAX_RETRIES           int
 	RDS_BASE_API_URL      string
-	MAIN_SITE_URL         string
-	BOT_PRIVATE_KEY       string
 	VERIFICATION_SITE_URL string
 	MAIN_SITE_URL         string
 	BOT_PRIVATE_KEY       string
@@ -45,11 +43,6 @@ func init() {
 		MAIN_SITE_URL:      loadEnv("MAIN_SITE_URL"),
 		BOT_PRIVATE_KEY:    loadEnv("BOT_PRIVATE_KEY"),
 		VERIFICATION_SITE_URL: loadEnv("VERIFICATION_SITE_URL"),
-<<<<<<< HEAD
-=======
-		MAIN_SITE_URL:         loadEnv("MAIN_SITE_URL"),
-		BOT_PRIVATE_KEY:       loadEnv("BOT_PRIVATE_KEY"),
->>>>>>> 964e765 (chore: add BOT_PRIVATE_KEY for integration with website-backend)
 	}
 }
 

@@ -10,6 +10,8 @@ type Data struct {
 type DiscordMessage struct {
 	AppPermissions string                    `json:"app_permissions"`
 	ApplicationId  string                    `json:"application_id"`
+	ID             string                    `json:"id"`
+	Token          string                    `json:"token"`
 	Type           discordgo.InteractionType `json:"type"`
 	Channel        *discordgo.Channel        `json:"channel"`
 	ChannelId      string                    `json:"channel_id"`

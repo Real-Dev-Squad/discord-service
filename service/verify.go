@@ -20,12 +20,15 @@ func (s *CommandService) Verify(response http.ResponseWriter, request *http.Requ
 	dp := &dtos.DataPacket{
 		UserID:      s.discordMessage.Member.User.ID,
 		CommandName: utils.CommandNames.Verify,
-		MetaData:    map[string]string{
-			"userAvatarHash": s.discordMessage.Member.Avatar,
-			"userName": s.discordMessage.Member.User.Username,
-			"discriminator": s.discordMessage.Member.User.Discriminator,
+		MetaData: map[string]string{
+			"userAvatarHash":  s.discordMessage.Member.Avatar,
+			"userName":        s.discordMessage.Member.User.Username,
+			"discriminator":   s.discordMessage.Member.User.Discriminator,
 			"discordJoinedAt": s.discordMessage.Member.JoinedAt.Format(time.RFC3339),
-			"dev": dev,
+			"dev":             dev,
+			"channelId":       s.discordMessage.ChannelId,
+			"token":           s.discordMessage.Token,
+			"applicationId":   s.discordMessage.ApplicationId,
 		},
 	}
 
@@ -37,7 +40,7 @@ func (s *CommandService) Verify(response http.ResponseWriter, request *http.Requ
 		}, http.StatusInternalServerError)
 	}
 
-	if err:= queue.SendMessage([]byte(bytes)); err != nil {
+	if err := queue.SendMessage([]byte(bytes)); err != nil {
 		logrus.Errorf("Failed to send data packet to queue: %v", err)
 		utils.ResponseHandler.WriteJSON(response, &dtos.Response{
 			Message: "Something went wrong",
@@ -48,7 +51,7 @@ func (s *CommandService) Verify(response http.ResponseWriter, request *http.Requ
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "Your request is being processed.",
-			Flags: discordgo.MessageFlagsEphemeral,
+			Flags:   discordgo.MessageFlagsEphemeral,
 		},
 	}
 

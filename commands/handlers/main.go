@@ -28,6 +28,8 @@ func MainHandler(dataPacket []byte) func() error {
 	switch packetData.CommandName {
 	case utils.CommandNames.Listening:
 		return CS.listeningHandler
+	case utils.CommandNames.Verify:
+		return CS.verify
 	default:
 		logrus.Warn("Invalid Command Received: ", packetData.CommandName)
 		return nil

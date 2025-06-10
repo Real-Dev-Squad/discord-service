@@ -29,7 +29,7 @@ var Commands = []*discordgo.ApplicationCommand{
 			{
 				Name:        "dev",
 				Description: "Use new website for verification.",
-				Type:        5,
+				Type:        discordgo.ApplicationCommandOptionBoolean,
 				Required:    false,
 			},
 		},

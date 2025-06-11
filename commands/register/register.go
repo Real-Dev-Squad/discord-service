@@ -1,7 +1,7 @@
 package register
 
 import (
-	constants "github.com/Real-Dev-Squad/discord-service/commands"
+	constants "github.com/Real-Dev-Squad/discord-service/commands/constants"
 	"github.com/Real-Dev-Squad/discord-service/config"
 	"github.com/Real-Dev-Squad/discord-service/models"
 	"github.com/bwmarrin/discordgo"

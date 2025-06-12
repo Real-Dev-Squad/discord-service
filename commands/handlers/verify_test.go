@@ -158,7 +158,7 @@ func TestVerify(t *testing.T) {
 		}
 		err := handler.verify()
 		assert.Error(t, err)
-		assert.Equal(t, "session error", err.Error())
+		assert.Equal(t, "error creating session: session error", err.Error())
 	})
 
 	t.Run("error on webhook message edit", func(t *testing.T) {
@@ -190,6 +190,6 @@ func TestVerify(t *testing.T) {
 		}
 		err := handler.verify()
 		assert.Error(t, err)
-		assert.Equal(t, "webhook error", err.Error())
+		assert.Equal(t, "error editing original message for application: webhook error", err.Error())
 	})
 }

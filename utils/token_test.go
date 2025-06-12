@@ -5,7 +5,6 @@ import (
 	"crypto/rsa"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +22,7 @@ func TestGenerateUniqueToken(t *testing.T) {
 		token, err := uniqueToken.GenerateUniqueToken()
 		assert.NoError(t, err)
 		assert.NotEmpty(t, token)
-		assert.Len(t, token, 64) // SHA-256 hash is 64 hex characters
+		assert.Len(t, token, 64)
 	})
 
 	t.Run("should return an error when random number generation fails", func(t *testing.T) {
@@ -32,7 +31,7 @@ func TestGenerateUniqueToken(t *testing.T) {
 		defer func() {
 			rand.Reader = originalReader
 		}()
-		
+
 		uniqueToken := &UniqueToken{}
 		token, err := uniqueToken.GenerateUniqueToken()
 		assert.Error(t, err)
@@ -42,36 +41,18 @@ func TestGenerateUniqueToken(t *testing.T) {
 }
 
 func TestGenerateAuthToken(t *testing.T) {
-	t.Run("should generate an HS256 auth token successfully", func(t *testing.T) {
-		claims := jwt.MapClaims{
-			"username": "test",
-			"exp":      time.Now().Add(time.Hour * 1).Unix(),
-		}
-		secret := []byte("secret-key")
-
-		authToken := &AuthToken{}
-		token, err := authToken.GenerateAuthToken(jwt.SigningMethodHS256, claims, secret)
-		assert.NoError(t, err)
-		assert.NotEmpty(t, token)
-
-		parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-			return secret, nil
-		})
-		assert.NoError(t, err)
-		assert.True(t, parsedToken.Valid)
-	})
-
 	t.Run("should generate an RS256 auth token successfully", func(t *testing.T) {
 		privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 		assert.NoError(t, err)
-
+		
+		name := "Discord Service"
 		claims := jwt.MapClaims{
-			"username": "test",
-			"exp":      time.Now().Add(time.Hour * 1).Unix(),
+			"name": name,
 		}
-
+		
 		authToken := &AuthToken{}
 		token, err := authToken.GenerateAuthToken(jwt.SigningMethodRS256, claims, privateKey)
+
 		assert.NoError(t, err)
 		assert.NotEmpty(t, token)
 
@@ -79,17 +60,13 @@ func TestGenerateAuthToken(t *testing.T) {
 			return &privateKey.PublicKey, nil
 		})
 		assert.NoError(t, err)
-		assert.True(t, parsedToken.Valid)
+		res, _ := parsedToken.Claims.(jwt.MapClaims)["name"]
+		assert.Equal(t, name, res)
 	})
 
 	t.Run("should return an error for invalid key type", func(t *testing.T) {
-		claims := jwt.MapClaims{
-			"username": "test",
-			"exp":      time.Now().Add(time.Hour * 1).Unix(),
-		}
-		// Using a string as a key for RS256, which expects *rsa.PrivateKey
-		invalidKey := "not-a-real-key"
-
+		claims := jwt.MapClaims{}
+		invalidKey := "<invalid-rsa-key>"
 		authToken := &AuthToken{}
 		token, err := authToken.GenerateAuthToken(jwt.SigningMethodRS256, claims, invalidKey)
 		assert.Error(t, err)

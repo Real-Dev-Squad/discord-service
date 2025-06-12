@@ -158,7 +158,7 @@ func (CS *CommandHandler) verify() error {
 
 	if _, err := session.WebhookMessageEdit(applicationId, metaData["token"], "@original", webhookEdit); err != nil {
 		logrus.Errorf("Error editing original message for application %v", err)
-		return fmt.Errorf("error editing original message for application %v", err)
+		return fmt.Errorf("error editing original message for application: %v", err)
 	}
 
 	if err := session.Close(); err != nil {

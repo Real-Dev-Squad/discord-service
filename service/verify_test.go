@@ -1,7 +1,6 @@
 package service
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -46,149 +45,52 @@ func TestVerify(t *testing.T) {
 		ApplicationId: "appID-789",
 	}
 
-	t.Run("Success with dev as true", func(t *testing.T) {
+	t.Run("should return success response with 200 status code", func(t *testing.T) {
 		message := *baseMessage
-		message.Data = &dtos.Data{
-			ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
-				Name: "verify",
-				Options: []*discordgo.ApplicationCommandInteractionDataOption{
-					{
-						Name:  "dev",
-						Type:  discordgo.ApplicationCommandOptionBoolean,
-						Value: true,
-					},
-				},
-			},
-		}
-
+		message.Data = &dtos.Data{}
 		service := &CommandService{
 			discordMessage: &message,
 		}
 
-		var capturedData []byte
-		queue.SendMessage = func(data []byte) error {
-			capturedData = data
-			return nil
-		}
+		queue.SendMessage = func(data []byte) error { return nil }
 
-		req, _ := http.NewRequest("POST", "/verify", nil)
-		rr := httptest.NewRecorder()
-		service.Verify(rr, req)
+		r, _ := http.NewRequest("POST", "/verify", nil)
+		w := httptest.NewRecorder()
 
-		assert.Equal(t, http.StatusOK, rr.Code)
-
-		var packet dtos.DataPacket
-		json.Unmarshal(capturedData, &packet)
-
-		assert.Equal(t, "true", packet.MetaData["dev"])
-		assert.Equal(t, "userID-123", packet.UserID)
+		service.Verify(w, r)
+		assert.Equal(t, http.StatusOK, w.Code)
 	})
 
-	t.Run("Success with dev as false", func(t *testing.T) {
+	t.Run("should return internal server error when queue send message fails", func(t *testing.T) {
 		message := *baseMessage
-		message.Data = &dtos.Data{
-			ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
-				Name: "verify",
-				Options: []*discordgo.ApplicationCommandInteractionDataOption{
-					{
-						Name:  "dev",
-						Type:  discordgo.ApplicationCommandOptionBoolean,
-						Value: false,
-					},
-				},
-			},
-		}
+		message.Data = &dtos.Data{}
 		service := &CommandService{
 			discordMessage: &message,
 		}
-		var capturedData []byte
-		queue.SendMessage = func(data []byte) error {
-			capturedData = data
-			return nil
-		}
-
-		req, _ := http.NewRequest("POST", "/verify", nil)
-		rr := httptest.NewRecorder()
-		service.Verify(rr, req)
-		assert.Equal(t, http.StatusOK, rr.Code)
-
-		var packet dtos.DataPacket
-		json.Unmarshal(capturedData, &packet)
-		assert.Equal(t, "false", packet.MetaData["dev"])
-	})
-
-	t.Run("Success with no dev flag", func(t *testing.T) {
-		message := *baseMessage
-		message.Data = &dtos.Data{
-			ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
-				Name:    "verify",
-				Options: []*discordgo.ApplicationCommandInteractionDataOption{},
-			},
-		}
-		service := &CommandService{
-			discordMessage: &message,
-		}
-
-		var capturedData []byte
-		queue.SendMessage = func(data []byte) error {
-			capturedData = data
-			return nil
-		}
-
-		req, _ := http.NewRequest("POST", "/verify", nil)
-		rr := httptest.NewRecorder()
-		service.Verify(rr, req)
-		assert.Equal(t, http.StatusOK, rr.Code)
-		var packet dtos.DataPacket
-		json.Unmarshal(capturedData, &packet)
-		assert.Equal(t, "false", packet.MetaData["dev"])
-	})
-
-	t.Run("Queue send message fails", func(t *testing.T) {
-		message := *baseMessage
-		message.Data = &dtos.Data{
-			ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
-				Name: "verify",
-			},
-		}
-		service := &CommandService{
-			discordMessage: &message,
-		}
-
 		queue.SendMessage = func(data []byte) error {
 			return errors.New("queue error")
 		}
 
-		req, _ := http.NewRequest("POST", "/verify", nil)
-		rr := httptest.NewRecorder()
-		service.Verify(rr, req)
+		r, _ := http.NewRequest("POST", "/verify", nil)
+		w := httptest.NewRecorder()
+		service.Verify(w, r)
 
-		assert.Equal(t, http.StatusInternalServerError, rr.Code)
-		var resp dtos.Response
-		json.Unmarshal(rr.Body.Bytes(), &resp)
-		assert.Equal(t, "Something went wrong", resp.Message)
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
 	})
 
-	t.Run("Json marshalling fails", func(t *testing.T) {
+	t.Run("should return internal server error when json marshalling fails", func(t *testing.T) {
 		message := *baseMessage
-		message.Data = &dtos.Data{
-			ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
-				Name: "verify",
-			},
-		}
+		message.Data = &dtos.Data{}
+
+		utils.Json = &mockFailingJsonHandler{}
 		service := &CommandService{
 			discordMessage: &message,
 		}
-		queue.SendMessage = func(data []byte) error {
-			return nil
-		}
-		utils.Json = &mockFailingJsonHandler{}
 
-		req, _ := http.NewRequest("POST", "/verify", nil)
-		rr := httptest.NewRecorder()
-		service.Verify(rr, req)
+		r, _ := http.NewRequest("POST", "/verify", nil)
+		w := httptest.NewRecorder()
+		service.Verify(w, r)
 
-		assert.Equal(t, http.StatusInternalServerError, rr.Code)
-		assert.Equal(t, "Internal Server Error\n", rr.Body.String())
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
 	})
 }

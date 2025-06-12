@@ -13,8 +13,10 @@ import (
 
 func (s *CommandService) Verify(response http.ResponseWriter, request *http.Request) {
 	dev := "false"
-	if len(s.discordMessage.Data.Options) == 1 && s.discordMessage.Data.Options[0].Value.(bool) {
-		dev = "true"
+	if len(s.discordMessage.Data.Options) == 1 {
+		if val, ok := s.discordMessage.Data.Options[0].Value.(bool); ok && val{
+			dev = "true"
+		}
 	}
 
 	dp := &dtos.DataPacket{

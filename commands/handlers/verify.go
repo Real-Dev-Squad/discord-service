@@ -17,8 +17,7 @@ func (CS *CommandHandler) verify() error {
 	metaData := CS.discordMessage.MetaData
 	applicationId := metaData["applicationId"]
 	
-	uniqueToken := &utils.UniqueToken{}
-	token, err := uniqueToken.GenerateUniqueToken()
+	token, err := utils.UniqueToken.GenerateUniqueToken()
 	if err != nil {
 		return fmt.Errorf("error generating unique token: %v", err)
 	}
@@ -28,8 +27,7 @@ func (CS *CommandHandler) verify() error {
 		return fmt.Errorf("error parsing private key string to rsa private key: %v", err)
 	}
 	
-	authToken := &utils.AuthToken{}
-	authTokenString, err := authToken.GenerateAuthToken(jwt.SigningMethodRS256, jwt.MapClaims{
+	authTokenString, err := utils.AuthToken.GenerateAuthToken(jwt.SigningMethodRS256, jwt.MapClaims{
 		"expiry": time.Now().Add(time.Second * 2).Unix(),
 		"name": DISCORD_SERVICE,
 	}, rsaPrivateKey)
@@ -76,7 +74,7 @@ func (CS *CommandHandler) verify() error {
 		if metaData["dev"] == "true" {
 			verificationSiteURL = config.AppConfig.MAIN_SITE_URL;
 			message = fmt.Sprintf("%s\n%s/discord?dev=true&token=%s\n%s", VERIFICATION_STRING, verificationSiteURL, token, VERIFICATION_SUBSTRING)
-		}else if metaData["dev"] == "false" {
+		}else {
 			verificationSiteURL = config.AppConfig.VERIFICATION_SITE_URL;
 			message = fmt.Sprintf("%s\n%s/discord?token=%s\n%s", VERIFICATION_STRING, verificationSiteURL, token, VERIFICATION_SUBSTRING)
 		}

@@ -17,10 +17,8 @@ import (
 )
 
 func TestMainService(t *testing.T) {
-	// Backup original functions
 	originalSendMessage := queue.SendMessage
 	defer func() {
-		// Restore original functions
 		queue.SendMessage = originalSendMessage
 	}()
 	queue.SendMessage = func(data []byte) error {

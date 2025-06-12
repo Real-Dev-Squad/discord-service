@@ -60,9 +60,6 @@ func TestCreateSession(t *testing.T) {
 	})
 }
 
-func mockCreateSession() (*discordgo.Session, error) {
-	return &discordgo.Session{}, nil
-}
 func TestUpdateNickName(t *testing.T) {
 
 	var originalCreateSession = CreateSession
@@ -75,7 +72,7 @@ func TestUpdateNickName(t *testing.T) {
 	})
 
 	t.Run("should return error if CreateSession fails", func(t *testing.T) {
-		CreateSession = func() (*discordgo.Session, error) {
+		CreateSession = func() (DiscordSessionWrapper, error) {
 			return nil, errors.New("failed to create session")
 		}
 		err := UpdateNickName("userID", "validNickname")
@@ -83,7 +80,9 @@ func TestUpdateNickName(t *testing.T) {
 		assert.Equal(t, "failed to create session", err.Error())
 	})
 	t.Run("should hit GuildMemberNickname if CreateSession succeeds", func(t *testing.T) {
-		CreateSession = mockCreateSession
+		CreateSession = func() (DiscordSessionWrapper, error) {
+			panic("GuildMemberNickname called")
+		}
 		assert.Panics(t, func() { UpdateNickName("userID", "validNickname") })
 
 	})

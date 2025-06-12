@@ -36,12 +36,18 @@ func MainHandler(dataPacket []byte) func() error {
 	}
 }
 
+type DiscordSessionWrapper interface {
+	WebhookMessageEdit(webhookID string, token string, messageID string, data *discordgo.WebhookEdit, options ...discordgo.RequestOption) (*discordgo.Message, error)
+	GuildMemberNickname(guildID string, userID string, nickname string, options ...discordgo.RequestOption) error
+	Close() error
+}
 type DiscordSession struct {
 	session *discordgo.Session
 }
 
 var NewDiscord = discordgo.New
-var CreateSession = func() (*discordgo.Session, error) {
+
+var CreateSession = func() (DiscordSessionWrapper, error) {
 	session, err := NewDiscord("Bot " + config.AppConfig.BOT_TOKEN)
 	if err != nil {
 		logrus.Errorf("Cannot create a new Discord session: %v", err)
@@ -59,7 +65,7 @@ var CreateSession = func() (*discordgo.Session, error) {
 func UpdateNickName(userId string, newNickName string) error {
 	if len(newNickName) > 32 {
 		logrus.Error("Must be 32 or fewer in length.")
-		return errors.New("Must be 32 or fewer in length.")
+		return errors.New("must be 32 or fewer in length")
 	}
 	session, err := CreateSession()
 	if err != nil {
@@ -68,7 +74,7 @@ func UpdateNickName(userId string, newNickName string) error {
 	err = session.GuildMemberNickname(config.AppConfig.GUILD_ID, userId, newNickName)
 	if err != nil {
 		logrus.Errorf("Cannot update nickname: %v", err)
-		return nil
+		return err
 	}
 	return nil
 }

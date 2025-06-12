@@ -38,6 +38,7 @@ func (s *CommandService) Verify(response http.ResponseWriter, request *http.Requ
 		utils.ResponseHandler.WriteJSON(response, &dtos.Response{
 			Message: "Something went wrong",
 		}, http.StatusInternalServerError)
+		return
 	}
 
 	if err := queue.SendMessage([]byte(bytes)); err != nil {
@@ -45,6 +46,7 @@ func (s *CommandService) Verify(response http.ResponseWriter, request *http.Requ
 		utils.ResponseHandler.WriteJSON(response, &dtos.Response{
 			Message: "Something went wrong",
 		}, http.StatusInternalServerError)
+		return
 	}
 
 	messageResponse := &discordgo.InteractionResponse{

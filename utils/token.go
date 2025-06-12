@@ -13,13 +13,19 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type tokenHelper struct{}
+type UniqueTokenHelper interface {
+	GenerateUniqueToken() (string, error)
+}
+type AuthTokenHelper interface {
+	GenerateAuthToken(method jwt.SigningMethod, claims jwt.Claims, privateKey any) (string, error)
+}
 
-var TokenHelper = &tokenHelper{}
+type UniqueToken struct{}
+type AuthToken struct{}
 
 // GenerateUniqueToken creates a secure, unique token by hashing a combination of a UUID,
 // a cryptographically secure random number, and the current time.
-func (t *tokenHelper) GenerateUniqueToken() (string, error) {
+func (t *UniqueToken) GenerateUniqueToken() (string, error) {
 	// 1. Generate a new UUID
 	uuidToken := uuid.NewString()
 
@@ -47,10 +53,9 @@ func (t *tokenHelper) GenerateUniqueToken() (string, error) {
 	return token, nil
 }
 
-
-func (t *tokenHelper) GenerateAuthToken(method jwt.SigningMethod, claims jwt.Claims, privateKey any) (string, error) {
+func (t *AuthToken) GenerateAuthToken(method jwt.SigningMethod, claims jwt.Claims, privateKey any) (string, error) {
 	logrus.Infof("Generating auth token with method: %s, claims: %v, privateKey: %v", method, claims, privateKey)
-	token:= jwt.NewWithClaims(method, claims)
+	token := jwt.NewWithClaims(method, claims)
 	tokenString, err := token.SignedString(privateKey)
 	if err != nil {
 		return "", err

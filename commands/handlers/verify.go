@@ -21,7 +21,8 @@ func (CS *CommandHandler) verify() error {
 	metaData := CS.discordMessage.MetaData
 	applicationId := metaData["applicationId"]
 	
-	token, err := utils.TokenHelper.GenerateUniqueToken()
+	uniqueToken := &utils.UniqueToken{}
+	token, err := uniqueToken.GenerateUniqueToken()
 	if err != nil {
 		return err
 	}
@@ -30,8 +31,9 @@ func (CS *CommandHandler) verify() error {
 	if err != nil {
 		return err
 	}
-
-	authToken, err:= utils.TokenHelper.GenerateAuthToken(jwt.SigningMethodRS256, jwt.MapClaims{
+	
+	authToken := &utils.AuthToken{}
+	authTokenString, err := authToken.GenerateAuthToken(jwt.SigningMethodRS256, jwt.MapClaims{
 		"expiry": time.Now().Add(time.Second * 2).Unix(),
 		"name": "Discord Service",
 	}, rsaPrivateKey)
@@ -39,7 +41,7 @@ func (CS *CommandHandler) verify() error {
 		return err
 	}
 	
-	logrus.Infof("Auth token: %s generated at %v", authToken, time.Now().Unix())
+	logrus.Infof("Auth token: %s generated at %v", authTokenString, time.Now().Unix())
 
 	baseUrl:= fmt.Sprintf("%s/external-accounts", config.AppConfig.RDS_BASE_API_URL)
 	requestBody:= map[string]any{
@@ -64,7 +66,7 @@ func (CS *CommandHandler) verify() error {
 		return err
 	}
 	
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authToken))
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authTokenString))
 	request.Header.Set("Content-Type", "application/json")
 	
 	response, err := http.DefaultClient.Do(request)

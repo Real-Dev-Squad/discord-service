@@ -68,13 +68,12 @@ func (CS *CommandHandler) verify() error {
 	
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authTokenString))
 	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("x-service-name", "Discord Service")
 	
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return err
 	}
-	
-	defer response.Body.Close()
 
 	message:= ""
 	if response.StatusCode == 201 || response.StatusCode == 200 {
@@ -83,9 +82,9 @@ func (CS *CommandHandler) verify() error {
 			verificationSiteURL = config.AppConfig.MAIN_SITE_URL;
 			message = fmt.Sprintf("%s\n%s/discord?dev=true&token=%s\n%s", VERIFICATION_STRING, verificationSiteURL, token, VERIFICATION_SUBSTRING)
 		}
-		if metaData["dev"] == "true" {
+		if metaData["dev"] == "false" {
 			verificationSiteURL = config.AppConfig.VERIFICATION_SITE_URL;
-			message = fmt.Sprintf("%s\n%s/discord?dev=true&token=%s\n%s", VERIFICATION_STRING, verificationSiteURL, token, VERIFICATION_SUBSTRING)
+			message = fmt.Sprintf("%s\n%s/discord?token=%s\n%s", VERIFICATION_STRING, verificationSiteURL, token, VERIFICATION_SUBSTRING)
 		}
 	}
 

@@ -43,10 +43,10 @@ func (CS *CommandHandler) verify() error {
 		"token": token,
 		"attributes": map[string]any{
 			"discordId": CS.discordMessage.UserID,
-			"userAvatar": fmt.Sprintf("%s/%s/%s.jpg", DISCORD_AVATAR_BASE_URL, CS.discordMessage.UserID, CS.discordMessage.MetaData["userAvatarHash"]),
-			"userName": CS.discordMessage.MetaData["userName"],
-			"discriminator": CS.discordMessage.MetaData["discriminator"],
-			"discordJoinedAt": CS.discordMessage.MetaData["discordJoinedAt"],
+			"userAvatar": fmt.Sprintf("%s/%s/%s.jpg", DISCORD_AVATAR_BASE_URL, CS.discordMessage.UserID, metaData["userAvatarHash"]),
+			"userName": metaData["userName"],
+			"discriminator": metaData["discriminator"],
+			"discordJoinedAt": metaData["discordJoinedAt"],
 			"expiry": time.Now().Add(time.Second * 2).Unix(),
 		},
 	}
@@ -70,14 +70,13 @@ func (CS *CommandHandler) verify() error {
 		return fmt.Errorf("error sending request to RDS Backend API: %v", err)
 	}
 
-	message:= ""
+	message:= "Something went wrong while generating verification link"
 	if response.StatusCode == 201 || response.StatusCode == 200 {
-		verificationSiteURL := "";
-		if CS.discordMessage.MetaData["dev"] == "true" {
+		verificationSiteURL := ""
+		if metaData["dev"] == "true" {
 			verificationSiteURL = config.AppConfig.MAIN_SITE_URL;
 			message = fmt.Sprintf("%s\n%s/discord?dev=true&token=%s\n%s", VERIFICATION_STRING, verificationSiteURL, token, VERIFICATION_SUBSTRING)
-		}
-		if metaData["dev"] == "false" {
+		}else if metaData["dev"] == "false" {
 			verificationSiteURL = config.AppConfig.VERIFICATION_SITE_URL;
 			message = fmt.Sprintf("%s\n%s/discord?token=%s\n%s", VERIFICATION_STRING, verificationSiteURL, token, VERIFICATION_SUBSTRING)
 		}

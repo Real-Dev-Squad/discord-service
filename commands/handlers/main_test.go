@@ -11,6 +11,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type mockMainTestDiscordSession struct {
+	*discordgo.Session
+}
+
+func (m *mockMainTestDiscordSession) WebhookMessageEdit(webhookID, token, messageID string, data *discordgo.WebhookEdit, options ...discordgo.RequestOption) (*discordgo.Message, error) {
+	return nil, nil
+}
+
+func (m *mockMainTestDiscordSession) GuildMemberNickname(guildID, userID, nickname string, options ...discordgo.RequestOption) error {
+	panic("GuildMemberNickname called")
+}
+
+func (m *mockMainTestDiscordSession) Close() error {
+	return nil
+}
+
 func TestMainHandler(t *testing.T) {
 	t.Run("should return listeningHandler for 'listening' command", func(t *testing.T) {
 		dataPacket := &dtos.DataPacket{
@@ -68,7 +84,7 @@ func TestUpdateNickName(t *testing.T) {
 	t.Run("should return error if newNickName is longer than 32 characters", func(t *testing.T) {
 		err := UpdateNickName("userID", "ThisIsAVeryLongNicknameThatExceedsTheLimit")
 		assert.Error(t, err)
-		assert.Equal(t, "Must be 32 or fewer in length.", err.Error())
+		assert.Equal(t, "must be 32 or fewer in length", err.Error())
 	})
 
 	t.Run("should return error if CreateSession fails", func(t *testing.T) {

@@ -18,8 +18,8 @@ type Config struct {
 	MAX_RETRIES           int
 	RDS_BASE_API_URL      string
 	VERIFICATION_SITE_URL string
-	MAIN_SITE_URL         string
 	BOT_PRIVATE_KEY       string
+	MAIN_SITE_URL		  string
 }
 
 var AppConfig Config

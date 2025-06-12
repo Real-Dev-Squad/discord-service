@@ -12,7 +12,9 @@ import (
 
 	"github.com/Real-Dev-Squad/discord-service/config"
 	"github.com/Real-Dev-Squad/discord-service/dtos"
+	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,10 +30,6 @@ func (m *mockDiscordSession) WebhookMessageEdit(webhookID, token, messageID stri
 	return nil, nil
 }
 
-func (m *mockDiscordSession) GuildMemberNickname(guildID, userID, nickname string, options ...discordgo.RequestOption) error {
-	return nil
-}
-
 func (m *mockDiscordSession) Close() error {
 	return nil
 }
@@ -44,12 +42,22 @@ func (m *mockFailingDiscordSession) WebhookMessageEdit(webhookID, token, message
 	return nil, errors.New("webhook error")
 }
 
-func (m *mockFailingDiscordSession) GuildMemberNickname(guildID, userID, nickname string, options ...discordgo.RequestOption) error {
-	return errors.New("nickname error")
+type mockFailingDiscordSessionCloser struct {
+	*discordgo.Session
 }
 
-func (m *mockFailingDiscordSession) Close() error {
+func (m *mockFailingDiscordSessionCloser) WebhookMessageEdit(webhookID, token, messageID string, data *discordgo.WebhookEdit, options ...discordgo.RequestOption) (*discordgo.Message, error) {
+	return nil, nil
+}
+
+func (m *mockFailingDiscordSessionCloser) Close() error {
 	return errors.New("close error")
+}
+
+type mockFailingJsonHandler struct{}
+
+func (m *mockFailingJsonHandler) ToJson(data interface{}) (string, error) {
+	return "", errors.New("json marshal error")
 }
 
 func generateTestPrivateKey(t *testing.T) *rsa.PrivateKey {
@@ -65,131 +73,213 @@ func pemEncodePrivateKey(privateKey *rsa.PrivateKey) string {
 	}))
 }
 
+type mockFailingUniqueToken struct{}
+
+func (m *mockFailingUniqueToken) GenerateUniqueToken() (string, error) {
+	return "", errors.New("unique token error")
+}
+
+type mockFailingAuthToken struct{}
+
+func (m *mockFailingAuthToken) GenerateAuthToken(method jwt.SigningMethod, claims jwt.Claims, privateKey any) (string, error) {
+	return "", errors.New("auth token error")
+}
+
 func TestVerify(t *testing.T) {
 	privateKey := generateTestPrivateKey(t)
 	pemPrivateKey := pemEncodePrivateKey(privateKey)
 
 	originalCreateSession := CreateSession
 	originalBotPrivateKey := config.AppConfig.BOT_PRIVATE_KEY
-	defer func() {
-		CreateSession = originalCreateSession
-		config.AppConfig.BOT_PRIVATE_KEY = originalBotPrivateKey
-	}()
-
+	originalJson := utils.Json
+	originalUniqueToken := utils.UniqueToken
+	originalAuthToken := utils.AuthToken
 	config.AppConfig.BOT_PRIVATE_KEY = pemPrivateKey
 
-	t.Run("success in dev mode", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusCreated)
-		}))
-		defer server.Close()
-		config.AppConfig.RDS_BASE_API_URL = server.URL
-		config.AppConfig.VERIFICATION_SITE_URL = "http://dev.realdevsquad.com"
-
-		var capturedMessage string
-		CreateSession = func() (DiscordSessionWrapper, error) {
-			return &mockDiscordSession{Session: &discordgo.Session{}, capturedMessage: &capturedMessage}, nil
-		}
-
-		handler := &CommandHandler{
-			discordMessage: &dtos.DataPacket{
-				UserID: "userID",
-				MetaData: map[string]string{
-					"dev":             "true",
-					"applicationId":   "appID",
-					"token":           "discord-token",
-					"userAvatarHash":  "avatarHash",
-					"userName":        "testuser",
-					"discriminator":   "1234",
-					"discordJoinedAt": "somedate",
-				},
-			},
-		}
-
+	t.Run("should return error when fails to generate unique token", func(t *testing.T) {
+		handler := &CommandHandler{discordMessage: &dtos.DataPacket{}}
+		utils.UniqueToken = &mockFailingUniqueToken{}
+		t.Cleanup(func() {
+			utils.UniqueToken = originalUniqueToken
+		})
 		err := handler.verify()
-		assert.NoError(t, err)
-		assert.Contains(t, capturedMessage, VERIFICATION_STRING)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "error generating unique token")
 	})
 
-	t.Run("error on http request", func(t *testing.T) {
-		config.AppConfig.RDS_BASE_API_URL = "http://localhost:12345"
+	t.Run("should return error when fails to parse private key string to rsa private key", func(t *testing.T) {
+		config.AppConfig.BOT_PRIVATE_KEY = "<invalid-key>"
+		t.Cleanup(func() {
+			config.AppConfig.BOT_PRIVATE_KEY = originalBotPrivateKey
+		})
 		handler := &CommandHandler{
-			discordMessage: &dtos.DataPacket{
-				UserID: "userID",
-				MetaData: map[string]string{
-					"dev":             "true",
-					"applicationId":   "appID",
-					"token":           "discord-token",
-					"userAvatarHash":  "avatarHash",
-					"userName":        "testuser",
-					"discriminator":   "1234",
-					"discordJoinedAt": "somedate",
-				},
-			},
+			discordMessage: &dtos.DataPacket{},
 		}
 		err := handler.verify()
 		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "error parsing private key string to rsa private key")
 	})
 
-	t.Run("error on create session", func(t *testing.T) {
+	t.Run("should return error when fails to generate auth token", func(t *testing.T) {
+		config.AppConfig.BOT_PRIVATE_KEY = pemPrivateKey
+		handler := &CommandHandler{
+			discordMessage: &dtos.DataPacket{},
+		}
+		utils.AuthToken = &mockFailingAuthToken{}
+		t.Cleanup(func() {
+			utils.AuthToken = originalAuthToken
+		})
+		err := handler.verify()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "error generating auth token")
+	})
+
+	t.Run("should return error when fails to parse request body to json string", func(t *testing.T) {
+		config.AppConfig.BOT_PRIVATE_KEY = pemPrivateKey
+		handler := &CommandHandler{
+			discordMessage: &dtos.DataPacket{},
+		}
+		utils.Json = &mockFailingJsonHandler{}
+		t.Cleanup(func() {
+			utils.Json = originalJson
+		})
+		err := handler.verify()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "error parsing request body in json string")
+	})
+
+	t.Run("should return error when fails to create http request", func(t *testing.T) {
+		config.AppConfig.BOT_PRIVATE_KEY = pemPrivateKey
+		config.AppConfig.RDS_BASE_API_URL = "http://localhost:1234\x7f"
+		handler := &CommandHandler{
+			discordMessage: &dtos.DataPacket{},
+		}
+		err := handler.verify()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "error creating http request")
+	})
+
+	t.Run("should return error when fails to send request to RDS Backend API", func(t *testing.T) {
+		config.AppConfig.BOT_PRIVATE_KEY = pemPrivateKey
+		config.AppConfig.RDS_BASE_API_URL = "http://localhost:12345"
+		handler := &CommandHandler{
+			discordMessage: &dtos.DataPacket{},
+		}
+		err := handler.verify()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "error sending request to RDS Backend API")
+	})
+
+	t.Run("should return error when fails to create session", func(t *testing.T) {
+		config.AppConfig.BOT_PRIVATE_KEY = pemPrivateKey
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusCreated)
+			w.WriteHeader(http.StatusOK)
 		}))
 		defer server.Close()
-		config.AppConfig.RDS_BASE_API_URL = server.URL
 
+		config.AppConfig.RDS_BASE_API_URL = server.URL
 		CreateSession = func() (DiscordSessionWrapper, error) {
 			return nil, errors.New("session error")
 		}
+		t.Cleanup(func() {
+			CreateSession = originalCreateSession
+		})
 
 		handler := &CommandHandler{
-			discordMessage: &dtos.DataPacket{
-				UserID: "userID",
-				MetaData: map[string]string{
-					"dev":             "true",
-					"applicationId":   "appID",
-					"token":           "discord-token",
-					"userAvatarHash":  "avatarHash",
-					"userName":        "testuser",
-					"discriminator":   "1234",
-					"discordJoinedAt": "somedate",
-				},
-			},
+			discordMessage: &dtos.DataPacket{},
 		}
+
 		err := handler.verify()
 		assert.Error(t, err)
-		assert.Equal(t, "error creating session: session error", err.Error())
+		assert.Contains(t, err.Error(), "error creating session")
 	})
 
-	t.Run("error on webhook message edit", func(t *testing.T) {
+	t.Run("should return error when fails to edit original message", func(t *testing.T) {
+		config.AppConfig.BOT_PRIVATE_KEY = pemPrivateKey
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		}))
 		defer server.Close()
 		config.AppConfig.RDS_BASE_API_URL = server.URL
-		config.AppConfig.MAIN_SITE_URL = "http://realdevsquad.com"
 
 		CreateSession = func() (DiscordSessionWrapper, error) {
-			// Initialize with an empty but non-nil session to avoid panics
-			return &mockFailingDiscordSession{Session: &discordgo.Session{}}, nil
+			return &mockFailingDiscordSession{}, nil
 		}
+		t.Cleanup(func() {
+			CreateSession = originalCreateSession
+		})
 
-		handler := &CommandHandler{
-			discordMessage: &dtos.DataPacket{
-				UserID: "userID",
-				MetaData: map[string]string{
-					"dev":             "true",
-					"applicationId":   "appID",
-					"token":           "discord-token",
-					"userAvatarHash":  "avatarHash",
-					"userName":        "testuser",
-					"discriminator":   "1234",
-					"discordJoinedAt": "somedate",
-				},
-			},
-		}
+		handler := &CommandHandler{discordMessage: &dtos.DataPacket{}}
 		err := handler.verify()
 		assert.Error(t, err)
-		assert.Equal(t, "error editing original message for application: webhook error", err.Error())
+		assert.Contains(t, err.Error(), "error editing original message for application")
+	})
+
+	t.Run("should return error when fails to close session", func(t *testing.T) {
+		config.AppConfig.BOT_PRIVATE_KEY = pemPrivateKey
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer server.Close()
+		config.AppConfig.RDS_BASE_API_URL = server.URL
+
+		CreateSession = func() (DiscordSessionWrapper, error) {
+			return &mockFailingDiscordSessionCloser{}, nil
+		}
+		t.Cleanup(func() {
+			CreateSession = originalCreateSession
+		})
+		handler := &CommandHandler{discordMessage: &dtos.DataPacket{}}
+		err := handler.verify()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "error closing session")
+	})
+
+	t.Run("should not return error when succeeds and dev is true", func(t *testing.T) {
+		config.AppConfig.BOT_PRIVATE_KEY = pemPrivateKey
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer server.Close()
+		config.AppConfig.RDS_BASE_API_URL = server.URL
+
+		CreateSession = func() (DiscordSessionWrapper, error) {
+			return &mockDiscordSession{}, nil
+		}
+		t.Cleanup(func() {
+			CreateSession = originalCreateSession
+		})
+
+		handler := &CommandHandler{discordMessage: &dtos.DataPacket{
+			MetaData: map[string]string{
+				"dev": "true",
+			},
+		}}
+		err := handler.verify()
+		assert.NoError(t, err)
+	})
+
+	t.Run("should not return error when succeeds and dev is false", func(t *testing.T) {
+		config.AppConfig.BOT_PRIVATE_KEY = pemPrivateKey
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer server.Close()
+		config.AppConfig.RDS_BASE_API_URL = server.URL
+
+		CreateSession = func() (DiscordSessionWrapper, error) {
+			return &mockDiscordSession{}, nil
+		}
+		t.Cleanup(func() {
+			CreateSession = originalCreateSession
+		})
+
+		handler := &CommandHandler{discordMessage: &dtos.DataPacket{
+			MetaData: map[string]string{
+				"dev": "false",
+			},
+		}}
+		err := handler.verify()
+		assert.NoError(t, err)
 	})
 }

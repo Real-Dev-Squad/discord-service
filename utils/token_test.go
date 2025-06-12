@@ -18,7 +18,7 @@ func (r *faultyReader) Read(p []byte) (n int, err error) {
 
 func TestGenerateUniqueToken(t *testing.T) {
 	t.Run("should generate a unique token successfully", func(t *testing.T) {
-		uniqueToken := &UniqueToken{}
+		uniqueToken := &uniqueToken{}
 		token, err := uniqueToken.GenerateUniqueToken()
 		assert.NoError(t, err)
 		assert.NotEmpty(t, token)
@@ -32,7 +32,7 @@ func TestGenerateUniqueToken(t *testing.T) {
 			rand.Reader = originalReader
 		}()
 
-		uniqueToken := &UniqueToken{}
+		uniqueToken := &uniqueToken{}
 		token, err := uniqueToken.GenerateUniqueToken()
 		assert.Error(t, err)
 		assert.Empty(t, token)
@@ -44,13 +44,13 @@ func TestGenerateAuthToken(t *testing.T) {
 	t.Run("should generate an RS256 auth token successfully", func(t *testing.T) {
 		privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 		assert.NoError(t, err)
-		
+
 		name := "Discord Service"
 		claims := jwt.MapClaims{
 			"name": name,
 		}
-		
-		authToken := &AuthToken{}
+
+		authToken := &authToken{}
 		token, err := authToken.GenerateAuthToken(jwt.SigningMethodRS256, claims, privateKey)
 
 		assert.NoError(t, err)
@@ -67,7 +67,7 @@ func TestGenerateAuthToken(t *testing.T) {
 	t.Run("should return an error for invalid key type", func(t *testing.T) {
 		claims := jwt.MapClaims{}
 		invalidKey := "<invalid-rsa-key>"
-		authToken := &AuthToken{}
+		authToken := &authToken{}
 		token, err := authToken.GenerateAuthToken(jwt.SigningMethodRS256, claims, invalidKey)
 		assert.Error(t, err)
 		assert.Empty(t, token)

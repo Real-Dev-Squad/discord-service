@@ -21,13 +21,6 @@ func (m *mockFailingJsonHandler) ToJson(data interface{}) (string, error) {
 }
 
 func TestVerify(t *testing.T) {
-	originalSendMessage := queue.SendMessage
-	originalJson := utils.Json
-	defer func() {
-		queue.SendMessage = originalSendMessage
-		utils.Json = originalJson
-	}()
-
 	joinedAt, _ := time.Parse(time.RFC3339, "2022-01-01T00:00:00Z")
 
 	baseMessage := &dtos.DiscordMessage{
@@ -46,8 +39,22 @@ func TestVerify(t *testing.T) {
 	}
 
 	t.Run("should return success response with 200 status code", func(t *testing.T) {
+		originalSendMessage := queue.SendMessage
+		t.Cleanup(func() {
+			queue.SendMessage = originalSendMessage
+		})
+
 		message := *baseMessage
-		message.Data = &dtos.Data{}
+		message.Data = &dtos.Data{
+			ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
+				Options: []*discordgo.ApplicationCommandInteractionDataOption{
+					{
+						Name:  "dev",
+						Value: true,
+					},
+				},
+			},
+		}
 		service := &CommandService{
 			discordMessage: &message,
 		}
@@ -62,6 +69,11 @@ func TestVerify(t *testing.T) {
 	})
 
 	t.Run("should return internal server error when queue send message fails", func(t *testing.T) {
+		originalSendMessage := queue.SendMessage
+		t.Cleanup(func() {
+			queue.SendMessage = originalSendMessage
+		})
+
 		message := *baseMessage
 		message.Data = &dtos.Data{}
 		service := &CommandService{
@@ -79,6 +91,11 @@ func TestVerify(t *testing.T) {
 	})
 
 	t.Run("should return internal server error when json marshalling fails", func(t *testing.T) {
+		originalJson := utils.Json
+		t.Cleanup(func() {
+			utils.Json = originalJson
+		})
+
 		message := *baseMessage
 		message.Data = &dtos.Data{}
 

@@ -13,10 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var DISCORD_AVATAR_BASE_URL = "https://cdn.discordapp.com/avatars"
-var VERIFICATION_STRING = "Please verify your discord account by clicking the link below 👇"
-var VERIFICATION_SUBSTRING = "By granting authorization, you agree to permit us to manage your server nickname displayed ONLY in the Real Dev Squad server and to sync your joining data with your user account on our platform."
-
 func (CS *CommandHandler) verify() error {
 	metaData := CS.discordMessage.MetaData
 	applicationId := metaData["applicationId"]
@@ -24,24 +20,22 @@ func (CS *CommandHandler) verify() error {
 	uniqueToken := &utils.UniqueToken{}
 	token, err := uniqueToken.GenerateUniqueToken()
 	if err != nil {
-		return err
+		return fmt.Errorf("error generating unique token: %v", err)
 	}
 
 	rsaPrivateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(config.AppConfig.BOT_PRIVATE_KEY))
 	if err != nil {
-		return err
+		return fmt.Errorf("error parsing private key string to rsa private key: %v", err)
 	}
 	
 	authToken := &utils.AuthToken{}
 	authTokenString, err := authToken.GenerateAuthToken(jwt.SigningMethodRS256, jwt.MapClaims{
 		"expiry": time.Now().Add(time.Second * 2).Unix(),
-		"name": "Discord Service",
+		"name": DISCORD_SERVICE,
 	}, rsaPrivateKey)
 	if err != nil {
-		return err
+		return fmt.Errorf("error generating auth token: %v", err)
 	}
-	
-	logrus.Infof("Auth token: %s generated at %v", authTokenString, time.Now().Unix())
 
 	baseUrl:= fmt.Sprintf("%s/external-accounts", config.AppConfig.RDS_BASE_API_URL)
 	requestBody:= map[string]any{
@@ -56,23 +50,24 @@ func (CS *CommandHandler) verify() error {
 			"expiry": time.Now().Add(time.Second * 2).Unix(),
 		},
 	}
+	
 	jsonBody, err := utils.Json.ToJson(requestBody)
 	if err != nil {
-		return err
+		return fmt.Errorf("error parsing request body in json string: %v", err)
 	}
 	
 	request, err := http.NewRequest("POST", baseUrl, bytes.NewBuffer([]byte(jsonBody)))
 	if err != nil {
-		return err
+		return fmt.Errorf("error creating http request: %v", err)
 	}
 	
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", authTokenString))
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("x-service-name", "Discord Service")
+	request.Header.Set(HEADERS.AUTHORIZATION, fmt.Sprintf("Bearer %s", authTokenString))
+	request.Header.Set(HEADERS.CONTENT_TYPE, "application/json")
+	request.Header.Set(HEADERS.SERVICE, DISCORD_SERVICE)
 	
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
-		return err
+		return fmt.Errorf("error sending request to RDS Backend API: %v", err)
 	}
 
 	message:= ""
@@ -90,21 +85,22 @@ func (CS *CommandHandler) verify() error {
 
 	session, err := CreateSession()
 	if err != nil {
-		return err
+		return fmt.Errorf("error creating session: %v", err)
 	}
 
 	webhookEdit := &discordgo.WebhookEdit{
 		Content: &message,
 	}
-	
+
 	if _, err := session.WebhookMessageEdit(applicationId, metaData["token"], "@original", webhookEdit); err != nil {
-		logrus.Errorf("Error editing webhook message for application %s: %v", applicationId, err)
-		return err
+		logrus.Errorf("Error editing original message for application %v", err)
+		return fmt.Errorf("error editing original message for application %v", err)
 	}
 
 	if err := session.Close(); err != nil {
 		logrus.Errorf("Error closing session: %v", err)
-		return err
+		return fmt.Errorf("error closing session: %v", err)
 	}
+
 	return nil
 }

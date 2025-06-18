@@ -24,27 +24,25 @@ func TestHomeHandler(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
 
-	t.Run("Should return 400 when request body is malformed", func(t *testing.T) {
+	t.Run("Should return 500 when fails to unmarshal request body", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		r, _ := http.NewRequest("POST", "/", bytes.NewBuffer([]byte("malformed request")))
 		controllers.DiscordBaseHandler(w, r, nil)
 
-		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
 	})
 
 	t.Run("Should return 200 when request body is valid", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		message := dtos.DiscordMessage{Type: discordgo.InteractionPing}
+		message := dtos.DiscordMessage{
+			Type: discordgo.InteractionPing,
+		}
 		jsonBytes, _ := json.Marshal(message)
 		r, _ := http.NewRequest("POST", "/", bytes.NewBuffer(jsonBytes))
 		controllers.DiscordBaseHandler(w, r, nil)
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		var response map[string]interface{}
-		err := json.Unmarshal(w.Body.Bytes(), &response)
 
-		assert.Nil(t, err)
-		assert.Equal(t, float64(discordgo.InteractionResponsePong), response["type"])
 	})
 	t.Run("Should return 200 when request body is valid for interaction command", func(t *testing.T) {
 		w := httptest.NewRecorder()

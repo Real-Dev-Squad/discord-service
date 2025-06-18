@@ -16,5 +16,5 @@ func (s *CommandService) VerifyService(response http.ResponseWriter, request *ht
 			Flags:   discordgo.MessageFlags(64), //Ephemeral message flag
 		},
 	}
-	utils.Success.NewDiscordResponse(response, "Success", messageResponse)
+	utils.WriteJSONResponse(response, http.StatusOK, messageResponse)
 }

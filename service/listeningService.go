@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Real-Dev-Squad/discord-service/dtos"
+	"github.com/Real-Dev-Squad/discord-service/errors"
 	"github.com/Real-Dev-Squad/discord-service/queue"
 	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
@@ -34,16 +35,19 @@ func (s *CommandService) ListeningService(response http.ResponseWriter, request 
 				"nickname": s.discordMessage.Member.Nick,
 			},
 		}
+		
 		bytePacket, err := dtos.ToByte(&dataPacket)
 		if err != nil {
-			response.WriteHeader(http.StatusInternalServerError)
+			errors.HandleError(response, errors.NewInternalServerError("Internal Server Error", err))
 			return
 		}
+
 		if err := queue.SendMessage(bytePacket); err != nil {
-			response.WriteHeader(http.StatusInternalServerError)
+			errors.HandleError(response, errors.NewInternalServerError("Internal Server Error", err))
 			return
 		}
 	}
+	
 	messageResponse := &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
@@ -51,5 +55,5 @@ func (s *CommandService) ListeningService(response http.ResponseWriter, request 
 			Flags:   discordgo.MessageFlagsEphemeral,
 		},
 	}
-	utils.Success.NewDiscordResponse(response, "Success", messageResponse)
+	utils.WriteJSONResponse(response, http.StatusOK, messageResponse)
 }

@@ -24,7 +24,7 @@ func VerifyCommand(next httprouter.Handle) httprouter.Handle {
 		
 		result := VerifyInteraction(request, publicKeyBytes)
 		if !result {
-			errors.HandleError(response, errors.NewUnauthorized("Unauthorized Access", err))
+			errors.HandleError(response, errors.NewUnauthorized("Unauthorized Access", nil))
 			return
 		}
 		

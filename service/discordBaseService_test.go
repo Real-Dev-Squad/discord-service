@@ -52,17 +52,26 @@ func TestDiscordBaseService(t *testing.T) {
 	})
 
 	t.Run("should return success response when message type is interaction ping", func(t *testing.T) {
-		msgByte, err := json.Marshal(map[string]interface{}{"type": discordgo.InteractionPing, "message": "Pong"})
+		msgByte, err := json.Marshal(map[string]interface{}{"type": discordgo.InteractionPing})
 		assert.NoError(t, err)
+		
 		r := httptest.NewRequest("POST", "/", bytes.NewBuffer([]byte(msgByte)))
 		rr := httptest.NewRecorder()
+		
 		DiscordBaseService(rr, r)
+		
+		msg:= dtos.DiscordMessage{
+			Type: discordgo.InteractionPing,
+		}
+		
 		bytes, err:= json.Marshal(map[string]any{
-			"data": discordgo.InteractionResponsePong,
 			"message": "Pong",
+			"data": msg,
 		})
+		assert.NoError(t, err)
+	
 		assert.Equal(t, http.StatusOK, rr.Code)
-		assert.Equal(t, string(bytes) + "\n", rr.Body.String())
+		assert.Equal(t, string(bytes), rr.Body.String())
 	})
 
 	t.Run("should return success response when message type is interaction application command", func(t *testing.T) {

@@ -4,14 +4,21 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/Real-Dev-Squad/discord-service/errors"
 	"github.com/sirupsen/logrus"
 )
 
 func WriteJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	
-	if err:= json.NewEncoder(w).Encode(data); err != nil {
-		logrus.Errorf("failed to write response: %v", err)
-	}
+    
+    jsonData, err := json.Marshal(data)
+    if err != nil {
+        errors.HandleError(w, errors.NewInternalServerError("Internal Server Error", err))
+        return
+    }
+    
+    w.WriteHeader(statusCode)
+    if _, err := w.Write(jsonData); err != nil {
+        logrus.Errorf("failed to write response: %v", err)
+    }
 }

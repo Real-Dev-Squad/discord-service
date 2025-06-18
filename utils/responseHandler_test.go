@@ -19,7 +19,7 @@ func TestWriteJSONResponse(t *testing.T) {
 		WriteJSONResponse(rr, status, data)
 		assert.Equal(t, status, rr.Code)
 		assert.Equal(t, "application/json", rr.Header().Get("Content-Type"))
-		assert.Equal(t, string(bytes) + "\n", rr.Body.String())
+		assert.Equal(t, string(bytes), rr.Body.String())
 	})
 
 	t.Run("should return response with 400 status code", func(t *testing.T) {
@@ -30,12 +30,16 @@ func TestWriteJSONResponse(t *testing.T) {
 		bytes, err := json.Marshal(data)
 		assert.NoError(t, err)
 		assert.Equal(t, status, rr.Code)
-		assert.Equal(t, string(bytes) + "\n", rr.Body.String())
+		assert.Equal(t, string(bytes), rr.Body.String())
 	})
 
-	t.Run("should have empty body when fails to encode data", func(t * testing.T){
+	t.Run("should have empty body when fails to marshal data", func(t *testing.T){
 		rr := httptest.NewRecorder();
+		bytes, err:= json.Marshal(map[string]string{
+			"error": "Internal Server Error",
+		})
+		assert.NoError(t, err)
 		WriteJSONResponse(rr, http.StatusAccepted, make(chan int))
-		assert.Equal(t, "", rr.Body.String())
+		assert.Equal(t, string(bytes) + "\n", rr.Body.String())
 	})
 }

@@ -32,4 +32,10 @@ func TestWriteJSONResponse(t *testing.T) {
 		assert.Equal(t, status, rr.Code)
 		assert.Equal(t, string(bytes) + "\n", rr.Body.String())
 	})
+
+	t.Run("should have empty body when fails to encode data", func(t * testing.T){
+		rr := httptest.NewRecorder();
+		WriteJSONResponse(rr, http.StatusAccepted, make(chan int))
+		assert.Equal(t, "", rr.Body.String())
+	})
 }

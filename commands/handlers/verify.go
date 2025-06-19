@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -48,35 +49,41 @@ func (CS *CommandHandler) verify() error {
 			"expiry": time.Now().Add(time.Second * 2).Unix(),
 		},
 	}
-	
-	jsonBody, err := utils.Json.ToJson(requestBody)
+
+	jsonBytes, err:= json.Marshal(requestBody)
 	if err != nil {
-		return fmt.Errorf("error parsing request body in json string: %v", err)
+		return fmt.Errorf("error parsing request body in json bytes: %v", err)
 	}
 	
-	request, err := http.NewRequest("POST", baseUrl, bytes.NewBuffer([]byte(jsonBody)))
+	request, err := http.NewRequest("POST", baseUrl, bytes.NewBuffer(jsonBytes))
 	if err != nil {
 		return fmt.Errorf("error creating http request: %v", err)
 	}
 	
-	request.Header.Set(HEADERS.AUTHORIZATION, fmt.Sprintf("Bearer %s", authTokenString))
-	request.Header.Set(HEADERS.CONTENT_TYPE, "application/json")
-	request.Header.Set(HEADERS.SERVICE, DISCORD_SERVICE)
+	request.Header.Set(HEADERS.Authorization, fmt.Sprintf("Bearer %s", authTokenString))
+	request.Header.Set(HEADERS.ContentType, "application/json")
+	request.Header.Set(HEADERS.Service, DISCORD_SERVICE)
 	
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return fmt.Errorf("error sending request to RDS Backend API: %v", err)
 	}
+	defer response.Body.Close()
 
 	message:= "Something went wrong while generating verification link"
+	verificationSiteURL := ""
+
+	createMessage := func (format string) string {
+		return fmt.Sprintf(format, VERIFICATION_STRING, verificationSiteURL, token, VERIFICATION_SUBSTRING)
+	}
+
 	if response.StatusCode == 201 || response.StatusCode == 200 {
-		verificationSiteURL := ""
 		if metaData["dev"] == "true" {
 			verificationSiteURL = config.AppConfig.MAIN_SITE_URL;
-			message = fmt.Sprintf("%s\n%s/discord?dev=true&token=%s\n%s", VERIFICATION_STRING, verificationSiteURL, token, VERIFICATION_SUBSTRING)
+			message = createMessage("%s\n%s/discord?dev=true&token=%s\n%s")
 		}else {
 			verificationSiteURL = config.AppConfig.VERIFICATION_SITE_URL;
-			message = fmt.Sprintf("%s\n%s/discord?token=%s\n%s", VERIFICATION_STRING, verificationSiteURL, token, VERIFICATION_SUBSTRING)
+			message = createMessage("%s\n%s/discord?token=%s\n%s")
 		}
 	}
 

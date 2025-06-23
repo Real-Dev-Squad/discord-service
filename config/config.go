@@ -15,9 +15,10 @@ type Config struct {
 	BOT_TOKEN             string
 	QUEUE_URL             string
 	QUEUE_NAME            string
-	ENV                   Environment
 	MAX_RETRIES           int
 	RDS_BASE_API_URL      string
+	MAIN_SITE_URL         string
+	BOT_PRIVATE_KEY       string
 	VERIFICATION_SITE_URL string
 }
 
@@ -37,14 +38,12 @@ func init() {
 		GUILD_ID:           loadEnv("GUILD_ID"),
 		BOT_TOKEN:          loadEnv("BOT_TOKEN"),
 		QUEUE_NAME:         loadEnv("QUEUE_NAME"),
-		ENV:                Environment(loadEnv("ENV")).Validate(),
 		MAX_RETRIES:        5,
+		RDS_BASE_API_URL:   loadEnv("RDS_BASE_API_URL"),
+		MAIN_SITE_URL:      loadEnv("MAIN_SITE_URL"),
+		BOT_PRIVATE_KEY:    loadEnv("BOT_PRIVATE_KEY"),
+		VERIFICATION_SITE_URL: loadEnv("VERIFICATION_SITE_URL"),
 	}
-
-	// Loading Constants
-	AppConfig.RDS_BASE_API_URL = EnvironmentURLs[AppConfig.ENV].RDS_BASE_API_URL
-	AppConfig.VERIFICATION_SITE_URL = EnvironmentURLs[AppConfig.ENV].VERIFICATION_SITE_URL
-
 }
 
 func loadEnv(key string) string {

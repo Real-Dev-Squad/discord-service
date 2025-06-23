@@ -13,13 +13,12 @@ import (
 
 func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 	payload, err := io.ReadAll(request.Body)
+	defer request.Body.Close()
 	if err != nil || len(payload) == 0 {
 		errors.HandleError(response, errors.NewBadRequest("Invalid Request Payload", err))
 		return
 	}
-	defer request.Body.Close()
-	
-	
+
 	var message dtos.DiscordMessage
 	if err = json.Unmarshal(payload, &message); err != nil {
 		errors.HandleError(response, errors.NewInternalServerError("Internal Server Error", err))
@@ -30,11 +29,11 @@ func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 
 	case discordgo.InteractionPing:
 		payload := dtos.DiscordMessage{
-			Type:    discordgo.InteractionPing,
+			Type: discordgo.InteractionPing,
 		}
 		utils.WriteJSONResponse(response, http.StatusOK, map[string]any{
 			"message": "Pong",
-			"data": payload,
+			"data":    payload,
 		})
 		return
 

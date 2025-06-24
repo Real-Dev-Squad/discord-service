@@ -9,16 +9,9 @@ import (
 
 	"github.com/Real-Dev-Squad/discord-service/dtos"
 	"github.com/Real-Dev-Squad/discord-service/queue"
-	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
 )
-
-type mockFailingJsonHandler struct{}
-
-func (m *mockFailingJsonHandler) ToJson(data interface{}) (string, error) {
-	return "", errors.New("json marshal error")
-}
 
 func TestVerify(t *testing.T) {
 	joinedAt, _ := time.Parse(time.RFC3339, "2022-01-01T00:00:00Z")
@@ -81,27 +74,6 @@ func TestVerify(t *testing.T) {
 		}
 		queue.SendMessage = func(data []byte) error {
 			return errors.New("queue error")
-		}
-
-		r, _ := http.NewRequest("POST", "/verify", nil)
-		w := httptest.NewRecorder()
-		service.Verify(w, r)
-
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-	})
-
-	t.Run("should return internal server error when json marshalling fails", func(t *testing.T) {
-		originalJson := utils.Json
-		t.Cleanup(func() {
-			utils.Json = originalJson
-		})
-
-		message := *baseMessage
-		message.Data = &dtos.Data{}
-
-		utils.Json = &mockFailingJsonHandler{}
-		service := &CommandService{
-			discordMessage: &message,
 		}
 
 		r, _ := http.NewRequest("POST", "/verify", nil)

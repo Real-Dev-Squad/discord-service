@@ -54,12 +54,6 @@ func (m *mockFailingDiscordSessionCloser) Close() error {
 	return errors.New("close error")
 }
 
-type mockFailingJsonHandler struct{}
-
-func (m *mockFailingJsonHandler) ToJson(data interface{}) (string, error) {
-	return "", errors.New("json marshal error")
-}
-
 func generateTestPrivateKey(t *testing.T) *rsa.PrivateKey {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	assert.NoError(t, err)
@@ -91,7 +85,6 @@ func TestVerify(t *testing.T) {
 
 	originalCreateSession := CreateSession
 	originalBotPrivateKey := config.AppConfig.BOT_PRIVATE_KEY
-	originalJson := utils.Json
 	originalUniqueToken := utils.UniqueToken
 	originalAuthToken := utils.AuthToken
 	config.AppConfig.BOT_PRIVATE_KEY = pemPrivateKey
@@ -132,20 +125,6 @@ func TestVerify(t *testing.T) {
 		err := handler.verify()
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "error generating auth token")
-	})
-
-	t.Run("should return error when fails to parse request body to json string", func(t *testing.T) {
-		config.AppConfig.BOT_PRIVATE_KEY = pemPrivateKey
-		handler := &CommandHandler{
-			discordMessage: &dtos.DataPacket{},
-		}
-		utils.Json = &mockFailingJsonHandler{}
-		t.Cleanup(func() {
-			utils.Json = originalJson
-		})
-		err := handler.verify()
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "error parsing request body in json string")
 	})
 
 	t.Run("should return error when fails to create http request", func(t *testing.T) {

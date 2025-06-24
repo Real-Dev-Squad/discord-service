@@ -16,6 +16,4 @@ func init() {
 	os.Setenv("MAIN_SITE_URL", "http://localhost:4200")
 	os.Setenv("BOT_PRIVATE_KEY", "<discord-bot-private-key>")
 	os.Setenv("VERIFICATION_SITE_URL", "http://localhost:3443")
-	os.Setenv("BOT_PRIVATE_KEY", "<discord-bot-private-key>")
-	os.Setenv("MAIN_SITE_URL", "http://localhost:4200")
 }

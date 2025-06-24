@@ -54,11 +54,11 @@ func TestVerify(t *testing.T) {
 
 		queue.SendMessage = func(data []byte) error { return nil }
 
-		r, _ := http.NewRequest("POST", "/verify", nil)
-		w := httptest.NewRecorder()
+		req := httptest.NewRequest("POST", "/verify", nil)
+		rr := httptest.NewRecorder()
 
-		service.Verify(w, r)
-		assert.Equal(t, http.StatusOK, w.Code)
+		service.Verify(rr, req)
+		assert.Equal(t, http.StatusOK, rr.Code)
 	})
 
 	t.Run("should return internal server error when queue send message fails", func(t *testing.T) {
@@ -76,10 +76,10 @@ func TestVerify(t *testing.T) {
 			return errors.New("queue error")
 		}
 
-		r, _ := http.NewRequest("POST", "/verify", nil)
-		w := httptest.NewRecorder()
-		service.Verify(w, r)
+		req := httptest.NewRequest("POST", "/verify", nil)
+		rr := httptest.NewRecorder()
+		service.Verify(rr, req)
 
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
+		assert.Equal(t, http.StatusInternalServerError, rr.Code)
 	})
 }

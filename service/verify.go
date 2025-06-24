@@ -1,10 +1,12 @@
 package service
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 
 	"github.com/Real-Dev-Squad/discord-service/dtos"
+	"github.com/Real-Dev-Squad/discord-service/errors"
 	"github.com/Real-Dev-Squad/discord-service/queue"
 	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
@@ -34,20 +36,16 @@ func (s *CommandService) Verify(response http.ResponseWriter, request *http.Requ
 		},
 	}
 
-	bytes, err := utils.Json.ToJson(dp)
+	dpBytes, err:= json.Marshal(dp)
 	if err != nil {
 		logrus.Errorf("Failed to convert data packet to json bytes: %v", err)
-		utils.ResponseHandler.WriteJSON(response, &dtos.Response{
-			Message: "Something went wrong",
-		}, http.StatusInternalServerError)
+		errors.HandleError(response, err)
 		return
 	}
 
-	if err := queue.SendMessage([]byte(bytes)); err != nil {
+	if err := queue.SendMessage(dpBytes); err != nil {
 		logrus.Errorf("Failed to send data packet to queue: %v", err)
-		utils.ResponseHandler.WriteJSON(response, &dtos.Response{
-			Message: "Something went wrong",
-		}, http.StatusInternalServerError)
+		errors.HandleError(response, err)
 		return
 	}
 
@@ -59,5 +57,5 @@ func (s *CommandService) Verify(response http.ResponseWriter, request *http.Requ
 		},
 	}
 
-	utils.ResponseHandler.WriteJSON(response, messageResponse, http.StatusOK)
+	utils.WriteJSONResponse(response, http.StatusOK, messageResponse)
 }

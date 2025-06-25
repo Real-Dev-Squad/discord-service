@@ -40,12 +40,10 @@ func (ut *uniqueToken) GenerateUniqueToken() (string, error) {
 	combinedString := fmt.Sprintf("%s%d%d", uuidToken, randNum, generationTime)
 
 	hasher := sha256.New()
-	if _, err := hasher.Write([]byte(combinedString)); err != nil {
-		return "", fmt.Errorf("failed to write to hasher: %v", err)
-	}
-
+	hasher.Write([]byte(combinedString))
 	hashBytes := hasher.Sum(nil)
 	token := hex.EncodeToString(hashBytes)
+	
 	return token, nil
 }
 

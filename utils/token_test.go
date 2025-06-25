@@ -60,7 +60,7 @@ func TestGenerateAuthToken(t *testing.T) {
 			return &privateKey.PublicKey, nil
 		})
 		assert.NoError(t, err)
-		res, _ := parsedToken.Claims.(jwt.MapClaims)["name"]
+		res := parsedToken.Claims.(jwt.MapClaims)["name"]
 		assert.Equal(t, name, res)
 	})
 

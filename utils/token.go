@@ -28,7 +28,7 @@ var (
 type uniqueToken struct{}
 type authToken struct{}
 
-func (t *uniqueToken) GenerateUniqueToken() (string, error) {
+func (ut *uniqueToken) GenerateUniqueToken() (string, error) {
 	uuidToken := uuid.NewString()
 	randNum, err := rand.Int(rand.Reader, big.NewInt(1000000))
 	if err != nil {
@@ -41,7 +41,7 @@ func (t *uniqueToken) GenerateUniqueToken() (string, error) {
 
 	hasher := sha256.New()
 	if _, err := hasher.Write([]byte(combinedString)); err != nil {
-		return "", fmt.Errorf("failed to write to hasher: %w", err)
+		return "", fmt.Errorf("failed to write to hasher: %v", err)
 	}
 
 	hashBytes := hasher.Sum(nil)
@@ -49,11 +49,13 @@ func (t *uniqueToken) GenerateUniqueToken() (string, error) {
 	return token, nil
 }
 
-func (t *authToken) GenerateAuthToken(method jwt.SigningMethod, claims jwt.Claims, privateKey any) (string, error) {
+func (at *authToken) GenerateAuthToken(method jwt.SigningMethod, claims jwt.Claims, privateKey any) (string, error) {
 	token := jwt.NewWithClaims(method, claims)
+	
 	tokenString, err := token.SignedString(privateKey)
 	if err != nil {
-		return "", fmt.Errorf("failed to sign token: %w", err)
+		return "", fmt.Errorf("failed to sign token: %v", err)
 	}
+
 	return tokenString, nil
 }

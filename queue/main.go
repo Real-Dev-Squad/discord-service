@@ -13,6 +13,7 @@ import (
 var (
 	queueInstance *Queue
 	once          sync.Once
+	initErr       error
 )
 
 type sessionInterface interface {
@@ -80,22 +81,49 @@ func InitQueueConnection(openSession sessionInterface) {
 func queueHandler() {
 	queueInstance = &Queue{}
 	InitQueueConnection(queueInstance)
+	if queueInstance.Channel == nil {
+		initErr = errors.New("failed to initialize queue connection")
+	}
 }
 
-var GetQueueInstance = func() *Queue {
+func GetQueueInstance() (*Queue, error) {
 	once.Do(queueHandler)
-	return queueInstance
+	if initErr != nil {
+		return nil, initErr
+	}
+	return queueInstance, nil
 }
 
-var SendMessage = func(message []byte) error {
-	queue := GetQueueInstance()
+func CloseQueueConnection() error {
+	if queueInstance != nil {
+		if queueInstance.Channel != nil {
+			if err := queueInstance.Channel.Close(); err != nil {
+				logrus.Errorf("Error closing channel: %v", err)
+				return err
+			}
+		}
+		if queueInstance.Connection != nil {
+			if err := queueInstance.Connection.Close(); err != nil {
+				logrus.Errorf("Error closing connection: %v", err)
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func SendMessage(message []byte) error {
+	queue, err := GetQueueInstance()
+	if err != nil {
+		return err
+	}
 
 	if queue.Channel == nil {
 		logrus.Errorf("Queue channel is not initialized")
 		return errors.New("Queue channel is not initialized")
 	}
 
-	err := queue.Channel.Publish(
+	err = queue.Channel.Publish(
 		"",               // default exchange
 		queue.Queue.Name, // use the actual queue name
 		false,            // mandatory

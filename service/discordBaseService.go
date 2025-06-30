@@ -21,7 +21,7 @@ func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 
 	var message dtos.DiscordMessage
 	if err = json.Unmarshal(payload, &message); err != nil {
-		errors.HandleError(response, errors.NewInternalServerError("Internal Server Error", err))
+		errors.HandleError(response, err)
 		return
 	}
 

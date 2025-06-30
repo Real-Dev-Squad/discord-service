@@ -38,12 +38,12 @@ func (s *CommandService) ListeningService(response http.ResponseWriter, request 
 		
 		bytePacket, err := dtos.ToByte(&dataPacket)
 		if err != nil {
-			errors.HandleError(response, errors.NewInternalServerError("Internal Server Error", err))
+			errors.HandleError(response, err)
 			return
 		}
 
 		if err := queue.SendMessage(bytePacket); err != nil {
-			errors.HandleError(response, errors.NewInternalServerError("Internal Server Error", err))
+			errors.HandleError(response, err)
 			return
 		}
 	}

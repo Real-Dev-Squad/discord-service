@@ -18,7 +18,7 @@ func VerifyCommand(next httprouter.Handle) httprouter.Handle {
 		
 		publicKeyBytes, err := hex.DecodeString(config.AppConfig.DISCORD_PUBLIC_KEY)
 		if err != nil {
-			errors.HandleError(response, errors.NewInternalServerError("Internal Server Error", err))
+			errors.HandleError(response, err)
 			return
 		}
 		

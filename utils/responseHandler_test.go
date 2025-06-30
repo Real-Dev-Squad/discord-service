@@ -36,7 +36,7 @@ func TestWriteJSONResponse(t *testing.T) {
 	t.Run("should have empty body when fails to marshal data", func(t *testing.T){
 		rr := httptest.NewRecorder();
 		bytes, err:= json.Marshal(map[string]string{
-			"error": "Internal Server Error",
+			"error": "Internal server error",
 		})
 		assert.NoError(t, err)
 		WriteJSONResponse(rr, http.StatusAccepted, make(chan int))

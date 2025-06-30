@@ -30,7 +30,7 @@ func TestDiscordBaseService(t *testing.T) {
 		rr := httptest.NewRecorder()
 		DiscordBaseService(rr, r)
 		bytes, err := json.Marshal(map[string]string{
-			"error": "Internal Server Error",
+			"error": "Internal server error",
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusInternalServerError, rr.Code)

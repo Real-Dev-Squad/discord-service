@@ -15,5 +15,5 @@ func (s *CommandService) HelloService(response http.ResponseWriter, request *htt
 			Content: fmt.Sprintf("Hey there <@%s>! Congratulations, you just executed your first slash command", s.discordMessage.Member.User.ID),
 		},
 	}
-	utils.Success.NewDiscordResponse(response, "Success", messageResponse)
+	utils.WriteJSONResponse(response, http.StatusOK, messageResponse)
 }

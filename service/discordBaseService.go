@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/Real-Dev-Squad/discord-service/dtos"
+	"github.com/Real-Dev-Squad/discord-service/errors"
 	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
 )
@@ -14,19 +15,26 @@ func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 	payload, err := io.ReadAll(request.Body)
 	defer request.Body.Close()
 	if err != nil || len(payload) == 0 {
-		utils.Errors.NewBadRequestError(response, "Invalid Request Payload")
+		errors.HandleError(response, errors.NewBadRequest("Invalid Request Payload", err))
 		return
 	}
+
 	var message dtos.DiscordMessage
 	if err = json.Unmarshal(payload, &message); err != nil {
-		utils.Errors.NewBadRequestError(response, "Invalid Request Payload")
+		errors.HandleError(response, err)
 		return
 	}
+
 	switch message.Type {
 
 	case discordgo.InteractionPing:
-		payload := map[string]interface{}{"type": uint8(discordgo.InteractionResponsePong)}
-		utils.Success.NewDiscordResponse(response, "Pong", payload)
+		payload := dtos.DiscordMessage{
+			Type: discordgo.InteractionPing,
+		}
+		utils.WriteJSONResponse(response, http.StatusOK, map[string]any{
+			"message": "Pong",
+			"data":    payload,
+		})
 		return
 
 	case discordgo.InteractionApplicationCommand:
@@ -34,6 +42,7 @@ func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 		return
 
 	default:
-		response.WriteHeader(http.StatusBadRequest)
+		errors.HandleError(response, errors.NewBadRequest("Invalid Request Payload", err))
+		return
 	}
 }

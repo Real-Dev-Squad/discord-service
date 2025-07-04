@@ -16,12 +16,12 @@ import (
 func (s *CommandService) Verify(response http.ResponseWriter, request *http.Request) {
 	dev := "false"
 	if len(s.discordMessage.Data.Options) == 1 {
-		if val, ok := s.discordMessage.Data.Options[0].Value.(bool); ok && val{
+		if val, ok := s.discordMessage.Data.Options[0].Value.(bool); ok && val {
 			dev = "true"
 		}
 	}
 	
-	message:= &dtos.DataPacket{
+	message := &dtos.DataPacket{
 		UserID:      s.discordMessage.Member.User.ID,
 		CommandName: utils.CommandNames.Verify,
 		MetaData: map[string]string{
@@ -36,7 +36,7 @@ func (s *CommandService) Verify(response http.ResponseWriter, request *http.Requ
 		},
 	}
 
-	messageBytes, err:= json.Marshal(message)
+	messageBytes, err := json.Marshal(message)
 	if err != nil {
 		logrus.Errorf("Failed to convert data packet to json bytes: %v", err)
 		errors.HandleError(response, err)
@@ -49,7 +49,7 @@ func (s *CommandService) Verify(response http.ResponseWriter, request *http.Requ
 		return
 	}
 
-	res:= &discordgo.InteractionResponse{
+	res := &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "Your request is being processed.",

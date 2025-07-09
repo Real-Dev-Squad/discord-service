@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -57,8 +58,19 @@ func TestVerify(t *testing.T) {
 		req := httptest.NewRequest("POST", "/verify", nil)
 		rr := httptest.NewRecorder()
 
+		res := &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Your request is being processed.",
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		}
+
+		resByte, _:= json.Marshal((res))
+
 		service.Verify(rr, req)
 		assert.Equal(t, http.StatusOK, rr.Code)
+		assert.Equal(t, rr.Body.Bytes(), resByte)
 	})
 
 	t.Run("should return internal server error when queue send message fails", func(t *testing.T) {

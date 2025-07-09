@@ -66,7 +66,7 @@ func TestVerify(t *testing.T) {
 			},
 		}
 
-		resByte, _:= json.Marshal((res))
+		resByte, _ := json.Marshal(res)
 
 		service.Verify(rr, req)
 		assert.Equal(t, http.StatusOK, rr.Code)

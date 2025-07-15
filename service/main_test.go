@@ -9,6 +9,7 @@ import (
 
 	"github.com/Real-Dev-Squad/discord-service/dtos"
 	"github.com/Real-Dev-Squad/discord-service/fixtures"
+	"github.com/Real-Dev-Squad/discord-service/queue"
 	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
 	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
@@ -16,6 +17,15 @@ import (
 )
 
 func TestMainService(t *testing.T) {
+	originalSendMessage := queue.SendMessage
+	
+	defer func() {
+		queue.SendMessage = originalSendMessage
+	}()
+	
+	queue.SendMessage = func(data []byte) error {
+		return nil
+	}
 	t.Run("should return HelloService when command name is hello", func(t *testing.T) {
 		handler := MainService(fixtures.HelloCommand)
 		w := httptest.NewRecorder()
@@ -54,6 +64,9 @@ func TestMainService(t *testing.T) {
 
 	t.Run("should trigger VerifyService when command name is verify", func(t *testing.T) {
 		discordMessage := &dtos.DiscordMessage{
+			Member: &discordgo.Member{
+				User: &discordgo.User{},
+			},
 			Data: &dtos.Data{
 				GuildId: "876543210987654321",
 				ApplicationCommandInteractionData: discordgo.ApplicationCommandInteractionData{
@@ -69,7 +82,7 @@ func TestMainService(t *testing.T) {
 		messageResponse := discordgo.InteractionResponse{}
 		err := json.Unmarshal(w.Body.Bytes(), &messageResponse)
 		assert.NoError(t, err)
-		assert.Equal(t, messageResponse.Data.Content, "Work in progress for Verify command")
+		assert.Equal(t, "Your request is being processed.", messageResponse.Data.Content)
 		assert.Equal(t, http.StatusOK, w.Code)
 	})
 

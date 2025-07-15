@@ -18,8 +18,7 @@ func (r *faultyReader) Read(p []byte) (n int, err error) {
 
 func TestGenerateUniqueToken(t *testing.T) {
 	t.Run("should generate a unique token successfully", func(t *testing.T) {
-		uniqueToken := &UniqueToken{}
-		token, err := uniqueToken.GenerateUniqueToken()
+		token, err := UniqueToken.GenerateUniqueToken()
 		assert.NoError(t, err)
 		assert.NotEmpty(t, token)
 		assert.Len(t, token, 64)
@@ -32,8 +31,7 @@ func TestGenerateUniqueToken(t *testing.T) {
 			rand.Reader = originalReader
 		}()
 
-		uniqueToken := &UniqueToken{}
-		token, err := uniqueToken.GenerateUniqueToken()
+		token, err := UniqueToken.GenerateUniqueToken()
 		assert.Error(t, err)
 		assert.Empty(t, token)
 		assert.Contains(t, err.Error(), "failed to generate random number")
@@ -50,8 +48,7 @@ func TestGenerateAuthToken(t *testing.T) {
 			"name": name,
 		}
 
-		authToken := &AuthToken{}
-		token, err := authToken.GenerateAuthToken(jwt.SigningMethodRS256, claims, privateKey)
+		token, err := AuthToken.GenerateAuthToken(jwt.SigningMethodRS256, claims, privateKey)
 
 		assert.NoError(t, err)
 		assert.NotEmpty(t, token)
@@ -67,8 +64,7 @@ func TestGenerateAuthToken(t *testing.T) {
 	t.Run("should return an error for invalid key type", func(t *testing.T) {
 		claims := jwt.MapClaims{}
 		invalidKey := "<invalid-rsa-key>"
-		authToken := &AuthToken{}
-		token, err := authToken.GenerateAuthToken(jwt.SigningMethodRS256, claims, invalidKey)
+		token, err := AuthToken.GenerateAuthToken(jwt.SigningMethodRS256, claims, invalidKey)
 		assert.Error(t, err)
 		assert.Empty(t, token)
 	})

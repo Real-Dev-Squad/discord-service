@@ -18,8 +18,7 @@ func (CS *CommandHandler) verify() error {
 	metaData := CS.discordMessage.MetaData
 	applicationId := metaData["applicationId"]
 
-	ut := &utils.UniqueToken{}
-	token, err := ut.GenerateUniqueToken()
+	token, err := utils.UniqueToken.GenerateUniqueToken()
 	if err != nil {
 		return fmt.Errorf("error generating unique token: %v", err)
 	}
@@ -29,8 +28,7 @@ func (CS *CommandHandler) verify() error {
 		return fmt.Errorf("error parsing private key string to rsa private key: %v", err)
 	}
 
-	at := utils.AuthToken{}
-	authTokenString, err := at.GenerateAuthToken(jwt.SigningMethodRS256, jwt.MapClaims{
+	authTokenString, err := utils.AuthToken.GenerateAuthToken(jwt.SigningMethodRS256, jwt.MapClaims{
 		"expiry": time.Now().Add(time.Second * 2).Unix(), 
 		"name": DiscordService,
 		}, rsaPrivateKey)
@@ -67,10 +65,10 @@ func (CS *CommandHandler) verify() error {
 		request.Header.Set(DefaultHeaders.Service, DiscordService)
 	
 		response, err := http.DefaultClient.Do(request)
-		defer response.Body.Close()
 		if err != nil {
 			return fmt.Errorf("error sending request to RDS Backend API: %v", err)
 		}
+		defer response.Body.Close()
 		
 
 		message:= "Something went wrong while generating verification link"

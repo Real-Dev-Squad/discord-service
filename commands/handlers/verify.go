@@ -82,7 +82,7 @@ func (CS *CommandHandler) verify() error {
 			if metaData["dev"] == "true" {
 				verificationSiteURL = config.AppConfig.MAIN_SITE_URL;
 				message = createMessage("%s\n%s/discord?dev=true&token=%s\n%s")
-			}else {			verificationSiteURL = config.AppConfig.VERIFICATION_SITE_URL;
+			} else {			verificationSiteURL = config.AppConfig.VERIFICATION_SITE_URL;
 				message = createMessage("%s\n%s/discord?token=%s\n%s")
 			}
 		}

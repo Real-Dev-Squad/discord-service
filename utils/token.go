@@ -19,10 +19,15 @@ type AuthTokenI interface {
 	GenerateAuthToken(method jwt.SigningMethod, claims jwt.Claims, privateKey any) (string, error)
 }
 
-type UniqueToken struct{}
-type AuthToken struct{}
+var (
+	UniqueToken UniqueTokenI = &uniqueToken{}
+	AuthToken   AuthTokenI   = &authToken{}
+)
 
-func (ut *UniqueToken) GenerateUniqueToken() (string, error) {
+type uniqueToken struct{}
+type authToken struct{}
+
+func (ut *uniqueToken) GenerateUniqueToken() (string, error) {
 	uuidToken := uuid.NewString()
 	
 	randNum, err := rand.Int(rand.Reader, big.NewInt(1000000))
@@ -41,7 +46,7 @@ func (ut *UniqueToken) GenerateUniqueToken() (string, error) {
 	return token, nil
 }
 
-func (at *AuthToken) GenerateAuthToken(method jwt.SigningMethod, claims jwt.Claims, privateKey any) (string, error) {
+func (at *authToken) GenerateAuthToken(method jwt.SigningMethod, claims jwt.Claims, privateKey any) (string, error) {
 	token := jwt.NewWithClaims(method, claims)
 	
 	tokenString, err := token.SignedString(privateKey)

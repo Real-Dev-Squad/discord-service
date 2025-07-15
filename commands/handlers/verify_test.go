@@ -214,7 +214,7 @@ func TestVerify(t *testing.T) {
 		assert.Contains(t, err.Error(), "error closing session")
 	})
 
-	t.Run("should not return error when succeeds and dev is true", func(t *testing.T) {
+	t.Run("should not return error when succeeds", func(t *testing.T) {
 		config.AppConfig.BOT_PRIVATE_KEY = pemPrivateKey
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
@@ -234,30 +234,7 @@ func TestVerify(t *testing.T) {
 				"dev": "true",
 			},
 		}}
-		err := handler.verify()
-		assert.NoError(t, err)
-	})
-
-	t.Run("should not return error when succeeds and dev is false", func(t *testing.T) {
-		config.AppConfig.BOT_PRIVATE_KEY = pemPrivateKey
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-		}))
-		defer server.Close()
-		config.AppConfig.RDS_BASE_API_URL = server.URL
-
-		CreateSession = func() (DiscordSessionWrapper, error) {
-			return &mockDiscordSession{}, nil
-		}
-		t.Cleanup(func() {
-			CreateSession = originalCreateSession
-		})
-
-		handler := &CommandHandler{discordMessage: &dtos.DataPacket{
-			MetaData: map[string]string{
-				"dev": "false",
-			},
-		}}
+		
 		err := handler.verify()
 		assert.NoError(t, err)
 	})

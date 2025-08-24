@@ -28,10 +28,10 @@ func DiscordBaseService(response http.ResponseWriter, request *http.Request) {
 	switch message.Type {
 
 	case discordgo.InteractionPing:
-      utils.WriteJSONResponse(response, http.StatusOK, map[string]uint8{
-        "type": uint8(discordgo.InteractionResponsePong),
-      })
-      return
+        utils.WriteJSONResponse(response, http.StatusOK, map[string]uint8{
+         "type": uint8(discordgo.InteractionResponsePong),
+        })
+        return
 
 	case discordgo.InteractionApplicationCommand:
 		MainService(&message)(response, request)

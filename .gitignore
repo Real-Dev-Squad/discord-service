@@ -4,3 +4,4 @@ coverage.html
 coverage.out
 build
 **/tmp
+.DS_Store

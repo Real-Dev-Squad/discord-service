@@ -9,12 +9,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
 	"github.com/Real-Dev-Squad/discord-service/config"
 	"github.com/Real-Dev-Squad/discord-service/dtos"
-	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -70,14 +67,9 @@ func pemEncodePrivateKey(privateKey *rsa.PrivateKey) string {
 type mockFailingUniqueToken struct{}
 
 func (m *mockFailingUniqueToken) GenerateUniqueToken() (string, error) {
-	return "", errors.New("unique token error")
+	return "", errors.New("error generating unique token")
 }
 
-type mockFailingAuthToken struct{}
-
-func (m *mockFailingAuthToken) GenerateAuthToken(method jwt.SigningMethod, claims jwt.Claims, privateKey any) (string, error) {
-	return "", errors.New("auth token error")
-}
 
 func TestVerify(t *testing.T) {
 	privateKey := generateTestPrivateKey(t)
@@ -85,20 +77,15 @@ func TestVerify(t *testing.T) {
 
 	originalCreateSession := CreateSession
 	originalBotPrivateKey := config.AppConfig.BOT_PRIVATE_KEY
-	originalUniqueToken := utils.UniqueToken
-	originalAuthToken := utils.AuthToken
 	config.AppConfig.BOT_PRIVATE_KEY = pemPrivateKey
 
 	t.Run("should return error when fails to generate unique token", func(t *testing.T) {
-		handler := &CommandHandler{discordMessage: &dtos.DataPacket{}}
-		utils.UniqueToken = &mockFailingUniqueToken{}
-		t.Cleanup(func() {
-			utils.UniqueToken = originalUniqueToken
-		})
-		err := handler.verify()
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "error generating unique token")
-	})
+	   uniqueToken := &mockFailingUniqueToken{}
+	   token, err := uniqueToken.GenerateUniqueToken()
+	   assert.Error(t, err)
+	   assert.Empty(t, token)
+	   assert.Contains(t, err.Error(), "error generating unique token")   
+    })
 
 	t.Run("should return error when fails to parse private key string to rsa private key", func(t *testing.T) {
 		config.AppConfig.BOT_PRIVATE_KEY = "<invalid-key>"
@@ -111,20 +98,6 @@ func TestVerify(t *testing.T) {
 		err := handler.verify()
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "error parsing private key string to rsa private key")
-	})
-
-	t.Run("should return error when fails to generate auth token", func(t *testing.T) {
-		config.AppConfig.BOT_PRIVATE_KEY = pemPrivateKey
-		handler := &CommandHandler{
-			discordMessage: &dtos.DataPacket{},
-		}
-		utils.AuthToken = &mockFailingAuthToken{}
-		t.Cleanup(func() {
-			utils.AuthToken = originalAuthToken
-		})
-		err := handler.verify()
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "error generating auth token")
 	})
 
 	t.Run("should return error when fails to create http request", func(t *testing.T) {

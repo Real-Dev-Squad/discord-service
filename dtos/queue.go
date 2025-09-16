@@ -29,3 +29,4 @@ func (d *DataPacket) FromByte(bytes []byte) error {
 	}
 	return nil
 }
+

@@ -18,7 +18,8 @@ func (CS *CommandHandler) verify() error {
 	metaData := CS.discordMessage.MetaData
 	applicationId := metaData["applicationId"]
 
-	token, err := utils.UniqueToken.GenerateUniqueToken()
+	uniqueToken := &utils.UniqueToken{}
+	token, err := uniqueToken.GenerateUniqueToken()
 	if err != nil {
 		return fmt.Errorf("error generating unique token: %v", err)
 	}
@@ -28,8 +29,9 @@ func (CS *CommandHandler) verify() error {
 		return fmt.Errorf("error parsing private key string to rsa private key: %v", err)
 	}
 
-	authTokenString, err := utils.AuthToken.GenerateAuthToken(jwt.SigningMethodRS256, jwt.MapClaims{
-		"expiry": time.Now().Add(time.Second * 2).Unix(),
+	authToken := &utils.AuthToken{}
+	authTokenString, err := authToken.GenerateAuthToken(jwt.SigningMethodRS256, jwt.MapClaims{
+		"expiry": time.Now().Add(time.Second * 15).Unix(),
 		"name":   DiscordService,
 	}, rsaPrivateKey)
 	if err != nil {

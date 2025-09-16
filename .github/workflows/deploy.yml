@@ -50,16 +50,16 @@ jobs:
             docker rm ${{ github.event.repository.name }}-${{vars.ENV}} || true
             docker run -d -p ${{vars.PORT}}:${{vars.PORT}} \
               --name ${{ github.event.repository.name }}-${{vars.ENV}} \
-              --network=${{vars.DOCKER_NETWORK}} \
-              -e PORT=${{vars.PORT}} \
-              -e DISCORD_PUBLIC_KEY=${{secrets.DISCORD_PUBLIC_KEY}} \
-              -e BOT_TOKEN=${{secrets.BOT_TOKEN}} \
-              -e GUILD_ID=${{secrets.GUILD_ID}} \
-              -e QUEUE_NAME=${{vars.QUEUE_NAME}} \
-              -e QUEUE_URL=${{vars.QUEUE_URL}} \
-              -e ENV=${{vars.ENV}} \
-              -e RDS_BASE_API_URL=${{vars.RDS_BASE_API_URL}} \
-              -e VERIFICATION_SITE_URL=${{vars.VERIFICATION_SITE_URL}} \
-              -e MAIN_SITE_URL=${{vars.MAIN_SITE_URL}} \
-              -e BOT_PRIVATE_KEY=${{secrets.BOT_PRIVATE_KEY}} \
+              --network="${{vars.DOCKER_NETWORK}}" \
+              -e PORT="${{vars.PORT}}" \
+              -e DISCORD_PUBLIC_KEY="${{secrets.DISCORD_PUBLIC_KEY}}" \
+              -e BOT_TOKEN="${{secrets.BOT_TOKEN}}" \
+              -e GUILD_ID="${{secrets.GUILD_ID}}" \
+              -e QUEUE_NAME="${{vars.QUEUE_NAME}}" \
+              -e QUEUE_URL="${{vars.QUEUE_URL}}" \
+              -e ENV="${{vars.ENV}}" \
+              -e RDS_BASE_API_URL="${{vars.RDS_BASE_API_URL}}" \
+              -e VERIFICATION_SITE_URL="${{vars.VERIFICATION_SITE_URL}}" \
+              -e MAIN_SITE_URL="${{vars.MAIN_SITE_URL}}" \
+              -e BOT_PRIVATE_KEY="${{secrets.BOT_PRIVATE_KEY}}" \
               ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}

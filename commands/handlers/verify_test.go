@@ -234,7 +234,7 @@ func TestVerify(t *testing.T) {
 				"dev": "true",
 			},
 		}}
-		
+
 		err := handler.verify()
 		assert.NoError(t, err)
 	})

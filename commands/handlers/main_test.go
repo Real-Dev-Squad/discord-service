@@ -10,6 +10,21 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
 )
+type mockMainTestDiscordSession struct {
+	*discordgo.Session
+}
+
+func (m *mockMainTestDiscordSession) WebhookMessageEdit(webhookID, token, messageID string, data *discordgo.WebhookEdit, options ...discordgo.RequestOption) (*discordgo.Message, error) {
+	return nil, nil
+}
+
+func (m *mockMainTestDiscordSession) mockGuildMemberNickname(guildID, userID, nickname string, options ...discordgo.RequestOption) error {
+	panic("GuildMemberNickname called")
+}
+
+func (m *mockMainTestDiscordSession) mockClose() error {
+	return nil
+}
 
 func TestMainHandler(t *testing.T) {
 	t.Run("should return listeningHandler for 'listening' command", func(t *testing.T) {
@@ -75,7 +90,7 @@ func TestUpdateNickName(t *testing.T) {
 	})
 
 	t.Run("should return error if CreateSession fails", func(t *testing.T) {
-		CreateSession = func() (*discordgo.Session, error) {
+		CreateSession = func() (DiscordSessionWrapper, error) {
 			return nil, errors.New("failed to create session")
 		}
 		err := UpdateNickName("userID", "validNickname")
@@ -83,9 +98,10 @@ func TestUpdateNickName(t *testing.T) {
 		assert.Equal(t, "failed to create session", err.Error())
 	})
 	t.Run("should hit GuildMemberNickname if CreateSession succeeds", func(t *testing.T) {
-		CreateSession = mockCreateSession
+		CreateSession = func() (DiscordSessionWrapper, error) {
+			panic("GuildMemberNickname called")
+		}
 		assert.Panics(t, func() { UpdateNickName("userID", "validNickname") })
-
 	})
 
 }

@@ -5,7 +5,6 @@ import (
 	"crypto/rsa"
 	"errors"
 	"testing"
-
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 )
@@ -31,7 +30,6 @@ func TestGenerateUniqueToken(t *testing.T) {
 		defer func() {
 			rand.Reader = originalReader
 		}()
-
 		uniqueToken := &UniqueToken{}
 		token, err := uniqueToken.GenerateUniqueToken()
 		assert.Error(t, err)

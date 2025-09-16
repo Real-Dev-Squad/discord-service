@@ -58,4 +58,8 @@ jobs:
               -e QUEUE_NAME=${{vars.QUEUE_NAME}} \
               -e QUEUE_URL=${{vars.QUEUE_URL}} \
               -e ENV=${{vars.ENV}} \
+              -e VERIFICATION_SITE_URL=${{vars.VERIFICATION_SITE_URL}} \
+              -e BOT_PRIVATE_KEY=${{vars.BOT_PRIVATE_KEY}} \
+              -e MAIN_SITE_URL=${{vars.MAIN_SITE_URL}} \
+              -e RDS_BASE_API_URL=${{vars.RDS_BASE_API_URL}} \
               ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}

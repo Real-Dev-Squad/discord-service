@@ -16,7 +16,7 @@ type UniqueTokenI interface {
 	GenerateUniqueToken() (string, error)
 }
 type AuthTokenI interface {
-	GenerateAuthToken(method jwt.SigningMethod, claims jwt.Claims, privateKey any) (string, error)
+    GenerateAuthToken(method jwt.SigningMethod, claims jwt.Claims, privateKey any) (string, error)
 }
 
 type UniqueToken struct{}

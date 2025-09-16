@@ -14,7 +14,7 @@ type mockMainTestDiscordSession struct {
 	*discordgo.Session
 }
 
-func (m *mockMainTestDiscordSession) mockWebhookMessageEdit(webhookID, token, messageID string, data *discordgo.WebhookEdit, options ...discordgo.RequestOption) (*discordgo.Message, error) {
+func (m *mockMainTestDiscordSession) WebhookMessageEdit(webhookID, token, messageID string, data *discordgo.WebhookEdit, options ...discordgo.RequestOption) (*discordgo.Message, error) {
 	return nil, nil
 }
 

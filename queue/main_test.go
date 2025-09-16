@@ -108,9 +108,9 @@ func TestSendMessage(t *testing.T) {
 		config.AppConfig.MAX_RETRIES = 1
 		message := dtos.DataPacket{
 			UserID:      "1",
-			CommandName: "listening",
+			CommandName: utils.CommandNames.Listening,
 		}
-		bytes, err := message.ToByte()
+		bytes, err := dtos.ToByte(&message)
 		assert.NoError(t, err)
 		assert.NotPanics(t, func() {
 			SendMessage(bytes)

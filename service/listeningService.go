@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Real-Dev-Squad/discord-service/dtos"
+	"github.com/Real-Dev-Squad/discord-service/errors"
 	"github.com/Real-Dev-Squad/discord-service/queue"
 	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
@@ -28,30 +29,31 @@ func (s *CommandService) ListeningService(response http.ResponseWriter, request 
 	if requiresUpdate {
 		dataPacket := dtos.DataPacket{
 			UserID:      s.discordMessage.Member.User.ID,
-			CommandName: "listening",
+			CommandName: utils.CommandNames.Listening,
 			MetaData: map[string]string{
 				"value":    fmt.Sprint(options.Value),
 				"nickname": s.discordMessage.Member.Nick,
 			},
 		}
-		bytePacket, err := dataPacket.ToByte()
+		
+		bytePacket, err := dtos.ToByte(&dataPacket)
 		if err != nil {
-			msg = "Failed to update your nickname."
-			response.WriteHeader(http.StatusInternalServerError)
+			errors.HandleError(response, err)
 			return
 		}
+
 		if err := queue.SendMessage(bytePacket); err != nil {
-			msg = "Failed to update your nickname."
-			response.WriteHeader(http.StatusInternalServerError)
+			errors.HandleError(response, err)
 			return
 		}
 	}
+	
 	messageResponse := &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: fmt.Sprintf(msg),
-			Flags:   64, // Ephemeral message flag
+			Content: msg,
+			Flags:   discordgo.MessageFlagsEphemeral,
 		},
 	}
-	utils.Success.NewDiscordResponse(response, "Success", messageResponse)
+	utils.WriteJSONResponse(response, http.StatusOK, messageResponse)
 }

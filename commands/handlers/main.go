@@ -6,6 +6,7 @@ import (
 	"github.com/Real-Dev-Squad/discord-service/config"
 	"github.com/Real-Dev-Squad/discord-service/dtos"
 	"github.com/Real-Dev-Squad/discord-service/models"
+	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 )
@@ -25,20 +26,27 @@ func MainHandler(dataPacket []byte) func() error {
 	}
 	CS.discordMessage = packetData
 	switch packetData.CommandName {
-	case "listening":
+	case utils.CommandNames.Listening:
 		return CS.listeningHandler
+	case utils.CommandNames.Verify:
+		return CS.verify
 	default:
 		logrus.Warn("Invalid Command Received: ", packetData.CommandName)
 		return nil
 	}
 }
 
+type DiscordSessionWrapper interface {
+	WebhookMessageEdit(webhookID string, token string, messageID string, data *discordgo.WebhookEdit, options ...discordgo.RequestOption) (*discordgo.Message, error)
+	GuildMemberNickname(guildID string, userID string, nickname string, options ...discordgo.RequestOption) error
+	Close() error
+}
 type DiscordSession struct {
 	session *discordgo.Session
 }
 
 var NewDiscord = discordgo.New
-var CreateSession = func() (*discordgo.Session, error) {
+var CreateSession = func() (DiscordSessionWrapper, error) {
 	session, err := NewDiscord("Bot " + config.AppConfig.BOT_TOKEN)
 	if err != nil {
 		logrus.Errorf("Cannot create a new Discord session: %v", err)

@@ -3,21 +3,22 @@ package utils
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/Real-Dev-Squad/discord-service/errors"
+	"github.com/sirupsen/logrus"
 )
 
-type successPackage struct{}
-
-var Success *successPackage = &successPackage{}
-
-func (Success *successPackage) NewDiscordResponse(response http.ResponseWriter, message string, data interface{}) {
-	response.WriteHeader(http.StatusOK)
-	if data != nil {
-		err := json.NewEncoder(response).Encode(data)
-		if err != nil {
-			Errors.NewInternalError(response)
-			return
-		}
-	} else {
-		response.Write([]byte(`{"success": true, "status": 200, "message": "` + message + `"}`))
-	}
+func WriteJSONResponse(w http.ResponseWriter, statusCode int, data any) {
+	w.Header().Set("Content-Type", "application/json")
+    
+    jsonData, err := json.Marshal(data)
+    if err != nil {
+        errors.HandleError(w, err)
+        return
+    }
+    
+    w.WriteHeader(statusCode)
+    if _, err := w.Write(jsonData); err != nil {
+        logrus.Errorf("failed to write response: %v", err)
+    }
 }

@@ -13,6 +13,7 @@ import (
 
 func QueueHandler(response http.ResponseWriter, request *http.Request, params httprouter.Params) {
 	body, err := io.ReadAll(request.Body)
+	defer request.Body.Close();
 	if err != nil {
 		http.Error(response, "Failed to read request body", http.StatusInternalServerError)
 		return

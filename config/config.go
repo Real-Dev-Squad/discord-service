@@ -9,13 +9,17 @@ import (
 )
 
 type Config struct {
-	Port               string
-	DISCORD_PUBLIC_KEY string
-	GUILD_ID           string
-	BOT_TOKEN          string
-	QUEUE_URL          string
-	QUEUE_NAME         string
-	MAX_RETRIES        int
+	Port                  string
+	DISCORD_PUBLIC_KEY    string
+	GUILD_ID              string
+	BOT_TOKEN             string
+	QUEUE_URL             string
+	QUEUE_NAME            string
+	MAX_RETRIES           int
+	RDS_BASE_API_URL      string
+	MAIN_SITE_URL         string
+	BOT_PRIVATE_KEY       string
+	VERIFICATION_SITE_URL string
 }
 
 var AppConfig Config
@@ -35,6 +39,10 @@ func init() {
 		BOT_TOKEN:          loadEnv("BOT_TOKEN"),
 		QUEUE_NAME:         loadEnv("QUEUE_NAME"),
 		MAX_RETRIES:        5,
+		RDS_BASE_API_URL:   loadEnv("RDS_BASE_API_URL"),
+		MAIN_SITE_URL:      loadEnv("MAIN_SITE_URL"),
+		BOT_PRIVATE_KEY:    loadEnv("BOT_PRIVATE_KEY"),
+		VERIFICATION_SITE_URL: loadEnv("VERIFICATION_SITE_URL"),
 	}
 }
 

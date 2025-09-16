@@ -6,24 +6,51 @@ import (
 
 	"github.com/Real-Dev-Squad/discord-service/dtos"
 	_ "github.com/Real-Dev-Squad/discord-service/tests/helpers"
+	"github.com/Real-Dev-Squad/discord-service/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
 )
+type mockMainTestDiscordSession struct {
+	*discordgo.Session
+}
+
+func (m *mockMainTestDiscordSession) WebhookMessageEdit(webhookID, token, messageID string, data *discordgo.WebhookEdit, options ...discordgo.RequestOption) (*discordgo.Message, error) {
+	return nil, nil
+}
+
+func (m *mockMainTestDiscordSession) mockGuildMemberNickname(guildID, userID, nickname string, options ...discordgo.RequestOption) error {
+	panic("GuildMemberNickname called")
+}
+
+func (m *mockMainTestDiscordSession) mockClose() error {
+	return nil
+}
 
 func TestMainHandler(t *testing.T) {
 	t.Run("should return listeningHandler for 'listening' command", func(t *testing.T) {
 		dataPacket := &dtos.DataPacket{
-			CommandName: "listening",
+			CommandName: utils.CommandNames.Listening,
 		}
-		data, err := dataPacket.ToByte()
+		data, err := dtos.ToByte(dataPacket)
 		assert.NoError(t, err)
 
 		handler := MainHandler(data)
 		assert.NotNil(t, handler)
 	})
-	t.Run("should return nil for invalid data", func(t *testing.T) {
-		invalidData := []byte(`{"invalid": "data"}`)
+	t.Run("should return nil for invalid json data", func(t *testing.T) {
+		invalidData := []byte(`{"userId":"1234567890","cmdName":"listening"}`)
 		handler := MainHandler(invalidData)
+		assert.Nil(t, handler)
+	})
+
+	t.Run("Should return nil for unknown commands", func(t *testing.T) {
+		dp := &dtos.DataPacket{
+			CommandName: "unknown",
+		}
+		data, err := dtos.ToByte(dp)
+		assert.NoError(t, err)
+
+		handler := MainHandler(data)
 		assert.Nil(t, handler)
 	})
 }
@@ -63,7 +90,7 @@ func TestUpdateNickName(t *testing.T) {
 	})
 
 	t.Run("should return error if CreateSession fails", func(t *testing.T) {
-		CreateSession = func() (*discordgo.Session, error) {
+		CreateSession = func() (DiscordSessionWrapper, error) {
 			return nil, errors.New("failed to create session")
 		}
 		err := UpdateNickName("userID", "validNickname")
@@ -71,9 +98,10 @@ func TestUpdateNickName(t *testing.T) {
 		assert.Equal(t, "failed to create session", err.Error())
 	})
 	t.Run("should hit GuildMemberNickname if CreateSession succeeds", func(t *testing.T) {
-		CreateSession = mockCreateSession
+		CreateSession = func() (DiscordSessionWrapper, error) {
+			panic("GuildMemberNickname called")
+		}
 		assert.Panics(t, func() { UpdateNickName("userID", "validNickname") })
-
 	})
 
 }

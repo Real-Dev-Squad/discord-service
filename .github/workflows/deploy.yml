@@ -62,4 +62,4 @@ jobs:
               -e BOT_PRIVATE_KEY=${{secrets.BOT_PRIVATE_KEY}} \
               -e MAIN_SITE_URL=${{vars.MAIN_SITE_URL}} \
               -e RDS_BASE_API_URL=${{vars.RDS_BASE_API_URL}} \
-              ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
+              ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:latest

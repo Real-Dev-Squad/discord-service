@@ -14,15 +14,15 @@ type mockMainTestDiscordSession struct {
 	*discordgo.Session
 }
 
-func (m *mockMainTestDiscordSession) WebhookMessageEdit(webhookID, token, messageID string, data *discordgo.WebhookEdit, options ...discordgo.RequestOption) (*discordgo.Message, error) {
+func (m *mockMainTestDiscordSession) mockWebhookMessageEdit(webhookID, token, messageID string, data *discordgo.WebhookEdit, options ...discordgo.RequestOption) (*discordgo.Message, error) {
 	return nil, nil
 }
 
-func (m *mockMainTestDiscordSession) GuildMemberNickname(guildID, userID, nickname string, options ...discordgo.RequestOption) error {
+func (m *mockMainTestDiscordSession) mockGuildMemberNickname(guildID, userID, nickname string, options ...discordgo.RequestOption) error {
 	panic("GuildMemberNickname called")
 }
 
-func (m *mockMainTestDiscordSession) Close() error {
+func (m *mockMainTestDiscordSession) mockClose() error {
 	return nil
 }
 

@@ -33,8 +33,9 @@ jobs:
           platforms: linux/arm64
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME | toLower }}/${{ github.event.repository.name | toLower }}:${{ github.sha }}
-            ${{ secrets.DOCKERHUB_USERNAME | toLower }}/${{ github.event.repository.name | toLower }}:latest
+            tags: |
+              ${{ toLower(secrets.DOCKERHUB_USERNAME) }}/${{ github.event.repository.name }}:${{ github.sha }}
+              ${{ toLower(secrets.DOCKERHUB_USERNAME) }}/${{ github.event.repository.name }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
